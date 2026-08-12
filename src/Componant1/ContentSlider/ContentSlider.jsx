@@ -1,83 +1,83 @@
 import "./content-slider.css";
-import contentSliderImg from "/images/text-shape.png";
+import contentSliderImg from "/images/logo.webp";
 
 const ContentSlider = () => {
   return (
     <div className="content-slider-section">
       <div className="content-slider">
         <div className="content-slider-content">
-          <h1>Environmental</h1>
+          <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} />
+          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
-          <h1>Ocean-Cleaning</h1>
+          <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} />
+          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
-          <h1>Animal-Protection</h1>
+          <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} />
+          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
-          <h1>Environmental</h1>
+          <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} />
+          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
-          <h1>Ocean-Cleaning</h1>
+          <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} />
+          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
-          <h1>Animal-Protection</h1>
+          <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} />
+          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
       </div>
       <div className="content-slider">
         <div className="content-slider-content">
-          <h1>Environmental</h1>
+          <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} />
+          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
-          <h1>Ocean-Cleaning</h1>
+          <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} />
+          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
-          <h1>Animal-Protection</h1>
+          <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} />
+          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
-          <h1>Environmental</h1>
+          <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} />
+          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
-          <h1>Ocean-Cleaning</h1>
+          <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} />
+          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
-          <h1>Animal-Protection</h1>
+          <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} />
+          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
       </div>
     </div>

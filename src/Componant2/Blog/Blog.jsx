@@ -12,12 +12,12 @@ const blogData = [
   {
     id: 1,
     blogThumb: blogThumb,
-    thumbContent: "Environment",
+    thumbContent: "Lingkungan",
     blogDate: "24 Mar, 2024",
     blogUrl: "/blog_details",
-    blogTitle: "Top 10 Recycling tips for Environment",
+    blogTitle: "10 Tips Daur Ulang Terbaik untuk Lingkungan",
     blogDesc:
-      "Competently cultivate worldwide to e-tailers professionally engineer high",
+      "Temukan berbagai informasi dan edukasi menarik seputar kelestarian alam.",
     blogProfileIcon: "J",
     blogProfileTitle: "John D. Alexon",
     btnIcon: <FaArrowRightLong />,
@@ -25,12 +25,12 @@ const blogData = [
   {
     id: 2,
     blogThumb: blogThumb2,
-    thumbContent: "Environment",
+    thumbContent: "Lingkungan",
     blogDate: "24 Mar, 2024",
     blogUrl: "/blog_details",
-    blogTitle: "How Every Individual Can Make a Difference",
+    blogTitle: "Bagaimana Setiap Individu Bisa Membawa Perubahan",
     blogDesc:
-      "Competently cultivate worldwide to e-tailers professionally engineer high",
+      "Temukan berbagai informasi dan edukasi menarik seputar kelestarian alam.",
     blogProfileIcon: "A",
     blogProfileTitle: "Anjelina Watson",
     btnIcon: <FaArrowRightLong />,
@@ -38,12 +38,12 @@ const blogData = [
   {
     id: 3,
     blogThumb: blogThumb3,
-    thumbContent: "Environment",
+    thumbContent: "Lingkungan",
     blogDate: "24 Mar, 2024",
     blogUrl: "/blog_details",
-    blogTitle: "Innovations in Renewable Energy Technology",
+    blogTitle: "Inovasi Baru dalam Teknologi Energi Terbarukan",
     blogDesc:
-      "Competently cultivate worldwide to e-tailers professionally engineer high",
+      "Temukan berbagai informasi dan edukasi menarik seputar kelestarian alam.",
     blogProfileIcon: "D",
     blogProfileTitle: "David Watson",
     btnIcon: <FaArrowRightLong />,
@@ -58,17 +58,17 @@ const Blog = () => {
           <div>
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2">
               <img src={subTitleShape} draggable="false" />
-              LATEST BLOG
+              ARTIKEL TERBARU
             </h5>
             <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
-              Building a Greener Future <br />
-              Together Forever
+              Bersama Membangun Masa Depan <br />
+              Lingkungan yang Lebih Hijau
             </h1>
           </div>
           <div className="flex lg:justify-end">
             <Link to={"/blog_grid"}>
               <button className="primary-btn">
-                View All Blog
+                Lihat Semua Artikel
                 <img src={buttonShape} draggable="false" />
               </button>
             </Link>

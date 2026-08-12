@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
 import { FaArrowRightLong } from "react-icons/fa6";
-import blogThumb from "/images/blog-thumb1.jpg";
-import blogThumb2 from "/images/blog-thumb2.jpg";
-import blogThumb3 from "/images/blog-thumb3.jpg";
+import blogThumb from "/images/blog-new-1.jpg";
+import blogThumb2 from "/images/blog-new-2.jpg";
+import blogThumb3 from "/images/blog-new-3.jpg";
 import subTitleShape from "/images/sub-title-shape.png";
 import buttonShape from "/images/button-shape-1.png";
 import BlogCard from "./BlogCard";
@@ -61,8 +61,8 @@ const Blog = () => {
               LATEST BLOG
             </h5>
             <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
-              Building a Greener Future <br />
-              Together Forever
+              Membangun Masa Depan <br />
+              Ramah Lingkungan
             </h1>
           </div>
           <div className="flex lg:justify-end">

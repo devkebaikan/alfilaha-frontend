@@ -1,9 +1,9 @@
 import { FaArrowRightLong } from "react-icons/fa6";
 import BreadCrumb from "../../../Shared/BreadCrumb/BreadCrumb";
-import projectThumb from "/images/project-img.png";
-import projectThumb2 from "/images/project-img2.png";
-import projectThumb3 from "/images/project-img3.png";
-import projectThumb4 from "/images/project-img4.jpg";
+import projectThumb from "/images/project-new-1.jpg";
+import projectThumb2 from "/images/project-new-2.jpg";
+import projectThumb3 from "/images/project-new-3.jpg";
+import projectThumb4 from "/images/project-new-4.jpg";
 import projectThumb5 from "/images/project-img5.jpg";
 import projectThumb6 from "/images/project-img6.jpg";
 import projectShape from "/images/project-shape.png";
@@ -28,8 +28,7 @@ const ProjectData = [
     projectThumb: projectThumb2,
     projectSubTitle: "Environment",
     projectTitle: "Echology Energy",
-    projectUrl: "/project_details",
-    buttonTitle: "View Details",
+    projectUrl: "/project_details",   
     buttonIcon: <FaArrowRightLong />,
     projectContentShape: projectContentShape,
     projectShape: projectShape,
@@ -70,7 +69,7 @@ const ProjectData = [
   {
     id: 6,
     projectThumb: projectThumb6,
-    projectSubTitle: "Environment",
+    projectSubTitle: "Energy",
     projectTitle: "Renewable Energy",
     projectUrl: "/project_details",
     buttonTitle: "View Details",

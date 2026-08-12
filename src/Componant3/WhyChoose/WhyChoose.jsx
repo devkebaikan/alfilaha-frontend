@@ -18,16 +18,15 @@ const WhyChoose = () => {
           <div>
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2">
               <FaStarOfLife />
-              WHY CHOOSE US
+              CAMPING & OUTBOUND
             </h5>
             <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-white mt-2 mb-6">
-              Building a Foundation
-              <br /> Energy Solutions.
+              Ruang Lebih Lama
+              <br /> untuk Rombongan Kita.
             </h1>
             <p className="font-AlbertSans text-TextColor-0 font-light">
-              Sometimes goods can arrive early when they being brought into the
-              solution other times items need a place to be stored for short
-              goods can arrive desig headquarters have enough space your needs.
+              Untuk rombongan sekolah atau perusahaan yang butuh ruang dan
+              waktu lebih lama untuk belajar bersama alam.
             </p>
             <div className="flex flex-col sm:flex-row sm:items-center gap-7 mt-12">
               <div>
@@ -35,12 +34,10 @@ const WhyChoose = () => {
               </div>
               <div className="flex-1">
                 <h5 className="font-AlbertSans font-semibold text-xl text-white">
-                  Solar Panel Solutions
+                  Kapasitas Besar
                 </h5>
                 <p className="font-AlbertSans text-TextColor-0 mt-3">
-                  Sometimes goods can arrive being brought into the solution so
-                  <br className="hidden sm:block lg:hidden 2xl:block" />{" "}
-                  headquarters have enough space your needs.target e-business
+                  Lapangan luas dan asrama bersih menanti rombongan kita.
                 </p>
               </div>
             </div>
@@ -50,12 +47,23 @@ const WhyChoose = () => {
               </div>
               <div className="flex-1">
                 <h5 className="font-AlbertSans font-semibold text-xl text-white">
-                  Solar Panel Solutions
+                  Team Building
                 </h5>
                 <p className="font-AlbertSans text-TextColor-0 mt-3">
-                  Sometimes goods can arrive being brought into the solution so
-                  <br className="hidden sm:block lg:hidden 2xl:block" />{" "}
-                  headquarters have enough space your needs.target e-business
+                  Permainan seru untuk menguji kekompakan dan kepemimpinan.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-7 mt-12">
+              <div>
+                <img src={boxImg} draggable="false" />
+              </div>
+              <div className="flex-1">
+                <h5 className="font-AlbertSans font-semibold text-xl text-white">
+                  Malam Keakraban
+                </h5>
+                <p className="font-AlbertSans text-TextColor-0 mt-3">
+                  Api unggun, udara sejuk, dan cerita-cerita hangat.
                 </p>
               </div>
             </div>

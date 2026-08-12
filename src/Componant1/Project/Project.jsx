@@ -1,8 +1,9 @@
 /* eslint-disable no-unused-vars */
 import { FaArrowRightLong } from "react-icons/fa6";
-import projectThumb from "/images/project-img.png";
-import projectThumb2 from "/images/project-img2.png";
-import projectThumb3 from "/images/project-img3.png";
+import projectThumb from "/images/project-new-1.jpg";
+import projectThumb2 from "/images/project-new-2.jpg";
+import projectThumb3 from "/images/project-new-3.jpg";
+import projectThumb4 from "/images/project-new-4.jpg";
 import projectShape from "/images/project-shape.png";
 import projectContentShape from "/images/project-content-shape.png";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -47,7 +48,7 @@ const ProjectData = [
   },
   {
     id: 4,
-    projectThumb: projectThumb,
+    projectThumb: projectThumb4,
     projectSubTitle: "Climate",
     projectTitle: "Cleaning Forest",
     projectUrl: "/project_details",

@@ -31,30 +31,31 @@ const Banner = () => {
     <div className="relative">
       <Swiper {...settings} pagination={pagination} modules={[Pagination]}>
         <SwiperSlide>
-          <section className="bg-[url('/images/banner-bg.jpg')] bg-cover bg-left lg:bg-center bg-no-repeat h-[750px] sm:h-[700px] md:h-[750px] lg:h-[760px] xl:h-[960px] flex items-center">
+          <section className="bg-[url('/images/banner-bg-backup.jpg')] bg-cover bg-left lg:bg-center bg-no-repeat h-[750px] sm:h-[700px] md:h-[750px] lg:h-[760px] xl:h-[960px] flex items-center">
             <div className="Container">
               <div className="pt-36">
                 <div className="relative banner-content">
-                  <h5 className="font-AlbertSans text-PrimaryColor-0 font-medium">
-                    NATURAL ENVIRONMENT
+                  <h5 className="font-AlbertSans text-PrimaryColor-0 font-medium text-lg">
+                    PESANTREN ALFILAHA
                   </h5>
-                  <h1 className="font-AlbertSans font-extrabold text-white text-[30px] sm:text-[56px] md:text-[70px] lg:text-[50px] xl:text-[60px] 2xl:text-[68px]">
-                    Be Safe Controls
+                  <h1 className="font-AlbertSans font-extrabold text-white text-[30px] sm:text-[56px] md:text-[70px] lg:text-[50px] xl:text-[60px] 2xl:text-[68px] drop-shadow-lg">
+                    Sekolah Kehidupan
                   </h1>
-                  <h1 className="font-AlbertSans font-extrabold text-white text-[30px] sm:text-[56px] md:text-[70px] lg:text-[50px] xl:text-[60px] 2xl:text-[68px] -mt-3 sm:-mt-5 md:-mt-7 lg:-mt-5">
-                    Environment
+                  <h1 className="font-AlbertSans font-extrabold text-white text-[30px] sm:text-[56px] md:text-[70px] lg:text-[50px] xl:text-[60px] 2xl:text-[68px] -mt-3 sm:-mt-5 md:-mt-7 lg:-mt-5 drop-shadow-lg">
+                    Belajar dari Alam
                   </h1>
-                  <p className="font-AlbertSans text-lg text-white mb-10">
-                    Professionally optimize interdependent intellectual
-                    interoperable <br className="hidden md:block" /> connect
-                    best practices. Progressively
-                    <br className="hidden sm:block md:hidden" /> fabricate done
+                  <p className="font-AlbertSans text-lg text-white mb-10 drop-shadow-md">
+                    Pesantren, kebun, dan ruang belajar terbuka untuk keluarga,{" "}
+                    <br className="hidden md:block" />
+                    sekolah, dan komunitas yang ingin belajar hidup
+                    <br className="hidden sm:block md:hidden" /> dari alam dan
+                    syariat
                   </p>
                   <div className="flex flex-col sm:flex-row gap-5">
                     <Link to={"/about"}>
                       <button className="primary-btn">
-                        {`Let's Talk`}
-                        <img src={buttonShape} draggable="false" />
+                        Selengkapnya
+                        <img src={buttonShape} draggable="false" alt="Button Shape" />
                       </button>
                     </Link>
                     <div className="text-lg font-AlbertSans font-medium text-white flex items-center gap-4">
@@ -65,7 +66,7 @@ const Banner = () => {
                           onClick={() => setToggler(!toggler)}
                         />
                       </button>
-                      Watch Video
+                      Tonton Video
                     </div>
                     <FsLightbox
                       toggler={toggler}
@@ -106,36 +107,42 @@ const Banner = () => {
                     </ul>
                   </div>
                 </div>
-                <div></div>
               </div>
             </div>
           </section>
         </SwiperSlide>
+
         <SwiperSlide>
-          <section className="bg-[url('/images/banner-bg2.jpg')] bg-cover bg-left lg:bg-center bg-no-repeat h-[750px] sm:h-[700px] md:h-[750px] lg:h-[760px] xl:h-[960px] flex items-center">
-            <div className="Container">
+          <section
+            className="relative bg-cover bg-center bg-no-repeat h-[750px] sm:h-[700px] md:h-[750px] lg:h-[760px] xl:h-[960px] flex items-center"
+              style={{ backgroundImage: "url('/images/banner-bg-backup.jpg')" }}
+          >
+            {/* Overlay gelap */}
+            <div className="absolute inset-0 bg-black bg-opacity-35"></div>
+
+            <div className="Container relative z-10">
               <div className="pt-36">
                 <div className="relative banner-content">
                   <h5 className="font-AlbertSans text-PrimaryColor-0 font-medium">
-                    NATURAL ENVIRONMENT
+                    KEBUN ORGANIK
                   </h5>
-                  <h1 className="font-AlbertSans font-extrabold text-white text-[30px] sm:text-[56px] md:text-[70px] lg:text-[50px] xl:text-[60px] 2xl:text-[68px]">
-                    Be Safe Controls
+                  <h1 className="font-AlbertSans font-extrabold text-white text-[30px] sm:text-[56px] md:text-[70px] lg:text-[50px] xl:text-[60px] 2xl:text-[68px] drop-shadow-lg">
+                    Living With Nature
                   </h1>
-                  <h1 className="font-AlbertSans font-extrabold text-white text-[30px] sm:text-[56px] md:text-[70px] lg:text-[50px] xl:text-[60px] 2xl:text-[68px] -mt-3 sm:-mt-5 md:-mt-7 lg:-mt-5">
-                    Environment
+                  <h1 className="font-AlbertSans font-extrabold text-white text-[30px] sm:text-[56px] md:text-[70px] lg:text-[50px] xl:text-[60px] 2xl:text-[68px] -mt-3 sm:-mt-5 md:-mt-7 lg:-mt-5 drop-shadow-lg">
+                    Belajar dari Alam
                   </h1>
-                  <p className="font-AlbertSans text-lg text-white mb-10">
-                    Professionally optimize interdependent intellectual
-                    interoperable <br className="hidden md:block" /> connect
-                    best practices. Progressively
-                    <br className="hidden sm:block md:hidden" /> fabricate done
+                  <p className="font-AlbertSans text-lg text-white mb-10 drop-shadow-md">
+                    Alam adalah guru besar. Belajar dari siklus semesta untuk{" "}
+                    <br className="hidden md:block" />
+                    menumbuhkan syukur dan tanggung jawab
+                    <br className="hidden sm:block md:hidden" /> menjaga bumi
                   </p>
                   <div className="flex flex-col sm:flex-row gap-5">
-                    <Link to={"/about"}>
+                    <Link to={"/kubus-alfilaha"}>
                       <button className="primary-btn">
-                        {`Let's Talk`}
-                        <img src={buttonShape} draggable="false" />
+                        Pelajari Lebih Lanjut
+                        <img src={buttonShape} draggable="false" alt="Button Shape" />
                       </button>
                     </Link>
                     <div className="text-lg font-AlbertSans font-medium text-white flex items-center gap-4">
@@ -146,7 +153,7 @@ const Banner = () => {
                           onClick={() => setToggler(!toggler)}
                         />
                       </button>
-                      Watch Video
+                      Tonton Video
                     </div>
                     <FsLightbox
                       toggler={toggler}
@@ -187,7 +194,6 @@ const Banner = () => {
                     </ul>
                   </div>
                 </div>
-                <div></div>
               </div>
             </div>
           </section>

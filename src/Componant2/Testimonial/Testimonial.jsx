@@ -19,11 +19,10 @@ const testiData = [
     testiImg: testiImg,
     testiRatingIcon: <MdOutlineStarPurple500 />,
     testiName: "Anjelina Watson",
-    testiDesignation: "Web Developer",
-    testiDesc: `Appropriately administrate proactive value with to
-                niche markets. Dramatically target market position
-                idea after high quality best practice. Dramatically 
-                synergize open source service`,
+    testiDesignation: "Pengguna Layanan",
+    testiDesc: `Pelayanan yang sangat baik dan terpercaya. 
+                Praktik yang diterapkan sungguh berkualitas dan memberikan 
+                dampak positif bagi lingkungan sekitar kita.`,
     testiShape: testiShape,
   },
   {
@@ -31,11 +30,10 @@ const testiData = [
     testiImg: testiImg2,
     testiRatingIcon: <MdOutlineStarPurple500 />,
     testiName: "Jhon D. Alexon",
-    testiDesignation: "UI/UX Designer",
-    testiDesc: `Appropriately administrate proactive value with to
-                niche markets. Dramatically target market position
-                idea after high quality best practice. Dramatically 
-                synergize open source service`,
+    testiDesignation: "Pakar Lingkungan",
+    testiDesc: `Pelayanan yang sangat baik dan terpercaya. 
+                Praktik yang diterapkan sungguh berkualitas dan memberikan 
+                dampak positif bagi lingkungan sekitar kita.`,
     testiShape: testiShape2,
   },
   {
@@ -43,11 +41,10 @@ const testiData = [
     testiImg: testiImg,
     testiRatingIcon: <MdOutlineStarPurple500 />,
     testiName: "Anjelina Watson",
-    testiDesignation: "Web Developer",
-    testiDesc: `Appropriately administrate proactive value with to
-                niche markets. Dramatically target market position
-                idea after high quality best practice. Dramatically 
-                synergize open source service`,
+    testiDesignation: "Pengguna Layanan",
+    testiDesc: `Pelayanan yang sangat baik dan terpercaya. 
+                Praktik yang diterapkan sungguh berkualitas dan memberikan 
+                dampak positif bagi lingkungan sekitar kita.`,
     testiShape: testiShape,
   },
 ];
@@ -98,12 +95,12 @@ const Testimonial = () => {
             <div>
               <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2">
                 <img src={subTitleShape} draggable="false" />
-                TESTIMONIALS
+                TESTIMONI
               </h5>
               <h1 className="font-AlbertSans font-bold text-xl leading-7 sm:text-[36px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
-                Clients Best Feedback About
+                Ulasan Terbaik Pelanggan Tentang
                 <br />
-                Echofy Provission
+                Layanan Alfilaha
               </h1>
             </div>
             <div className="mt-[46px]">

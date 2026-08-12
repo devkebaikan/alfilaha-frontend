@@ -22,10 +22,10 @@ const ServiceData = [
     serviceIcon: serviceIcon,
     serviceUrl: "/service_details",
     serviceButton: <GoArrowUpRight />,
-    serviceButton2: "Discover More",
-    serviceTitle: "Tree Plantation",
+    serviceButton2: "Selengkapnya",
+    serviceTitle: "Menjaga Bumi",
     serviceDesc:
-      "Alternative innovation to ethical network environmental whiteboard",
+      "Hentikan bahan kimia perusak. Kita buat kompos dan hidupkan mikroba tanah, agar alam merawat kita kembali.",
     serviceShape: serviceShape,
   },
   {
@@ -34,10 +34,10 @@ const ServiceData = [
     serviceIcon: serviceIcon2,
     serviceUrl: "/service_details",
     serviceButton: <GoArrowUpRight />,
-    serviceButton2: "Discover More",
-    serviceTitle: "Dust Recycling",
+    serviceButton2: "Selengkapnya",
+    serviceTitle: "Menjaga Sesama",
     serviceDesc:
-      "Alternative innovation to ethical network environmental whiteboard",
+      "Sayuran dan buah di sini harus sehat tanpa racun, agar yang sampai ke piring membawa manfaat bagi sesama.",
     serviceShape: serviceShape,
   },
   {
@@ -46,22 +46,10 @@ const ServiceData = [
     serviceIcon: serviceIcon3,
     serviceUrl: "/service_details",
     serviceButton: <GoArrowUpRight />,
-    serviceButton2: "Discover More",
-    serviceTitle: "Cleaning Ocean",
+    serviceButton2: "Selengkapnya",
+    serviceTitle: "Pembagian yang Adil",
     serviceDesc:
-      "Alternative innovation to ethical network environmental whiteboard",
-    serviceShape: serviceShape,
-  },
-  {
-    id: 4,
-    serviceImg: serviceImg,
-    serviceIcon: serviceIcon,
-    serviceUrl: "/service_details",
-    serviceButton: <GoArrowUpRight />,
-    serviceButton2: "Discover More",
-    serviceTitle: "Tree Plantation",
-    serviceDesc:
-      "Alternative innovation to ethical network environmental whiteboard",
+      "Tidak ada keserakahan. Ambil secukupnya, sisa panen dikembalikan ke alam atau dibagikan dengan adil.",
     serviceShape: serviceShape,
   },
 ];
@@ -109,11 +97,11 @@ const Service = () => {
         <div className="text-center">
           <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2 justify-center">
             <img src={subTitleShape} draggable="false" />
-            OUR SERVICES
+            PRINSIP TIGA ADAB
           </h5>
           <h1 className="font-AlbertSans font-bold text-xl leading-6 sm:text-[38px] sm:leading-[48px] md:text-[40px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-white mt-5 mb-3 pb-9">
-            Echofy Provide Environment <br />
-            Best Leading Services
+            Tiga Adab Utama <br />
+            di Kebun Alfilaha
           </h1>
         </div>
         <div className="mt-[40px]">

@@ -25,18 +25,18 @@ const Banner = () => {
             <div className="Container">
               <div className="relative banner-content text-center pt-[47px]">
                 <h5 className="font-AlbertSans text-white font-medium mb-8">
-                  SOLUTIONS FOR ENVIROMENTAL PROTECTION
+                  PUSAT EDUKASI & WISATA ALFILAHA
                 </h5>
                 <h1 className="font-AlbertSans font-extrabold text-white text-xl sm:text-[38px] sm:leading-[56px] md:text-[46px] md:leading-[54px] xl:text-[76px] xl:leading-[90px]">
-                  YOUR JOURNEY TO SOLAR
+                  RUANG BERMAIN DAN
                 </h1>
                 <h1 className="font-AlbertSans font-extrabold text-white text-xl sm:text-[38px] sm:leading-[56px] md:text-[46px] md:leading-[54px] xl:text-[76px] xl:leading-[90px] -mt-0 sm:-mt-3 md:mt-2 lg:mt-2">
-                  EMPOWERMENT
+                  BELAJAR TERBUKA
                 </h1>
                 <div className="flex justify-center m-auto mt-9">
-                  <Link to={"/about"}>
+                  <Link to={"/appointment"}>
                     <button className="primary-btn2">
-                      {`Find Out More`}
+                      {`Pesan Jadwal Rombongan Kita`}
                       <FaArrowRightLong />
                     </button>
                   </Link>
@@ -50,18 +50,18 @@ const Banner = () => {
             <div className="Container">
               <div className="relative banner-content text-center pt-[47px]">
                 <h5 className="font-AlbertSans text-white font-medium mb-8">
-                  SOLUTIONS FOR ENVIROMENTAL PROTECTION
+                  PUSAT EDUKASI & WISATA ALFILAHA
                 </h5>
                 <h1 className="font-AlbertSans font-extrabold text-white text-xl sm:text-[38px] sm:leading-[56px] md:text-[46px] md:leading-[54px] xl:text-[76px] xl:leading-[90px]">
-                  YOUR JOURNEY TO SOLAR
+                  RUANG BERMAIN DAN
                 </h1>
                 <h1 className="font-AlbertSans font-extrabold text-white text-xl sm:text-[38px] sm:leading-[56px] md:text-[46px] md:leading-[54px] xl:text-[76px] xl:leading-[90px] -mt-0 sm:-mt-3 md:mt-2 lg:mt-2">
-                  EMPOWERMENT
+                  BELAJAR TERBUKA
                 </h1>
                 <div className="flex justify-center m-auto mt-9">
-                  <Link to={"/about"}>
+                  <Link to={"/appointment"}>
                     <button className="primary-btn2">
-                      {`Find Out More`}
+                      {`Pesan Jadwal Rombongan Kita`}
                       <FaArrowRightLong />
                     </button>
                   </Link>

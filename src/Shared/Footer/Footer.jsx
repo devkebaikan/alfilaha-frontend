@@ -9,6 +9,7 @@ import {
   FaChevronRight,
   FaFacebookF,
   FaLinkedinIn,
+  FaLocationDot,
   FaPhone,
   FaPinterestP,
   FaXTwitter,
@@ -17,7 +18,7 @@ import { MdEmail } from "react-icons/md";
 
 const Footer = () => {
   return (
-    <footer className="bg-[url('/images/footer-bg.jpg')] bg-no-repeat bg-center bg-cover relative z-10 pt-28 overflow-hidden">
+    <footer className="bg-[url('/images/footer-bg-new.jpg')] bg-no-repeat bg-center bg-cover relative z-10 pt-28 overflow-hidden before:absolute before:inset-0 before:bg-black/70 before:-z-10">
       <img
         src={footerLine}
         draggable="false"
@@ -34,12 +35,12 @@ const Footer = () => {
             <div className="flex flex-col gap-7 lg:gap-0 lg:flex-row lg:items-center lg:justify-between p-10 mb-[90px]">
               <div>
                 <h2 className="font-AlbertSans font-bold text-white text-[30px] sm:text-[40px]">
-                  Stay With Us On Social
+                  Ikuti Alfilaha di Media Sosial
                 </h2>
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <h5 className="font-AlbertSans font-semibold text-white text-lg uppercase">
-                  Follow Us :
+                  Ikuti Kami :
                 </h5>
                 <ul className="flex gap-3">
                   <li>
@@ -85,68 +86,69 @@ const Footer = () => {
               <img src={footerLogo} draggable={false} />
             </Link>
             <p className="font-AlbertSans text-white mt-7 mb-5">
-              Proactively restore timely alignments after client environmentals
+              Pesantren, kebun, dan ruang belajar terbuka untuk keluarga,
+              sekolah, dan komunitas.
             </p>
             <div>
               <h6 className="font-AlbertSans font-medium text-white text-lg pl-8 relative before:absolute before:top-1/2 before:left-0 before:-translate-y-1/2 before:bg-PrimaryColor-0 before:w-[22px] before:h-[2px]">
-                Contact
+                Kontak
               </h6>
               <Link to={"/"} className="mt-[18px] block">
                 <button className="flex items-center gap-3 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0">
                   <FaPhone className="text-PrimaryColor-0" />
-                  +123 (4567) 890
+                  +62 812-3456-7890
                 </button>
               </Link>
               <Link to={"/"} className="mt-[18px] block">
                 <button className="flex items-center gap-3 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0">
                   <MdEmail size={"18"} className="text-PrimaryColor-0" />
-                  example@gmail.com
+                  info@alfilaha.id
                 </button>
               </Link>
             </div>
           </div>
           <div>
             <h4 className="font-AlbertSans text-2xl text-white font-semibold mb-[30px]">
-              Company
+              Halaman
             </h4>
             <ul>
               <li>
                 <Link to={"/"}>
                   <button className="flex items-center gap-2 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0 hover:gap-1 mb-[18px] opacity-60 hover:!opacity-100">
                     <FaChevronRight className="text-xs opacity-60" />
-                    Home
+                    Pondok Pesantren
                   </button>
                 </Link>
               </li>
               <li>
-                <Link to={"/"}>
+                <Link to={"/kubus-alfilaha"}>
                   <button className="flex items-center gap-2 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0 hover:gap-1 mb-[18px] opacity-60 hover:!opacity-100">
                     <FaChevronRight className="text-xs opacity-60" />
-                    About Us
+                    Kubus Alfilaha
                   </button>
                 </Link>
               </li>
               <li>
-                <Link to={"/"}>
+                <Link to={"/paket-wisata"}>
                   <button className="flex items-center gap-2 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0 hover:gap-1 mb-[18px] opacity-60 hover:!opacity-100">
                     <FaChevronRight className="text-xs opacity-60" />
-                    Our Services
+                    Paket Wisata
                   </button>
                 </Link>
               </li>
               <li>
-                <Link to={"/"}>
+                <Link to={"/blog_grid"}>
                   <button className="flex items-center gap-2 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0 hover:gap-1 mb-[18px] opacity-60 hover:!opacity-100">
                     <FaChevronRight className="text-xs opacity-60" />
-                    Meet Our Team
+                    Blog
                   </button>
                 </Link>
               </li>
               <li>
-                <Link to={"/"}>
+                <Link to={"/event"}>
                   <button className="flex items-center gap-2 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0 hover:gap-1 opacity-60 hover:!opacity-100">
                     <FaChevronRight className="text-xs opacity-60" />
-                    Latest Blog
+                    Event & Kegiatan
                   </button>
                 </Link>
               </li>
@@ -154,46 +156,46 @@ const Footer = () => {
           </div>
           <div>
             <h4 className="font-AlbertSans text-2xl text-white font-semibold mb-[30px]">
-              Quick Links
+              Layanan
             </h4>
             <ul>
               <li>
-                <Link to={"/"}>
+                <Link to={"/pesan-tempat"}>
                   <button className="flex items-center gap-2 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0 hover:gap-1 mb-[18px] opacity-60 hover:!opacity-100">
                     <FaChevronRight className="text-xs opacity-60" />
-                    Testimonials
+                    Form Pesan Tempat
                   </button>
                 </Link>
               </li>
               <li>
-                <Link to={"/"}>
+                <Link to={"/cek-tanaman"}>
                   <button className="flex items-center gap-2 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0 hover:gap-1 mb-[18px] opacity-60 hover:!opacity-100">
                     <FaChevronRight className="text-xs opacity-60" />
-                    Contact Us
+                    Cek Tanaman + History
                   </button>
                 </Link>
               </li>
               <li>
-                <Link to={"/"}>
+                <Link to={"/appointment"}>
                   <button className="flex items-center gap-2 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0 hover:gap-1 mb-[18px] opacity-60 hover:!opacity-100">
                     <FaChevronRight className="text-xs opacity-60" />
-                    Donations
+                    Pendaftaran Santri
                   </button>
                 </Link>
               </li>
               <li>
-                <Link to={"/"}>
+                <Link to={"/faq_inner"}>
                   <button className="flex items-center gap-2 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0 hover:gap-1 mb-[18px] opacity-60 hover:!opacity-100">
                     <FaChevronRight className="text-xs opacity-60" />
-                    Faq
+                    FAQ
                   </button>
                 </Link>
               </li>
               <li>
-                <Link to={"/"}>
+                <Link to={"/contact"}>
                   <button className="flex items-center gap-2 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0 hover:gap-1 opacity-60 hover:!opacity-100">
                     <FaChevronRight className="text-xs opacity-60" />
-                    Careers
+                    Hubungi Kami
                   </button>
                 </Link>
               </li>
@@ -201,33 +203,26 @@ const Footer = () => {
           </div>
           <div>
             <h4 className="font-AlbertSans text-2xl text-white font-semibold mb-8">
-              Newsletter
+              Alamat & Maps
             </h4>
-            <p className="font-AlbertSans text-TextColor-0 font-medium mb-[22px]">
-              Subscribe Our Newsletter
+            <p className="font-AlbertSans text-TextColor-0 font-medium mb-[22px] flex gap-3">
+              <FaLocationDot className="text-PrimaryColor-0 mt-1 shrink-0" />
+              Jl. Contoh Alamat No. 1, Kecamatan, Kabupaten, Provinsi
             </p>
-            <form action="#" method="post">
-              <input
-                type="email"
-                name="email"
-                id="email"
-                placeholder="Enter Your E-Mail*"
-                required
-                className="w-full h-[60px] rounded-full font-AlbertSans border border-PrimaryColor-0 border-opacity-50 bg-transparent px-6 py-2 text-white placeholder:text-white mb-4"
-              />
-              <button
-                type="submit"
-                className="w-full h-[58px] rounded-full border border-PrimaryColor-0 bg-PrimaryColor-0 gap-2 px-6 py-2 text-white font-AlbertSans uppercase flex items-center justify-center relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:rounded-full before:bg-[#041e15] before:-z-10 before:scale-0 before:transition-all before:duration-500 hover:before:scale-100"
-              >
-                Subscribe <FaArrowRightLong />
-              </button>
-            </form>
+            <a
+              href="https://maps.google.com"
+              target="_blank"
+              rel="noreferrer"
+              className="w-full h-[58px] rounded-full border border-PrimaryColor-0 bg-PrimaryColor-0 gap-2 px-6 py-2 text-white font-AlbertSans uppercase flex items-center justify-center relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:rounded-full before:bg-[#041e15] before:-z-10 before:scale-0 before:transition-all before:duration-500 hover:before:scale-100"
+            >
+              Buka di Google Maps <FaArrowRightLong />
+            </a>
           </div>
         </div>
         <div className="text-left sm:text-center pb-6 mt-[108px]">
           <p className="font-AlbertSans text-white">
-            © Copyrights 2024 Echofy All rights reserved by
-            <span className="text-PrimaryColor-0"> Dream-IT Solution</span>
+            © 2026 Alfilaha. Seluruh hak cipta dilindungi
+            <span className="text-PrimaryColor-0"> Alfilaha</span>
           </p>
         </div>
       </div>

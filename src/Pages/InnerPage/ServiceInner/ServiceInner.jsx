@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
 import { FaArrowRightLong, FaCheck } from "react-icons/fa6";
-import serviceImg from "/images/services-thumb.png";
-import serviceImg2 from "/images/services-thumb2.png";
-import serviceImg3 from "/images/services-thumb3.png";
-import serviceImg4 from "/images/services-thumb4.png";
-import serviceImg5 from "/images/services-thumb5.png";
-import serviceImg6 from "/images/services-thumb6.png";
+import serviceImg from "/images/services-plant-1.jpg";
+import serviceImg2 from "/images/services-plant-2.jpg";
+import serviceImg3 from "/images/services-plant-3.jpg";
+import serviceImg4 from "/images/services-plant-4.jpg";
+import serviceImg5 from "/images/services-plant-5.jpg";
+import serviceImg6 from "/images/services-plant-6.jpg";
 import serviceShape from "/images/service-shape.png";
 import serviceIcon from "/images/service2-icon.png";
 import serviceIcon2 from "/images/service2-icon2.png";
@@ -100,6 +100,7 @@ const ServiceInner = () => {
         breadCrumbTitle={"Our Services"}
         breadCrumbIcon={<FaArrowRightLong />}
         breadCrumbLink={"Our Services"}
+        bgImage={"/images/service-banner.jpg"}
       />
       <section className="pt-28 pb-[120px] p relative z-10 bg-[#f3f3f7]">
         <div className="Container">

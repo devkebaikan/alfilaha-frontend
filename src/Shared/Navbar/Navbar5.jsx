@@ -46,7 +46,7 @@ const Navbar5 = () => {
 
   return (
     <nav
-      className={`w-full transition-all duration-300 bg-transparent absolute z-[99999]`}
+      className={`w-full transition-all duration-300 bg-black/60 backdrop-blur-md absolute z-[99999]`}
     >
       {/* top Navbar */}
       <header className="bg-transparent overflow-hidden md:block">
@@ -299,8 +299,8 @@ const Navbar5 = () => {
                       : ""} text-white text-left hover:text-PrimaryColor-0 lg:border-b-0 px-3 lg:px-2 xl:px-3 w-full block transition-all duration-300 group relative `}
                   to="#"
                 >
-                  <span className="flex items-center">
-                    Pages
+                  <span className="flex items-center whitespace-nowrap">
+                    Program
                     <BiChevronDown className="ml-1" />
                   </span>
                   <div className="absolute pt-5 lg:pt-8 z-20">

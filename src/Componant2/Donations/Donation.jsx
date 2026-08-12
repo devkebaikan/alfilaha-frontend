@@ -15,56 +15,56 @@ const DonationData = [
     id: 1,
     donateImg: donateImg,
     donateUrl: "/donation_inner",
-    imgButton: "Donate Now",
-    donateTitle: "Fund Raising For Tree Plantation - 2024",
+    imgButton: "Donasi Sekarang",
+    donateTitle: "Penggalangan Dana Penanaman Pohon 2024",
     donateDesc:
-      "Cultivate worldwide tailers through nature professionally engineer high",
+      "Membangun lingkungan asri secara profesional untuk manfaat bersama",
     donatePercent: "85",
-    percentTitle: "Raised :",
+    percentTitle: "Terkumpul :",
     percentNumber: "$780.00",
-    percentTitle2: "Gaol :",
+    percentTitle2: "Target :",
     percentNumber2: "$1000.00",
   },
   {
     id: 2,
     donateImg: donateImg2,
     donateUrl: "/donation_inner",
-    imgButton: "Donate Now",
-    donateTitle: "Fund Raising For Forest Recycling & Repair",
+    imgButton: "Donasi Sekarang",
+    donateTitle: "Dana Restorasi & Daur Ulang Hutan",
     donateDesc:
-      "Cultivate worldwide tailers through nature professionally engineer high",
+      "Membangun lingkungan asri secara profesional untuk manfaat bersama",
     donatePercent: "80",
-    percentTitle: "Raised :",
+    percentTitle: "Terkumpul :",
     percentNumber: "$700.00",
-    percentTitle2: "Gaol :",
+    percentTitle2: "Target :",
     percentNumber2: "$1000.00",
   },
   {
     id: 3,
     donateImg: donateImg3,
     donateUrl: "/donation_inner",
-    imgButton: "Donate Now",
-    donateTitle: "Environmental Dust Cleaning & Recycling",
+    imgButton: "Donasi Sekarang",
+    donateTitle: "Pembersihan & Daur Ulang Lingkungan",
     donateDesc:
-      "Cultivate worldwide tailers through nature professionally engineer high",
+      "Membangun lingkungan asri secara profesional untuk manfaat bersama",
     donatePercent: "90",
-    percentTitle: "Raised :",
+    percentTitle: "Terkumpul :",
     percentNumber: "$880.00",
-    percentTitle2: "Gaol :",
+    percentTitle2: "Target :",
     percentNumber2: "$1000.00",
   },
   {
     id: 4,
     donateImg: donateImg,
     donateUrl: "/donation_inner",
-    imgButton: "Donate Now",
-    donateTitle: "Fund Raising For Tree Plantation - 2024",
+    imgButton: "Donasi Sekarang",
+    donateTitle: "Penggalangan Dana Penanaman Pohon 2024",
     donateDesc:
-      "Cultivate worldwide tailers through nature professionally engineer high",
+      "Membangun lingkungan asri secara profesional untuk manfaat bersama",
     donatePercent: "85",
-    percentTitle: "Raised :",
+    percentTitle: "Terkumpul :",
     percentNumber: "$780.00",
-    percentTitle2: "Gaol :",
+    percentTitle2: "Target :",
     percentNumber2: "$1000.00",
   },
 ];
@@ -112,11 +112,11 @@ const Donation = () => {
         <div className="text-center">
           <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2 justify-center">
             <img src={subTitleShape} draggable="false" />
-            DONATIONS
+            DONASI
           </h5>
           <h1 className="font-AlbertSans font-bold text-xl leading-6 sm:text-[38px] sm:leading-[48px] md:text-[40px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-white mt-5 mb-3 pb-9">
-            For Savings Environments <br />
-            Donation Money
+            Bantu Selamatkan Lingkungan <br />
+            Salurkan Donasi Anda
           </h1>
         </div>
         <div className="mt-[40px]">

@@ -11,22 +11,22 @@ const processData = [
     id: 1,
     processIcon: processIcon,
     boxNumber: "1",
-    processTitle: "Find Us Online",
-    processDesc: "Repurpose go forward benefits more conveniently e-business",
+    processTitle: "Temukan Kami Online",
+    processDesc: "Kunjungi situs web kami untuk mengetahui lebih lanjut.",
   },
   {
     id: 2,
     processIcon: processIcon2,
     boxNumber: "2",
-    processTitle: "Choose Services",
-    processDesc: "Repurpose go forward benefits more conveniently e-business",
+    processTitle: "Pilih Layanan",
+    processDesc: "Tentukan program yang sesuai dengan kebutuhan Anda.",
   },
   {
     id: 3,
     processIcon: processIcon3,
     boxNumber: "3",
-    processTitle: "Book Appoinment",
-    processDesc: "Repurpose go forward benefits more conveniently e-business",
+    processTitle: "Jadwalkan Pertemuan",
+    processDesc: "Tentukan waktu terbaik untuk berdiskusi dengan ahli kami.",
   },
 ];
 
@@ -49,15 +49,14 @@ const Process = () => {
         <div className="text-center">
           <div>
             <h5 className="font-AlbertSans font-medium text-SecondaryColor-0">
-              WORKING PROCESS
+              PROSES KERJA
             </h5>
             <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[35px] xl:leading-[45px] 2xl:text-[44px] 2xl:leading-[54px] text-HeadingColor-0 mt-3 mb-3">
-              Easy Steps to Works
+              Langkah Mudah Bekerja Sama
             </h1>
             <p className="font-AlbertSans text-TextColor-0 font-light lg:w-3/5 2xl:w-3/4 mx-auto">
-              Competently repurpose go forward benefits without goal-oriented
-              ROI <br className="hidden md:block" /> conveniently target
-              e-business opportunities whereas
+              Kami memastikan setiap tahapan berjalan dengan transparan, terarah, dan 
+              <br className="hidden md:block" /> efisien demi mencapai hasil yang optimal.
             </p>
           </div>
         </div>

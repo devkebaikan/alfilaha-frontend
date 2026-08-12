@@ -24,7 +24,7 @@ const Home1 = () => {
       <Process />
       <Testimonial />
       <Brand />
-      <TeamMember />
+      {/* <TeamMember /> */}
       <Blog />
     </>
   );

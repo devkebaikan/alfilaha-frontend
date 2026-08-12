@@ -15,44 +15,44 @@ const serviceData = [
     id: 1,
     serviceIcon: serviceIcon,
     serviceThumb: serviceThumb,
-    serviceTitle: `Resort Cleaning`,
+    serviceTitle: `Seri Merawat Bumi`,
     serviceDesc:
-      "Sometims goods can arrive early when ses need a place  short goods can arrive solarihave space your needs.",
+      "Kelas dasar berkebun, mengenal peran serangga, dan memelihara ayam halaman.",
     serviceUrl: "/service_details",
-    serviceBtn: `Read More`,
+    serviceBtn: `Selengkapnya`,
     serviceBtnIcon: <FaArrowRightLong />,
   },
   {
     id: 2,
     serviceIcon: serviceIcon2,
     serviceThumb: serviceThumb2,
-    serviceTitle: `Window Cleaning`,
+    serviceTitle: `Seri Hasil Bumi`,
     serviceDesc:
-      "Sometims goods can arrive early when ses need a place  short goods can arrive solarihave space your needs.",
+      "Meracik jamu tradisional dan seduhan teh sehat dari hasil kebun sendiri.",
     serviceUrl: "/service_details",
-    serviceBtn: `Read More`,
+    serviceBtn: `Selengkapnya`,
     serviceBtnIcon: <FaArrowRightLong />,
   },
   {
     id: 3,
     serviceIcon: serviceIcon3,
     serviceThumb: serviceThumb3,
-    serviceTitle: `Forest Cleaning`,
+    serviceTitle: `Seri Nol Sampah`,
     serviceDesc:
-      "Sometims goods can arrive early when ses need a place  short goods can arrive solarihave space your needs.",
+      "Praktik kompos sisa dapur, eco-enzyme, dan upcycling plastik.",
     serviceUrl: "/service_details",
-    serviceBtn: `Read More`,
+    serviceBtn: `Selengkapnya`,
     serviceBtnIcon: <FaArrowRightLong />,
   },
   {
     id: 4,
     serviceIcon: serviceIcon4,
     serviceThumb: serviceThumb4,
-    serviceTitle: `Garden Cleaning`,
+    serviceTitle: `Seri Eksplorasi`,
     serviceDesc:
-      "Sometims goods can arrive early when ses need a place  short goods can arrive solarihave space your needs.",
+      "Membuat karya seni bahan alam dan jalan-jalan tadabur alam.",
     serviceUrl: "/service_details",
-    serviceBtn: `Read More`,
+    serviceBtn: `Selengkapnya`,
     serviceBtnIcon: <FaArrowRightLong />,
   },
 ];
@@ -65,18 +65,19 @@ const Service = () => {
           <div>
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2">
               <FaStarOfLife />
-              ECHOFY SERVICES
+              PAKET EDUKASI TEMATIK
             </h5>
             <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-2 mb-6">
-              Pioneering Sustainable
-              <br /> Energy Services.
+              Pilih Kegiatan yang Pas
+              <br /> untuk Rombongan Kita.
             </h1>
           </div>
           <div>
             <p className="font-AlbertSans text-TextColor-0 font-light">
-              Sometimes goods can arrive early when they being brought into the
-              solution other times items need a place to be stored for short
-              goods can arrive desig headquarters have enough space your needs.
+              Bawa keluarga, sekolah, atau komunitas kita. Tinggalkan layar
+              kaca, mari sentuh tanah dan rasakan udara segar. Kita punya
+              banyak pilihan kegiatan, silakan pilih yang paling pas untuk
+              rombongan.
             </p>
           </div>
         </div>

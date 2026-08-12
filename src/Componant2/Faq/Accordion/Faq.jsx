@@ -10,26 +10,26 @@ const Faq = () => {
   const faqs = [
     {
       faqIcon: faqIcon,
-      title: "How to Cleaning Sea Beach Properly?",
-      text: "Distinctively plagiarize ubiquitous mindshare goal-oriented collaboration idea-sharing. Efficiently transition dynamic initiatives to business testing procedures enthusiastically negotiate high",
+      title: "Bagaimana Cara Bergabung dengan Alfilaha?",
+      text: "Anda bisa menghubungi kami melalui halaman kontak atau pesan di media sosial kami untuk informasi lebih lanjut tentang kolaborasi.",
       active: true,
     },
     {
       faqIcon: faqIcon,
-      title: "How to save earth using trees?",
-      text: "Distinctively plagiarize ubiquitous mindshare goal-oriented collaboration idea-sharing. Efficiently transition dynamic initiatives to business testing procedures enthusiastically negotiate high",
+      title: "Apa Itu Pertanian Regeneratif?",
+      text: "Metode bertani yang tidak hanya mengambil hasil, namun juga fokus pada pemulihan tanah dan ekosistem agar alam tetap lestari.",
       active: false,
     },
     {
       faqIcon: faqIcon,
-      title: "When Seedlings a Plants?",
-      text: "Distinctively plagiarize ubiquitous mindshare goal-oriented collaboration idea-sharing. Efficiently transition dynamic initiatives to business testing procedures enthusiastically negotiate high",
+      title: "Kapan Waktu Terbaik Untuk Berkunjung?",
+      text: "Kami menyarankan Anda untuk membuat janji temu terlebih dahulu agar kami bisa menyiapkan panduan terbaik saat berkunjung ke kebun.",
       active: false,
     },
     {
       faqIcon: faqIcon,
-      title: "Can I Donate money using Website?",
-      text: "Distinctively plagiarize ubiquitous mindshare goal-oriented collaboration idea-sharing. Efficiently transition dynamic initiatives to business testing procedures enthusiastically negotiate high",
+      title: "Apakah Saya Bisa Berdonasi Melalui Website?",
+      text: "Ya, tentu saja. Anda dapat melihat program donasi kami di halaman Donasi dan mengikuti langkah mudah untuk berkontribusi secara online.",
       active: false,
     },
   ];
@@ -51,15 +51,15 @@ const Faq = () => {
               FAQ
             </h5>
             <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-6">
-              Freequently Asked <br />
-              Questions
+              Pertanyaan yang <br />
+              Sering Diajukan
             </h1>
             <p className="font-AlbertSans text-TextColor-0 font-light mb-9">
-              {`Competently cultivate worldwide e-tailers through principle-centered professionally engineer high-payoff deliverables without exceptional processes. Rapidiously network cost effective vortals`}
+              {`Kami telah merangkum beberapa pertanyaan umum untuk memudahkan Anda memahami visi, misi, dan aktivitas yang kami jalankan di Alfilaha.`}
             </p>
             <Link to={"/about"}>
               <button className="primary-btn">
-                {`Learn More`}
+                {`Selengkapnya`}
                 <img src={buttonShape} draggable="false" />
               </button>
             </Link>

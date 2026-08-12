@@ -34,7 +34,7 @@ const Brand = () => {
   return (
     <div className="bg-[#f5f8ed]">
       <div className="Container relative z-10">
-        <div className="pt-[80px] pb-[72px] px-10 rounded-md bg-[url('/images/brand-bg.jpg')] bg-no-repeat bg-center bg-cover text-center relative">
+        <div className="pt-[80px] pb-[72px] px-10 rounded-md bg-[url('/images/brand-bg-new.jpg')] bg-no-repeat bg-center bg-cover text-center relative z-10 before:absolute before:inset-0 before:bg-black/50 before:backdrop-blur-sm before:rounded-md before:-z-10">
           <img
             src={brandShape}
             draggable="false"

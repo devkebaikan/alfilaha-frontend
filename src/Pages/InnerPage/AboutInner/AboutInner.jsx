@@ -15,12 +15,13 @@ const AboutInner = () => {
         breadCrumbTitle={"About Us"}
         breadCrumbIcon={<FaArrowRightLong />}
         breadCrumbLink={"About Us"}
+        bgImage={"/images/about-banner.jpg"}
       />
       <About />
       <Counter />
       <Process />
       <Brand />
-      <TeamMember />
+      {/* <TeamMember /> */}
       <ContentSlider2 />
       <Testimonial />
     </>

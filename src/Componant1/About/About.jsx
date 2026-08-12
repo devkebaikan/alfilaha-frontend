@@ -1,4 +1,4 @@
-import aboutThumb from "/images/about.png";
+import aboutThumb from "/images/planting-tree.jpg";
 import aboutAward from "/images/about-award.png";
 import aboutIcon from "/images/about-icon.png";
 import aboutIcon2 from "/images/about-icon2.png";
@@ -18,8 +18,8 @@ const About = () => {
       />
       <div className="Container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[92px] lg:gap-5 xl:gap-24 items-center">
-          <div className="relative">
-            <img src={aboutThumb} draggable="false" />
+          <div className="relative z-10">
+            <img src={aboutThumb} draggable="false" className="w-full h-[400px] sm:h-[500px] lg:h-[650px] rounded-3xl shadow-2xl object-cover" alt="Tentang Alfilaha" />
             <img
               src={aboutAward}
               draggable="false"
@@ -29,11 +29,11 @@ const About = () => {
           <div className="relative">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2">
               <img src={subTitleShape} draggable="false" />
-              ABOUT ECHOFY
+              TENTANG ALFILAHA
             </h5>
             <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
-              Environmental Sustainable <br />
-              Forever Green Future
+              Belajar Hidup dalam <br />
+              Semua Dimensi
             </h1>
             <div className="flex gap-6 mt-12">
               <div>
@@ -41,11 +41,11 @@ const About = () => {
               </div>
               <div className="flex-1">
                 <h5 className="font-AlbertSans font-semibold text-2xl text-HeadingColor-0 -mt-2">
-                  Economic Benifits
+                  Ruang Tumbuh Nyata
                 </h5>
                 <p className="font-AlbertSans text-TextColor-0 pt-3">
-                  Alternative innovation after ethical to network environmental
-                  whiteboard transparent growth natural done.
+                  Anak muda butuh ruang tumbuh dan pengalaman nyata. Di
+                  Pesantren Alfilaha, belajar hidup mencakup semua dimensi.
                 </p>
               </div>
             </div>
@@ -55,17 +55,17 @@ const About = () => {
               </div>
               <div className="flex-1">
                 <h5 className="font-AlbertSans font-semibold text-2xl text-HeadingColor-0 -mt-2">
-                  Safe Environment
+                  Agama Melebur dalam Keseharian
                 </h5>
                 <p className="font-AlbertSans text-TextColor-0 pt-3">
-                  Alternative innovation after ethical to network environmental
-                  whiteboard transparent growth natural done.
+                  Kita tidak memisahkan agama dari keseharian, semuanya
+                  melebur dalam setiap kegiatan.
                 </p>
               </div>
             </div>
             <Link to={"/about"}>
               <button className="primary-btn">
-                {`More About`}
+                {`Selengkapnya`}
                 <img src={buttonShape} draggable="false" />
               </button>
             </Link>

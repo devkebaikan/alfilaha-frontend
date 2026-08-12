@@ -30,6 +30,12 @@ import ProjectDetails from "../Pages/InnerPage/ProjectDetails/ProjectDetails";
 import FaqInner from "../Pages/InnerPage/Faq/Accordion/FaqInner";
 import Main5 from "../Main/Main5";
 import TestimonialInner from "../Pages/InnerPage/TestimonialInner/TestimonialInner";
+import EventInner from "../Pages/InnerPage/EventInner/EventInner";
+import PesanTempat from "../Pages/InnerPage/PesanTempat/PesanTempat";
+import CekTanaman from "../Pages/InnerPage/CekTanaman/CekTanaman";
+import KubusAlfilaha from "../Pages/InnerPage/KubusAlfilaha/KubusAlfilaha";
+import PaketWisata from "../Pages/InnerPage/PaketWisata/PaketWisata";
+import AlfilahaAdmin from "../Pages/AlfilahaAdmin/AlfilahaAdmin";
 
 const router = createBrowserRouter([
   {
@@ -40,6 +46,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home1 />,
+      },
+      {
+        path: "/homeTest",
+        element: <Home2 />,
       },
       {
         path: "/about",
@@ -121,6 +131,26 @@ const router = createBrowserRouter([
         path: "/contact",
         element: <ContactInner />,
       },
+      {
+        path: "/event",
+        element: <EventInner />,
+      },
+      {
+        path: "/pesan-tempat",
+        element: <PesanTempat />,
+      },
+      {
+        path: "/cek-tanaman",
+        element: <CekTanaman />,
+      },
+      {
+        path: "/kubus-alfilaha",
+        element: <KubusAlfilaha />,
+      },
+      {
+        path: "/paket-wisata",
+        element: <PaketWisata />,
+      },
     ],
   },
   {
@@ -166,6 +196,14 @@ const router = createBrowserRouter([
         element: <Home5 />,
       },
     ],
+  },
+  {
+    path: "/admin",
+    element: <AlfilahaAdmin />,
+  },
+  {
+    path: "/admin/:tab",
+    element: <AlfilahaAdmin />,
   },
 ]);
 

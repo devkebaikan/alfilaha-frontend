@@ -8,8 +8,8 @@ const Rating = () => {
       <div className="Container relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center bg-[url('/images/rating-bg.jpg')] bg-cover bg-no-repeat bg-center rounded-md px-5 sm:px-[60px] py-11">
           <h1 className="font-AlbertSans font-bold text-[20px] leading-7 sm:text-[34px] sm:leading-[44px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-white mt-5 mb-3">
-            We Provide Environment <br />
-            Leading Services
+            Layanan Lingkungan <br />
+            Terbaik dari Kami
           </h1>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-0">
             <div className="flex items-center gap-3 sm:gap-7 lg:gap-4 xl:gap-7">
@@ -24,7 +24,7 @@ const Rating = () => {
                   className="font-AlbertSans text-[46px] text-white font-bold"
                 />
                 <p className="font-AlbertSans text-white text-xl lg:text-lg 2xl:text-xl -mt-1">
-                  Team Member
+                  Anggota Tim
                 </p>
               </div>
             </div>
@@ -40,7 +40,7 @@ const Rating = () => {
                   className="font-AlbertSans text-[46px] text-white font-bold"
                 />
                 <p className="font-AlbertSans text-white text-xl lg:text-lg 2xl:text-xl -mt-1">
-                  Avg. Ratings
+                  Rata-rata Penilaian
                 </p>
               </div>
             </div>

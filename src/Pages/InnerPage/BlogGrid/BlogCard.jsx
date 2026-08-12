@@ -15,7 +15,7 @@ const BlogCard = ({
       <div className="relative overflow-hidden rounded-md">
         <img
           src={blogThumb}
-          className="transition-all duration-500 scale-100 group-hover:scale-110 w-full"
+          className="transition-all duration-500 scale-100 group-hover:scale-110 w-full h-[300px] object-cover"
         />
         <div className="absolute left-4 top-5">
           <h6 className="font-AlbertSans text-sm uppercase text-center inline-block overflow-hidden rounded px-4 py-[8px] text-white transition-all duration-500 group-hover:text-white bg-PrimaryColor-0 relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:bg-SecondaryColor-0 before:transition-all before:duration-500 before:-z-10 before:scale-0 group-hover:before:scale-100">

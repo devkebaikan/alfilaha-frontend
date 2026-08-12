@@ -37,7 +37,7 @@ const counterData = [
 
 const Counter = () => {
   return (
-    <section className="py-28 bg-[url('/images/counter-bg.png')] bg-no-repeat bg-cover bg-center">
+    <section className="relative z-10 py-28 bg-[url('/images/counter-bg-new.jpg')] bg-no-repeat bg-cover bg-center before:absolute before:inset-0 before:bg-black/60 before:-z-10">
       <div className="Container">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-7 lg:gap-0 lg:grid-cols-4 items-center justify-center">
           {counterData.map(

@@ -1,5 +1,5 @@
 import subTitleShape from "/images/sub-title-shape.png";
-import skillThumb from "/images/skill-thumb.png";
+import skillThumb from "/images/our-skills-team.jpg";
 import skillMainShape from "/images/skill-main-shape.png";
 import skillShape from "/images/skill-shape.png";
 import skillShape2 from "/images/skill-shape2.png";
@@ -103,7 +103,7 @@ const Skill = () => {
             </div>
           </div>
           <div className="relative z-10">
-            <img src={skillThumb} draggable="false" className="md:ml-16" />
+            <img src={skillThumb} draggable="false" className="md:ml-16 w-full h-[400px] sm:h-[500px] lg:h-[617px] rounded-3xl shadow-2xl object-cover" alt="Our Skills Team" />
             <img
               src={skillShape}
               draggable="false"
