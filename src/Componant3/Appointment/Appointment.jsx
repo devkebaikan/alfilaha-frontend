@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { FiPhoneCall } from "react-icons/fi";
 import { Link } from "react-router-dom";
@@ -5,6 +6,41 @@ import shape from "/images/appointment-shape.png";
 import shape2 from "/images/appointment-shape2.png";
 
 const Appointment = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    number: "",
+    email: "",
+    address: "",
+    message: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000/"}api/appointments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        alert("Appointment berhasil dikirim!");
+        setFormData({ name: "", number: "", email: "", address: "", message: "" });
+      } else {
+        alert("Gagal mengirim appointment.");
+      }
+    } catch (error) {
+      console.error("Error submitting appointment:", error);
+      alert("Terjadi kesalahan sistem.");
+    }
+  };
+
   return (
     <section className="py-28 relative bg-[linear-gradient(to_bottom,_rgba(121,185,0,1)_40%,_rgba(255,255,255,1)_32%)] sm:bg-[linear-gradient(to_bottom,_rgba(121,185,0,1)_41.5%,_rgba(255,255,255,1)_32%)] md:bg-[linear-gradient(to_top,_rgba(255,255,255,1)_52.5%,_rgba(121,185,0,1)_48.5%)] lg:bg-[linear-gradient(to_right,_rgba(121,185,0,1)_50%,_rgba(255,255,255,1)_50%)] border-r-8 border-b-8 border-PrimaryColor-0 overflow-hidden">
       <img loading="lazy" src={shape} className="absolute -left-2 -top-2 z-20" />
@@ -36,12 +72,14 @@ const Appointment = () => {
             <h2 className="font-AlbertSans font-bold text-3xl md:text-[40px] mb-11">
               Request A Quote
             </h2>
-            <form action="#" method="post" className="flex flex-col gap-7">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-7">
               <div className="flex flex-col md:flex-row gap-7">
                 <input
                   type="text"
                   name="name"
                   id="name"
+                  value={formData.name}
+                  onChange={handleChange}
                   placeholder="Your Name*"
                   required
                   className="border border-BorderColor2-0 rounded py-2 px-6 outline-none h-[56px] w-full"
@@ -50,6 +88,8 @@ const Appointment = () => {
                   type="text"
                   name="number"
                   id="number"
+                  value={formData.number}
+                  onChange={handleChange}
                   placeholder="Your Number"
                   className="border border-BorderColor2-0 rounded py-2 px-6 outline-none h-[56px] w-full"
                 />
@@ -59,6 +99,8 @@ const Appointment = () => {
                   type="email"
                   name="email"
                   id="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   placeholder="Your E-Mail*"
                   required
                   className="border border-BorderColor2-0 rounded py-2 px-6 outline-none h-[56px] w-full"
@@ -67,6 +109,8 @@ const Appointment = () => {
                   type="text"
                   name="address"
                   id="address"
+                  value={formData.address}
+                  onChange={handleChange}
                   placeholder="Your Address"
                   className="border border-BorderColor2-0 rounded py-2 px-6 outline-none h-[56px] w-full"
                 />
@@ -74,6 +118,8 @@ const Appointment = () => {
               <textarea
                 name="message"
                 id="message"
+                value={formData.message}
+                onChange={handleChange}
                 placeholder="Write A Message..."
                 className="border border-BorderColor2-0 rounded py-2 px-6 outline-none resize-none h-[140px] w-full"
               ></textarea>
