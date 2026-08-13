@@ -8,12 +8,12 @@ import { MdEmail } from "react-icons/md";
 const Footer2 = () => {
   return (
     <footer className="bg-[url('/images/footer-bg.jpg')] bg-no-repeat bg-center bg-cover relative z-10 pt-28 overflow-hidden">
-      <img
+      <img loading="lazy"
         src={footerLine}
         draggable="false"
         className="absolute -z-10 right-0 -bottom-20 opacity-70"
       />
-      <img
+      <img loading="lazy"
         src={footerShape3}
         draggable="false"
         className="absolute -z-10 top-0 left-0 animate-dance2"
@@ -22,7 +22,7 @@ const Footer2 = () => {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
           <div>
             <Link to={""}>
-              <img src={footerLogo} draggable={false} />
+              <img loading="lazy" src={footerLogo} draggable={false} />
             </Link>
             <p className="font-AlbertSans text-white mt-7 mb-5">
               Proactively restore timely alignments after client environmentals

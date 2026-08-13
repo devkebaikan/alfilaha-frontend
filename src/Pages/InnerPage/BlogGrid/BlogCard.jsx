@@ -13,7 +13,7 @@ const BlogCard = ({
   return (
     <div className="bg-[#f3f4f8] group transition-all duration-500 hover:bg-white hover:shadow-cases rounded-md">
       <div className="relative overflow-hidden rounded-md">
-        <img
+        <img loading="lazy"
           src={blogThumb}
           className="transition-all duration-500 scale-100 group-hover:scale-110 w-full h-[300px] object-cover"
         />

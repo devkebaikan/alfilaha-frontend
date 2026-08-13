@@ -9,12 +9,12 @@ import { FaChevronRight, FaFacebookF, FaLinkedinIn, FaPinterestP, FaXTwitter } f
 const Footer3 = () => {
   return (
     <footer className="bg-[url('/images/footer4-bg.jpg')] bg-no-repeat bg-center bg-cover relative z-10 pt-28 overflow-hidden">
-      <img
+      <img loading="lazy"
         src={footerLine}
         draggable="false"
         className="absolute -z-10 right-0 -bottom-20 opacity-70"
       />
-      <img
+      <img loading="lazy"
         src={footerShape3}
         draggable="false"
         className="absolute -z-10 top-0 left-0 animate-dance2"
@@ -23,7 +23,7 @@ const Footer3 = () => {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
           <div>
             <Link to={"/"}>
-              <img src={footerLogo} draggable={false} />
+              <img loading="lazy" src={footerLogo} draggable={false} />
             </Link>
             <p className="font-AlbertSans text-white opacity-60 mt-10 mb-9">
               Sometimes goods can arrive early when creative designneed place to
@@ -166,7 +166,7 @@ const Footer3 = () => {
             </h4>
             <Link to={"/"} className="flex items-center gap-[18px] group">
               <div>
-                <img src={footerImg} className="w-[80px] h-[80px] rounded" />
+                <img loading="lazy" src={footerImg} className="w-[80px] h-[80px] rounded" />
               </div>
               <div className="flex-1">
                 <h6 className="font-AlbertSans text-sm sm:text-base lg:text-sm text-white opacity-60 transition-all duration-500 group-hover:opacity-100">
@@ -179,7 +179,7 @@ const Footer3 = () => {
             </Link>
             <Link to={"/"} className="flex items-center gap-[18px] group mt-5">
               <div>
-                <img src={footerImg2} className="w-[80px] h-[80px] rounded" />
+                <img loading="lazy" src={footerImg2} className="w-[80px] h-[80px] rounded" />
               </div>
               <div className="flex-1">
                 <h6 className="font-AlbertSans text-sm sm:text-base lg:text-sm text-white opacity-60 transition-all duration-500 group-hover:opacity-100">

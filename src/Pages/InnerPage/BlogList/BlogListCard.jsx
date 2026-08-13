@@ -19,7 +19,7 @@ const BlogListCard = ({
   return (
     <div className="border border-BorderColor2-0 rounded-md overflow-hidden group">
       <div className="relative overflow-hidden">
-        <img
+        <img loading="lazy"
           src={blogListImg}
           className="w-full transition-all duration-500 group-hover:scale-110"
         />

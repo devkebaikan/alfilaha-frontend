@@ -14,7 +14,7 @@ const TestimonialCard = ({
       </p>
       <div className="flex flex-col sm:flex-row sm:items-center gap-[18px] lg:gap-4 xl:gap-[18px] mt-6 pb-12">
         <div>
-          <img src={testiImg} draggable="false" />
+          <img loading="lazy" src={testiImg} draggable="false" />
         </div>
         <div className="flex-1">
           <h5 className="font-AlbertSans font-semibold text-HeadingColor-0 transition-all duration-500 group-hover:text-white text-2xl mb-[6px]">

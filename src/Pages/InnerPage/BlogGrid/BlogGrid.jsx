@@ -11,7 +11,7 @@ const BlogGrid = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/blogs");
+        const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs`);
         if(response.ok) {
           const data = await response.json();
           setBlogs(data);
@@ -31,6 +31,7 @@ const BlogGrid = () => {
         breadCrumbLink={"Blog"}
         breadCrumbIcon2={<FaArrowRightLong />}
         breadCrumbContent={"Blog Grid"}
+        bgImage={"/images/blog-new-1.jpg"}
       />
       <section className="pt-28">
         <div className="Container">
@@ -38,7 +39,7 @@ const BlogGrid = () => {
             <div>
               <div>
                 <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2">
-                  <img src={subTitleShape} draggable="false" />
+                  <img loading="lazy" src={subTitleShape} draggable="false" />
                   BLOG TERBARU
                 </h5>
                 <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
@@ -65,7 +66,7 @@ const BlogGrid = () => {
                 return (
                   <div key={item.id}>
                     <BlogCard
-                      blogThumb={item.image ? `http://localhost:5000/uploads/${item.image}` : '/images/blog-new-1.jpg'}
+                      blogThumb={item.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${item.image}` : '/images/blog-new-1.jpg'}
                       thumbContent={dateDisplay}
                       blogUrl={"/blog_details"}
                       blogTitle={item.title}

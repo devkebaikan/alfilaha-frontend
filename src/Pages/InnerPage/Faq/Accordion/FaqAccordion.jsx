@@ -26,7 +26,7 @@ const PricingAccordion = ({ children, faqIcon, title, id, active = false }) => {
               accordionOpen && "!text-white"
             }`}
           >
-            <img
+            <img loading="lazy"
               src={faqIcon}
               className="w-8 h-[18px] transition-all duration-500"
             />

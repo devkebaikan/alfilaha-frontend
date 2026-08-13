@@ -31,7 +31,7 @@ const ServiceDetails = () => {
         <div className="Container">
           <div className="grid grid-cols-3 gap-[70px]">
             <div className="col-span-3 lg:col-span-2">
-              <img
+              <img loading="lazy"
                 src={serviceDetailsThumb}
                 draggable="false"
                 className="w-full"
@@ -57,7 +57,7 @@ const ServiceDetails = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-7">
                 <div className="flex flex-col md:flex-row lg:flex-col xl:flex-row gap-5 bg-[#f3f4f8] rounded-md px-6 py-7">
                   <div className="w-[72px] h-[72px] rounded-full bg-white flex justify-center items-center">
-                    <img src={serviceDetailsIcon} draggable="false" />
+                    <img loading="lazy" src={serviceDetailsIcon} draggable="false" />
                   </div>
                   <div className="flex-1">
                     <h6 className="font-AlbertSans font-semibold text-[22px] text-HeadingColor-0">
@@ -71,7 +71,7 @@ const ServiceDetails = () => {
                 </div>
                 <div className="flex flex-col md:flex-row lg:flex-col xl:flex-row gap-5 bg-[#f3f4f8] rounded-md px-6 py-7">
                   <div className="w-[72px] h-[72px] rounded-full bg-white flex justify-center items-center">
-                    <img src={serviceDetailsIcon2} draggable="false" />
+                    <img loading="lazy" src={serviceDetailsIcon2} draggable="false" />
                   </div>
                   <div className="flex-1">
                     <h6 className="font-AlbertSans font-semibold text-[22px] text-HeadingColor-0">
@@ -86,7 +86,7 @@ const ServiceDetails = () => {
               </div>
               <div className="bg-PrimaryColor-0 px-[42px] rounded-md py-7 flex flex-col sm:flex-row sm:items-center gap-8 mt-[62px]">
                 <div className=" pr-8 sm:border-r-2 border-[#94c933]">
-                  <img src={icon} draggable="false" />
+                  <img loading="lazy" src={icon} draggable="false" />
                 </div>
                 <div className="flex-1">
                   <p className="font-AlbertSans italic text-lg sm:text-[22px] leading-8 text-white">
@@ -107,7 +107,7 @@ const ServiceDetails = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-9">
                 <div className="text-center group">
                   <div className="overflow-hidden rounded">
-                    <img
+                    <img loading="lazy"
                       src={projectDetialsBoxImg}
                       draggable="false"
                       className="transition-all duration-500 group-hover:scale-110"
@@ -131,7 +131,7 @@ const ServiceDetails = () => {
                 </div>
                 <div className="text-center group">
                   <div className="overflow-hidden rounded">
-                    <img
+                    <img loading="lazy"
                       src={projectDetialsBoxImg2}
                       draggable="false"
                       className="transition-all duration-500 group-hover:scale-110"
@@ -265,7 +265,7 @@ const ServiceDetails = () => {
                 </ul>
               </div>
               <div className="rounded-lg px-9 overflow-hidden bg-[url('/images/sidebar-bg.jpg')] bg-cover bg-no-repeat bg-center py-[50px]">
-                <img src={wedgetIcon} draggable="false" />
+                <img loading="lazy" src={wedgetIcon} draggable="false" />
                 <h6 className="font-AlbertSans font-medium text-lg text-white mt-5 mb-2">
                   Call Us Anytime
                 </h6>

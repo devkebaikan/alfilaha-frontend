@@ -7,11 +7,11 @@ import shape2 from "/images/appointment-shape2.png";
 const Appointment = () => {
   return (
     <section className="py-28 relative bg-[linear-gradient(to_bottom,_rgba(121,185,0,1)_40%,_rgba(255,255,255,1)_32%)] sm:bg-[linear-gradient(to_bottom,_rgba(121,185,0,1)_41.5%,_rgba(255,255,255,1)_32%)] md:bg-[linear-gradient(to_top,_rgba(255,255,255,1)_52.5%,_rgba(121,185,0,1)_48.5%)] lg:bg-[linear-gradient(to_right,_rgba(121,185,0,1)_50%,_rgba(255,255,255,1)_50%)] border-r-8 border-b-8 border-PrimaryColor-0 overflow-hidden">
-      <img src={shape} className="absolute -left-2 -top-2 z-20" />
+      <img loading="lazy" src={shape} className="absolute -left-2 -top-2 z-20" />
       <div className="Container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-40 md:gap-40 lg:gap-28 items-center">
           <div className="relative text-center">
-            <img
+            <img loading="lazy"
               src={shape2}
               className="absolute right-0 -top-20 animate-zoomInOut hidden 2xl:block"
             />

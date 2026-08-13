@@ -11,10 +11,10 @@ const projectCard = ({
 }) => {
   return (
     <div className="relative z-10">
-      <img src={projectThumb} />
+      <img loading="lazy" src={projectThumb} />
       <div className="project-content3 absolute left-0 -bottom-full transition-all duration-500 w-9/12 bg-PrimaryColor-0">
         <div className="transition-all duration-500 pt-6 pl-4 lg:pl-10 2xl:pl-[48px] pb-8 2xl:pb-11 relative z-10 before:absolute before:-top-2 before:left-2 before:rounded-es before:w-full before:h-full before:bg-white before:-z-10">
-          <img src={shape} draggable="false" className="absolute top-5 right-5 animate-zoomInOut"/>
+          <img loading="lazy" src={shape} draggable="false" className="absolute top-5 right-5 animate-zoomInOut"/>
           <p className="text-PrimaryColor-0 font-AlbertSans">
             {projectSubTitle}
           </p>

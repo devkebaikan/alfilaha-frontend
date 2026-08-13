@@ -10,7 +10,7 @@ const CounterCard = ({
   return (
     <div className="text-center">
       <div>
-        <img src={counterIcon} draggable="false" className="m-auto" />
+        <img loading="lazy" src={counterIcon} draggable="false" className="m-auto" />
       </div>
       <div className="mt-3 -mb-1">
         <CountUp

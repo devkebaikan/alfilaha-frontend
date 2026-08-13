@@ -9,7 +9,7 @@ const WhyChoose = () => {
       <div className="Container">
         <div className="grid grid-cols-1 lg:items-center lg:grid-cols-2 2xl:gap-20">
           <div className="bg-SecondaryColor-0 rounded-t-md">
-            <img
+            <img loading="lazy"
               src={WhyChooseImg}
               draggable="false"
               className="w-full lg:w-[inherit] max-w-[inherit] rounded-r-md lg:-ml-[30em] xl:-ml-[25rem] 2xl:-ml-[20rem] mb-10 lg:mb-0"
@@ -30,7 +30,7 @@ const WhyChoose = () => {
             </p>
             <div className="flex flex-col sm:flex-row sm:items-center gap-7 mt-12">
               <div>
-                <img src={boxImg} draggable="false" />
+                <img loading="lazy" src={boxImg} draggable="false" />
               </div>
               <div className="flex-1">
                 <h5 className="font-AlbertSans font-semibold text-xl text-white">
@@ -43,7 +43,7 @@ const WhyChoose = () => {
             </div>
             <div className="flex flex-col sm:flex-row gap-7 mt-12">
               <div>
-                <img src={boxImg2} draggable="false" />
+                <img loading="lazy" src={boxImg2} draggable="false" />
               </div>
               <div className="flex-1">
                 <h5 className="font-AlbertSans font-semibold text-xl text-white">
@@ -56,7 +56,7 @@ const WhyChoose = () => {
             </div>
             <div className="flex flex-col sm:flex-row gap-7 mt-12">
               <div>
-                <img src={boxImg} draggable="false" />
+                <img loading="lazy" src={boxImg} draggable="false" />
               </div>
               <div className="flex-1">
                 <h5 className="font-AlbertSans font-semibold text-xl text-white">

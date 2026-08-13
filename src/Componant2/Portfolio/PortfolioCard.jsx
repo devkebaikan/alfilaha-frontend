@@ -13,7 +13,7 @@ const PortfolioCard = ({
   return (
     <div>
       <div className="relative z-10 overflow-hidden">
-        <img src={portfolioThumb} />
+        <img loading="lazy" src={portfolioThumb} />
         <h6 className="font-AlbertSans font-medium text-[15px] text-HeadingColor-0 px-[22px] py-2 rounded-full bg-PrimaryColor-0 inline-block absolute top-6 -left-full transition-all duration-500 opacity-0 portfolio-thumb-title">
           {thumbTitle}
         </h6>

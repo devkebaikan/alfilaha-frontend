@@ -14,7 +14,7 @@ const Rating = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-0">
             <div className="flex items-center gap-3 sm:gap-7 lg:gap-4 xl:gap-7">
               <div>
-                <img src={teamIcon} draggable="false" className="m-auto" />
+                <img loading="lazy" src={teamIcon} draggable="false" className="m-auto" />
               </div>
               <div>
                 <CountUp
@@ -30,7 +30,7 @@ const Rating = () => {
             </div>
             <div className="flex items-center gap-3 sm:gap-7 lg:gap-4 xl:gap-7">
               <div>
-                <img src={teamIcon2} draggable="false" className="m-auto" />
+                <img loading="lazy" src={teamIcon2} draggable="false" className="m-auto" />
               </div>
               <div>
                 <CountUp

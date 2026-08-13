@@ -47,7 +47,7 @@ const teamData = [
 const TeamMember = () => {
   return (
     <section className="bg-[url('/images/team-bg.jpg')] bg-no-repeat bg-cover bg-center pt-[244px] pb-28 relative -mt-[130px]">
-      <img
+      <img loading="lazy"
         src={skillMainShape}
         draggable="false"
         className="absolute -z-10 top-10 left-10 animate-dance2 hidden xl:block"
@@ -55,7 +55,7 @@ const TeamMember = () => {
       <div className="Container">
         <div className="text-center">
           <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center justify-center gap-2">
-            <img src={subTitleShape} draggable="false" />
+            <img loading="lazy" src={subTitleShape} draggable="false" />
             OUR TEAM
           </h5>
           <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">

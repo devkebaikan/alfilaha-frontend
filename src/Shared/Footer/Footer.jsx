@@ -19,12 +19,12 @@ import { MdEmail } from "react-icons/md";
 const Footer = () => {
   return (
     <footer className="bg-[url('/images/footer-bg-new.jpg')] bg-no-repeat bg-center bg-cover relative z-10 pt-28 overflow-hidden before:absolute before:inset-0 before:bg-black/70 before:-z-10">
-      <img
+      <img loading="lazy"
         src={footerLine}
         draggable="false"
         className="absolute -z-10 right-0 -bottom-20 opacity-70"
       />
-      <img
+      <img loading="lazy"
         src={footerShape3}
         draggable="false"
         className="absolute -z-10 top-0 left-0 animate-dance2"
@@ -67,14 +67,14 @@ const Footer = () => {
               </div>
             </div>
             <div className="md:flex justify-center items-center w-full absolute top-1/4 left-16 md:left-1/3 lg:left-16 hidden ">
-              <img
+              <img loading="lazy"
                 src={footerShape2}
                 draggable="false"
                 className="animate-zoomInOut"
               />
             </div>
           </div>
-          <img
+          <img loading="lazy"
             src={footerShape}
             draggable="false"
             className="absolute -z-10 -bottom-[70px] -right-[10px] animate-dance2"
@@ -83,7 +83,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
           <div>
             <Link to={"/"}>
-              <img src={footerLogo} draggable={false} />
+              <img loading="lazy" src={footerLogo} draggable={false} />
             </Link>
             <p className="font-AlbertSans text-white mt-7 mb-5">
               Pesantren, kebun, dan ruang belajar terbuka untuk keluarga,

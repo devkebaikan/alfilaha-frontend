@@ -14,7 +14,7 @@ const BlogCard = ({
   return (
     <div className="group bg-white rounded-md mb-6 lg:mb-0">
       <div className="relative overflow-hidden rounded-t-md z-10 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0 after:transition-all after:duration-500 after:bg-gradient-to-t after:from-PrimaryColor-0 after:to-transparent group-hover:after:h-5/6">
-        <img
+        <img loading="lazy"
           src={blogThumb}
           className="transition-all duration-500 scale-100 group-hover:scale-110 w-full"
         />

@@ -12,7 +12,7 @@ const TestimonialCard = ({
       <div className="px-4 sm:px-10 pt-8 pb-9 relative bg-[#002526] group rounded-md z-10 overflow-hidden before:absolute before:top-0 before:left-1/2 before:w-0 before:h-full before:bg-SecondaryColor-0 before:-z-10 before:rounded-md before:transition-all before:duration-500 hover:before:w-full group-hover:before:left-0 transition-all duration-500">
         <div className="flex flex-col lg:items-center lg:flex-row gap-[18px] lg:gap-4 xl:gap-[18px] pb-8">
           <div>
-            <img src={testiImg} draggable="false" />
+            <img loading="lazy" src={testiImg} draggable="false" />
           </div>
           <div className="flex-1">
             <h5 className="font-AlbertSans font-semibold text-white text-[22px] mb-[6px]">

@@ -116,6 +116,7 @@ const BlogList = () => {
         breadCrumbIcon2={<FaArrowRightLong />}
         breadCrumbLink={"Blog"}
         breadCrumbContent={"Blog With Sidebar"}
+        bgImage={"/images/blog-new-1.jpg"}
       />
       <section className="pt-[120px]">
         <div className="Container">
@@ -257,7 +258,7 @@ const BlogList = () => {
                 <Link to={"/blog-details"}>
                   <button className="group flex gap-4 mb-6">
                     <div>
-                      <img draggable="false" src={itemthumb} />
+                      <img loading="lazy" draggable="false" src={itemthumb} />
                     </div>
                     <div className="flex-1 text-left">
                       <h6 className="font-AlbertSans font-medium text-lg lg:text-base 2xl:text-lg leading-6 text-HeadingColor-0 transition-all duration-500 group-hover:text-PrimaryColor-0">
@@ -272,7 +273,7 @@ const BlogList = () => {
                 <Link to={"/blog_details"}>
                   <button className="group flex gap-4 my-6">
                     <div>
-                      <img draggable="false" src={itemthumb2} />
+                      <img loading="lazy" draggable="false" src={itemthumb2} />
                     </div>
                     <div className="flex-1 text-left">
                       <h6 className="font-AlbertSans font-medium text-lg lg:text-base 2xl:text-lg leading-6 text-HeadingColor-0 transition-all duration-500 group-hover:text-PrimaryColor-0">
@@ -287,7 +288,7 @@ const BlogList = () => {
                 <Link to={"/blog_details"}>
                   <button className="group flex gap-4 my-6">
                     <div>
-                      <img draggable="false" src={itemthumb3} />
+                      <img loading="lazy" draggable="false" src={itemthumb3} />
                     </div>
                     <div className="flex-1 text-left">
                       <h6 className="font-AlbertSans font-medium text-lg lg:text-base 2xl:text-lg leading-6 text-HeadingColor-0 transition-all duration-500 group-hover:text-PrimaryColor-0">

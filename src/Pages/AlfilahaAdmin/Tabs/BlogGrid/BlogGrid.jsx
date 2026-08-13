@@ -18,8 +18,8 @@ const BlogGrid = ({ blogs, setAddBlogModal, setEditBlogModal, setDeleteBlogModal
         {blogs.length > 0 ? blogs.map((item) => (
           <div key={`grid-${item.id}`} className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full">
             <div className="relative h-48 overflow-hidden bg-gray-100">
-              <img 
-                src={item.image ? `http://localhost:5000/uploads/${item.image}` : '/images/blog-new-1.jpg'} 
+              <img loading="lazy" 
+                src={item.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${item.image}` : '/images/blog-new-1.jpg'} 
                 alt={item.title} 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
               />

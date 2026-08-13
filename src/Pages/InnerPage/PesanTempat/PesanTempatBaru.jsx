@@ -7,20 +7,42 @@ const PesanTempat = () => {
     name: "", phone: "", email: "", instansi: "",
     paket: "", peserta: "", tanggal: "", waktu: "", message: ""
   });
-  const [paketList, setPaketList] = useState([]);
+  const [paketList, setPaketList] = useState([
+    { id: 1, nama_paket: "Edukasi Basic", harga: "Rp 20.000 / orang" },
+    { id: 2, nama_paket: "Edukasi Premium", harga: "Rp 100.000 / orang" },
+    { id: 3, nama_paket: "Paket Wisata Keluarga", harga: "Rp 150.000 / keluarga" },
+    { id: 4, nama_paket: "Panen buah & Sayuran", harga: "Rp 30.000 / Orang" }
+  ]);
+  const [fetchError, setFetchError] = useState("");
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Helper untuk mendapatkan API URL utama
+  const getApiUrl = () => {
+    const defaultApi = import.meta.env.VITE_PUBLIC_API || "http://localhost:5000";
+    if (defaultApi.includes("localhost")) return ""; // Gunakan proxy
+    return defaultApi;
+  };
 
   useEffect(() => {
     const fetchPaket = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/paket");
-        if(response.ok) {
+        setFetchError("");
+        let response = await fetch(`/api/paket`).catch(() => null);
+        
+        if (!response || !response.ok) {
+          const directUrl = `http://${window.location.hostname}:5000/api/paket`;
+          response = await fetch(directUrl).catch(() => null);
+        }
+
+        if (response && response.ok) {
           const data = await response.json();
-          setPaketList(data);
+          if (data && data.length > 0) {
+            setPaketList(data);
+          }
         }
       } catch(err) {
-        console.error("Gagal memuat paket wisata:", err);
+        console.error("Gagal memuat paket wisata, menggunakan data fallback:", err);
       }
     };
     fetchPaket();
@@ -46,13 +68,23 @@ const PesanTempat = () => {
         pesan: formData.message
       };
 
-      const response = await fetch("http://localhost:5000/api/reservasi", {
+      let response = await fetch(`${getApiUrl()}/api/reservasi`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(reservationData),
-      });
+      }).catch(() => null);
 
-      if (response.ok) {
+      if (!response || !response.ok) {
+        // Fallback langsung ke IP jika proxy gagal
+        const directUrl = `http://${window.location.hostname}:5000/api/reservasi`;
+        response = await fetch(directUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(reservationData),
+        }).catch(() => null);
+      }
+
+      if (response && response.ok) {
         setStatus("success");
         setFormData({ name: "", phone: "", email: "", instansi: "", paket: "", peserta: "", tanggal: "", waktu: "", message: "" });
       } else {
@@ -61,7 +93,6 @@ const PesanTempat = () => {
     } catch (error) {
       console.error(error);
       setStatus("error");
-      alert("TIDAK TERSIMPAN: Gagal terhubung ke Database MySQL! Pastikan XAMPP menyala DAN Backend Node.js (server.js) sudah di-run (npm start)!");
     } finally {
       setIsSubmitting(false);
     }
@@ -72,6 +103,7 @@ const PesanTempat = () => {
         breadCrumbTitle={"Form Pesan Tempat"}
         breadCrumbIcon={<FaArrowRightLong />}
         breadCrumbLink={"Form Pesan Tempat"}
+        bgImage={"/images/pesan-tempat-bg.jpg"}
       />
       <section className="py-28 bg-gradient-to-b from-gray-50 to-white">
         <div className="Container">
@@ -94,6 +126,11 @@ const PesanTempat = () => {
             {status === 'error' && (
               <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg text-center font-bold border border-red-200">
                 ❌ Gagal mengirim reservasi. Pastikan backend server menyala.
+              </div>
+            )}
+            {fetchError && (
+              <div className="mb-6 p-4 bg-yellow-100 text-yellow-800 rounded-lg text-sm border border-yellow-300">
+                ⚠️ Peringatan: Gagal memuat daftar paket ({fetchError}). Apakah backend menyala di port 5000?
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -198,7 +235,7 @@ const PesanTempat = () => {
                       required
                       className="border border-BorderColor2-0 rounded py-3 px-4 outline-none focus:border-PrimaryColor-0 transition-all duration-300 w-full"
                     >
-                      <option value="">-- Pilih Paket --</option>
+                      <option value="">-- Silakan Pilih Paket Wisata --</option>
                       {paketList.map((paket) => (
                         <option key={paket.id} value={paket.nama_paket}>
                           {paket.nama_paket} - {paket.harga}

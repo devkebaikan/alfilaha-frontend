@@ -18,7 +18,7 @@ const ProjectDetails = () => {
       />
       <section className="py-[120px]">
         <div className="Container">
-          <img src={projectDetailsThumb} draggable="false" className="w-full" />
+          <img loading="lazy" src={projectDetailsThumb} draggable="false" className="w-full" />
           <div className="grid grid-cols-3 gap-[70px] mt-12">
             <div className="col-span-3 lg:col-span-2">
               <h2 className="font-AlbertSans font-bold text-3xl sm:text-4xl text-HeadingColor-0">
@@ -51,7 +51,7 @@ const ProjectDetails = () => {
               </p>
               <div className="grid gap-7 grid-cols-1 lg:grid-cols-1 md:grid-cols-2 items-center xl:grid-cols-2 mt-12">
                 <div>
-                  <img src={projectDetailsListThumb} draggable="false" />
+                  <img loading="lazy" src={projectDetailsListThumb} draggable="false" />
                 </div>
                 <div>
                   <h2 className="font-AlbertSans font-semibold text-[28px] text-HeadingColor-0">
@@ -147,7 +147,7 @@ const ProjectDetails = () => {
                 </div>
               </div>
               <div className="rounded-lg px-9 overflow-hidden bg-[url('/images/sidebar-bg.jpg')] bg-cover bg-no-repeat bg-center py-[50px]">
-                <img src={wedgetIcon} draggable="false" />
+                <img loading="lazy" src={wedgetIcon} draggable="false" />
                 <h6 className="font-AlbertSans font-medium text-lg text-white mt-5 mb-2">
                   Call Us Anytime
                 </h6>

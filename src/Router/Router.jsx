@@ -31,7 +31,7 @@ import FaqInner from "../Pages/InnerPage/Faq/Accordion/FaqInner";
 import Main5 from "../Main/Main5";
 import TestimonialInner from "../Pages/InnerPage/TestimonialInner/TestimonialInner";
 import EventInner from "../Pages/InnerPage/EventInner/EventInner";
-import PesanTempat from "../Pages/InnerPage/PesanTempat/PesanTempat";
+import PesanTempat from "../Pages/InnerPage/PesanTempat/PesanTempatBaru";
 import CekTanaman from "../Pages/InnerPage/CekTanaman/CekTanaman";
 import KubusAlfilaha from "../Pages/InnerPage/KubusAlfilaha/KubusAlfilaha";
 import PaketWisata from "../Pages/InnerPage/PaketWisata/PaketWisata";

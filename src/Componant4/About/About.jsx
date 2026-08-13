@@ -8,7 +8,7 @@ const About = () => {
       <div className="Container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[92px] lg:gap-5 xl:gap-20 2xl:gap-12 items-center">
           <div className="relative z-10">
-            <img src={aboutThumb} draggable="false" />
+            <img loading="lazy" src={aboutThumb} draggable="false" />
           </div>
           <div>
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2">

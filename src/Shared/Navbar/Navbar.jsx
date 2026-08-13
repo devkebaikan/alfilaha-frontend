@@ -40,7 +40,7 @@ const Navbar = () => {
             {/* website Logo */}
             <div className=" w-48 lg:w-52">
               <Link to="/">
-                <img
+                <img loading="lazy"
                   draggable="false"
                   src={Logo}
                   className="hidden lg:block object-cover w-full h-full"
@@ -52,7 +52,7 @@ const Navbar = () => {
             <div className="w-full lg:hidden flex justify-between h-[70px] items-center p-3">
               <div className="w-28">
                 <Link to="/">
-                  <img
+                  <img loading="lazy"
                     draggable="false"
                     src={Logo}
                     className="block lg:hidden "

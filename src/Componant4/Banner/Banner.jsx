@@ -6,7 +6,7 @@ import bannerShape from "/images/hero4-shape.png";
 const Banner = () => {
   return (
     <section className="bg-[url('/images/hero4-bg.jpg')] bg-cover bg-left lg:bg-center bg-no-repeat h-[600px] md:h-[650px] lg:h-[700px] xl:h-[802px] flex items-center relative">
-      <img
+      <img loading="lazy"
         src={bannerShape}
         className="absolute lg:top-10 2xl:top-20 lg:left-10 2xl:left-[5%] animate-rotational lg:block hidden"
       />
@@ -19,7 +19,7 @@ const Banner = () => {
             Renewable Solar
             <br />
             <span className="flex items-center gap-3 md:gap-16">
-              Solutions <img src={heroImg} className="w-4/12 md:w-[inherit]"/>
+              Solutions <img loading="lazy" src={heroImg} className="w-4/12 md:w-[inherit]"/>
             </span>
           </h1>
           <p className="font-AlbertSans text-TextColor-0 mt-4">

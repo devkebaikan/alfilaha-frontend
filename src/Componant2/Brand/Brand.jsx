@@ -35,32 +35,32 @@ const Brand = () => {
         <Swiper {...settings}>
           <SwiperSlide>
             <div>
-              <img src={brandThumb} draggable="false" className="m-auto" />
+              <img loading="lazy" src={brandThumb} draggable="false" className="m-auto" />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img src={brandThumb2} draggable="false" className="m-auto" />
+              <img loading="lazy" src={brandThumb2} draggable="false" className="m-auto" />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img src={brandThumb3} draggable="false" className="m-auto" />
+              <img loading="lazy" src={brandThumb3} draggable="false" className="m-auto" />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img src={brandThumb} draggable="false" className="m-auto" />
+              <img loading="lazy" src={brandThumb} draggable="false" className="m-auto" />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img src={brandThumb5} draggable="false" className="m-auto" />
+              <img loading="lazy" src={brandThumb5} draggable="false" className="m-auto" />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img src={brandThumb} draggable="false" className="m-auto" />
+              <img loading="lazy" src={brandThumb} draggable="false" className="m-auto" />
             </div>
           </SwiperSlide>
         </Swiper>

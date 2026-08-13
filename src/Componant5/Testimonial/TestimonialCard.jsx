@@ -21,12 +21,12 @@ const TestimonialCard = ({
           <li className="text-orange-400 text-xl">{testiRatingIcon}</li>
         </ul>
         <div className="absolute bottom-6 right-8">
-          <img src={testiShape} />
+          <img loading="lazy" src={testiShape} />
         </div>
       </div>
       <div className="flex items-center gap-5 pl-10 pt-6">
         <div>
-          <img src={testiImg} />
+          <img loading="lazy" src={testiImg} />
         </div>
         <div>
           <p className="font-AlbertSans text-TextColor-0">{testiDesignation}</p>

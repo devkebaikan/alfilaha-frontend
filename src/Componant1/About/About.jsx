@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 const About = () => {
   return (
     <section className="py-[120px] bg-[url('/images/about-bg.jpg')] bg-no-repeat bg-center bg-cover relative">
-      <img
+      <img loading="lazy"
         src={aboutShape2}
         draggable="false"
         className="absolute top-32 right-20 animate-zoomInOut hidden 2xl:block"
@@ -19,8 +19,8 @@ const About = () => {
       <div className="Container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[92px] lg:gap-5 xl:gap-24 items-center">
           <div className="relative z-10">
-            <img src={aboutThumb} draggable="false" className="w-full h-[400px] sm:h-[500px] lg:h-[650px] rounded-3xl shadow-2xl object-cover" alt="Tentang Alfilaha" />
-            <img
+            <img loading="lazy" src={aboutThumb} draggable="false" className="w-full h-[400px] sm:h-[500px] lg:h-[650px] rounded-3xl shadow-2xl object-cover" alt="Tentang Alfilaha" />
+            <img loading="lazy"
               src={aboutAward}
               draggable="false"
               className="absolute bottom-10 left-0 animate-movebtn hidden sm:block"
@@ -28,7 +28,7 @@ const About = () => {
           </div>
           <div className="relative">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2">
-              <img src={subTitleShape} draggable="false" />
+              <img loading="lazy" src={subTitleShape} draggable="false" />
               TENTANG ALFILAHA
             </h5>
             <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
@@ -37,7 +37,7 @@ const About = () => {
             </h1>
             <div className="flex gap-6 mt-12">
               <div>
-                <img src={aboutIcon} draggable="false" />
+                <img loading="lazy" src={aboutIcon} draggable="false" />
               </div>
               <div className="flex-1">
                 <h5 className="font-AlbertSans font-semibold text-2xl text-HeadingColor-0 -mt-2">
@@ -51,7 +51,7 @@ const About = () => {
             </div>
             <div className="flex gap-6 mt-9 pb-9 mb-10 border-b border-BorderColor2-0">
               <div>
-                <img src={aboutIcon2} draggable="false" />
+                <img loading="lazy" src={aboutIcon2} draggable="false" />
               </div>
               <div className="flex-1">
                 <h5 className="font-AlbertSans font-semibold text-2xl text-HeadingColor-0 -mt-2">
@@ -66,10 +66,10 @@ const About = () => {
             <Link to={"/about"}>
               <button className="primary-btn">
                 {`Selengkapnya`}
-                <img src={buttonShape} draggable="false" />
+                <img loading="lazy" src={buttonShape} draggable="false" />
               </button>
             </Link>
-            <img
+            <img loading="lazy"
               src={aboutShape}
               draggable="false"
               className="absolute -bottom-0 left-1/2 animate-dance3 hidden sm:block"

@@ -9,7 +9,7 @@ import icon from "/images/about5-icon.png"
 const About = () => {
   return (
     <section className="py-[120px] relative">
-      <img
+      <img loading="lazy"
         src={aboutShape}
         draggable="false"
         className="absolute top-1/2 left-0 -translate-y-1/2 hidden 2xl:block"
@@ -17,10 +17,10 @@ const About = () => {
       <div className="Container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[60px] lg:gap-8 xl:gap-[60px] 2xl:gap-0 items-center">
           <div className="relative inline-block">
-            <img src={aboutThumb} draggable="false" />
+            <img loading="lazy" src={aboutThumb} draggable="false" />
             <div className="text-center border-[8px] border-PrimaryColor-0 rounded-md bg-white w-[218px] h-[228px] flex justify-center items-center flex-col absolute bottom-0 right-0 md:right-[132px] lg:right-0 2xl:right-[76px]">
               <div>
-                <img src={icon} draggable="false" className="m-auto"/>
+                <img loading="lazy" src={icon} draggable="false" className="m-auto"/>
               </div>
               <h5 className="font-AlbertSans font-medium text-lg text-HeadingColor-0 mt-[18px] mb-[6px]">Place of Animals</h5>
               <p className="font-AlbertSans font-medium text-PrimaryColor-0 mb-5">8:30AM - 6:00PM</p>
@@ -34,7 +34,7 @@ const About = () => {
           </div>
           <div className="relative">
             <h5 className="font-AlbertSans font-semibold text-PrimaryColor-0 flex items-center gap-2">
-              <img src={subTitleShape} draggable="false" />
+              <img loading="lazy" src={subTitleShape} draggable="false" />
               ABOUT COMPANY
             </h5>
             <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-[14px] mb-3">

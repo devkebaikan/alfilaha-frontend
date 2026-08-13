@@ -36,6 +36,7 @@ const blog_details = () => {
         breadCrumbLink={"Blog"}
         breadCrumbIcon2={<FaArrowRightLong />}
         breadCrumbContent={"How Every Individual Can Make a Difference"}
+        bgImage={"/images/blog-new-1.jpg"}
       />
       <section className="py-28">
         <div className="Container">
@@ -43,7 +44,7 @@ const blog_details = () => {
             <div className="col-span-2">
               <div className="border border-BorderColor2-0 rounded-md overflow-hidden">
                 <div className="relative">
-                  <img
+                  <img loading="lazy"
                     draggable="false"
                     src={blog_detailsThumb}
                     className="w-full"
@@ -152,10 +153,10 @@ const blog_details = () => {
                   </ul>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-16">
                     <div>
-                      <img draggable="false" src={blog_detailsImg} />
+                      <img loading="lazy" draggable="false" src={blog_detailsImg} />
                     </div>
                     <div>
-                      <img draggable="false" src={blog_detailsImg2} />
+                      <img loading="lazy" draggable="false" src={blog_detailsImg2} />
                     </div>
                   </div>
                   <Link to={"/blog_details"}>
@@ -230,7 +231,7 @@ const blog_details = () => {
                     className="flex flex-col sm:flex-row lg:flex-col xl:flex-row xl:items-center gap-5 sm:items-center lg:items-start mt-5"
                   >
                     <div>
-                      <img draggable="false" src={itemthumb} />
+                      <img loading="lazy" draggable="false" src={itemthumb} />
                     </div>
                     <div className="flex-1">
                       <h4 className="font-AlbertSans font-medium sm:text-lg md:text-base 2xl:text-lg text-HoverColor-0 sm:leading-[26px]">
@@ -260,7 +261,7 @@ const blog_details = () => {
                       </p>
                     </div>
                     <div>
-                      <img draggable="false" src={itemthumb3} />
+                      <img loading="lazy" draggable="false" src={itemthumb3} />
                     </div>
                   </button>
                 </div>
@@ -271,7 +272,7 @@ const blog_details = () => {
                 </h3>
                 <div className="flex flex-col sm:flex-row gap-6 border-b border-BorderColor1-0 pb-8">
                   <div>
-                    <img draggable="false" src={author1} />
+                    <img loading="lazy" draggable="false" src={author1} />
                   </div>
                   <div className="flex-1 relative">
                     <h5 className="font-AlbertSans font-medium text-HeadingColor-0 text-lg">
@@ -295,7 +296,7 @@ const blog_details = () => {
                 </div>
                 <div className="flex flex-col sm:flex-row gap-6 mt-10 md:pl-[90px]">
                   <div>
-                    <img draggable="false" src={author2} />
+                    <img loading="lazy" draggable="false" src={author2} />
                   </div>
                   <div className="flex-1 relative">
                     <h5 className="font-AlbertSans font-medium text-HeadingColor-0 text-lg">
@@ -461,7 +462,7 @@ const blog_details = () => {
                 <Link to={"/blog-details"}>
                   <button className="group flex gap-4 mb-6">
                     <div>
-                      <img draggable="false" src={itemthumb} />
+                      <img loading="lazy" draggable="false" src={itemthumb} />
                     </div>
                     <div className="flex-1 text-left">
                       <h6 className="font-AlbertSans font-medium text-lg lg:text-base 2xl:text-lg leading-6 text-HeadingColor-0 transition-all duration-500 group-hover:text-PrimaryColor-0">
@@ -476,7 +477,7 @@ const blog_details = () => {
                 <Link to={"/blog_details"}>
                   <button className="group flex gap-4 my-6">
                     <div>
-                      <img draggable="false" src={itemthumb2} />
+                      <img loading="lazy" draggable="false" src={itemthumb2} />
                     </div>
                     <div className="flex-1 text-left">
                       <h6 className="font-AlbertSans font-medium text-lg lg:text-base 2xl:text-lg leading-6 text-HeadingColor-0 transition-all duration-500 group-hover:text-PrimaryColor-0">
@@ -491,7 +492,7 @@ const blog_details = () => {
                 <Link to={"/blog_details"}>
                   <button className="group flex gap-4 my-6">
                     <div>
-                      <img draggable="false" src={itemthumb3} />
+                      <img loading="lazy" draggable="false" src={itemthumb3} />
                     </div>
                     <div className="flex-1 text-left">
                       <h6 className="font-AlbertSans font-medium text-lg lg:text-base 2xl:text-lg leading-6 text-HeadingColor-0 transition-all duration-500 group-hover:text-PrimaryColor-0">

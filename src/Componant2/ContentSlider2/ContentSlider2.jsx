@@ -9,19 +9,19 @@ const ContentSlider2 = () => {
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content2">
-          <img src={contentSliderImg} className="h-[30px] md:h-[80px] w-auto object-contain" alt="Alfilaha Logo" />
+          <img loading="lazy" src={contentSliderImg} className="h-[30px] md:h-[80px] w-auto object-contain" alt="Alfilaha Logo" />
         </div>
         <div className="content-slider-content2">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content2">
-          <img src={contentSliderImg} className="h-[30px] md:h-[80px] w-auto object-contain" alt="Alfilaha Logo" />
+          <img loading="lazy" src={contentSliderImg} className="h-[30px] md:h-[80px] w-auto object-contain" alt="Alfilaha Logo" />
         </div>
         <div className="content-slider-content2">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content2">
-          <img src={contentSliderImg} className="h-[30px] md:h-[80px] w-auto object-contain" alt="Alfilaha Logo" />
+          <img loading="lazy" src={contentSliderImg} className="h-[30px] md:h-[80px] w-auto object-contain" alt="Alfilaha Logo" />
         </div>
       </div>
       <div className="content-slider2">
@@ -29,19 +29,19 @@ const ContentSlider2 = () => {
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content2">
-          <img src={contentSliderImg} className="h-[30px] md:h-[80px] w-auto object-contain" alt="Alfilaha Logo" />
+          <img loading="lazy" src={contentSliderImg} className="h-[30px] md:h-[80px] w-auto object-contain" alt="Alfilaha Logo" />
         </div>
         <div className="content-slider-content2">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content2">
-          <img src={contentSliderImg} className="h-[30px] md:h-[80px] w-auto object-contain" alt="Alfilaha Logo" />
+          <img loading="lazy" src={contentSliderImg} className="h-[30px] md:h-[80px] w-auto object-contain" alt="Alfilaha Logo" />
         </div>
         <div className="content-slider-content2">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content2">
-          <img src={contentSliderImg} className="h-[30px] md:h-[80px] w-auto object-contain" alt="Alfilaha Logo" />
+          <img loading="lazy" src={contentSliderImg} className="h-[30px] md:h-[80px] w-auto object-contain" alt="Alfilaha Logo" />
         </div>
       </div>
     </div>

@@ -9,37 +9,37 @@ const ContentSlider = () => {
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
+          <img loading="lazy" src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
+          <img loading="lazy" src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
+          <img loading="lazy" src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
+          <img loading="lazy" src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
+          <img loading="lazy" src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
+          <img loading="lazy" src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
       </div>
       <div className="content-slider">
@@ -47,37 +47,37 @@ const ContentSlider = () => {
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
+          <img loading="lazy" src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
+          <img loading="lazy" src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
+          <img loading="lazy" src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
+          <img loading="lazy" src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
+          <img loading="lazy" src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
         <div className="content-slider-content">
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content">
-          <img src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
+          <img loading="lazy" src={contentSliderImg} className="h-10 w-auto object-contain" alt="Alfilaha" />
         </div>
       </div>
     </div>

@@ -39,32 +39,32 @@ const Brand = () => {
         <Swiper {...settings}>
           <SwiperSlide>
             <div className="flex justify-center">
-              <img src={brandThumb} />
+              <img loading="lazy" src={brandThumb} />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div className="flex justify-center">
-              <img src={brandThumb2} />
+              <img loading="lazy" src={brandThumb2} />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div className="flex justify-center">
-              <img src={brandThumb3} />
+              <img loading="lazy" src={brandThumb3} />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div className="flex justify-center">
-              <img src={brandThumb4} />
+              <img loading="lazy" src={brandThumb4} />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div className="flex justify-center">
-              <img src={brandThumb5} />
+              <img loading="lazy" src={brandThumb5} />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div className="flex justify-center">
-              <img src={brandThumb3} />
+              <img loading="lazy" src={brandThumb3} />
             </div>
           </SwiperSlide>
         </Swiper>

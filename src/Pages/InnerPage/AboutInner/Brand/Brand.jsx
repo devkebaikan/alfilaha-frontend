@@ -34,7 +34,7 @@ const Brand = () => {
   return (
     <div className="Container relative z-10">
       <div className="pt-[80px] pb-[72px] px-10 rounded-md bg-[url('/images/brand-bg-new.jpg')] bg-no-repeat bg-center bg-cover text-center relative z-10 before:absolute before:inset-0 before:bg-black/50 before:backdrop-blur-sm before:rounded-md before:-z-10">
-        <img
+        <img loading="lazy"
           src={brandShape}
           draggable="false"
           className="absolute -z-10 -top-[50px] -right-[60px] animate-dance2"
@@ -45,32 +45,32 @@ const Brand = () => {
         <Swiper {...settings}>
           <SwiperSlide>
             <div>
-              <img src={brandThumb} draggable="false" className="m-auto" />
+              <img loading="lazy" src={brandThumb} draggable="false" className="m-auto" />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img src={brandThumb2} draggable="false" className="m-auto" />
+              <img loading="lazy" src={brandThumb2} draggable="false" className="m-auto" />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img src={brandThumb3} draggable="false" className="m-auto" />
+              <img loading="lazy" src={brandThumb3} draggable="false" className="m-auto" />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img src={brandThumb4} draggable="false" className="m-auto" />
+              <img loading="lazy" src={brandThumb4} draggable="false" className="m-auto" />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img src={brandThumb5} draggable="false" className="m-auto" />
+              <img loading="lazy" src={brandThumb5} draggable="false" className="m-auto" />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img src={brandThumb} draggable="false" className="m-auto" />
+              <img loading="lazy" src={brandThumb} draggable="false" className="m-auto" />
             </div>
           </SwiperSlide>
         </Swiper>

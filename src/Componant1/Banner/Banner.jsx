@@ -55,7 +55,7 @@ const Banner = () => {
                     <Link to={"/about"}>
                       <button className="primary-btn">
                         Selengkapnya
-                        <img src={buttonShape} draggable="false" alt="Button Shape" />
+                        <img loading="lazy" src={buttonShape} draggable="false" alt="Button Shape" />
                       </button>
                     </Link>
                     <div className="text-lg font-AlbertSans font-medium text-white flex items-center gap-4">
@@ -142,7 +142,7 @@ const Banner = () => {
                     <Link to={"/kubus-alfilaha"}>
                       <button className="primary-btn">
                         Pelajari Lebih Lanjut
-                        <img src={buttonShape} draggable="false" alt="Button Shape" />
+                        <img loading="lazy" src={buttonShape} draggable="false" alt="Button Shape" />
                       </button>
                     </Link>
                     <div className="text-lg font-AlbertSans font-medium text-white flex items-center gap-4">

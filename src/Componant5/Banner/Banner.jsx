@@ -38,7 +38,7 @@ const Banner = () => {
                   <h5 className="banner5-tag font-AlbertSans text-PrimaryColor-0 text-[18px] sm:text-[22px] font-medium bg-[#030804]/80 backdrop-blur-sm inline-block px-[24px] py-2 border border-BorderColor4-0 rounded-md mb-6">
                     Pondok Pesantren Alfilaha
                   </h5>
-                  <h1 className="banner5-title font-AlbertSans font-extrabold text-white text-[36px] sm:text-[56px] md:text-[70px] lg:text-[60px] xl:text-[70px] leading-[1.2] mb-6">
+                  <h1 className="banner5-title font-AlbertSans font-extrabold text-white text-[28px] sm:text-[40px] md:text-[70px] lg:text-[60px] xl:text-[70px] leading-[1.2] mb-6">
                     Pesantren Alfilaha <br />
                     Sekolah Kehidupan
                   </h1>
@@ -114,7 +114,7 @@ const Banner = () => {
                   <h5 className="banner5-tag font-AlbertSans text-PrimaryColor-0 text-[18px] sm:text-[22px] font-medium bg-[#030804]/80 backdrop-blur-sm inline-block px-[24px] py-2 border border-BorderColor4-0 rounded-md mb-6">
                     Pondok Pesantren Alfilaha
                   </h5>
-                  <h1 className="banner5-title font-AlbertSans font-extrabold text-white text-[36px] sm:text-[56px] md:text-[70px] lg:text-[60px] xl:text-[70px] leading-[1.2] mb-6">
+                  <h1 className="banner5-title font-AlbertSans font-extrabold text-white text-[28px] sm:text-[40px] md:text-[70px] lg:text-[60px] xl:text-[70px] leading-[1.2] mb-6">
                     Pesantren Alfilaha <br />
                     Sekolah Kehidupan
                   </h1>

@@ -74,7 +74,7 @@ const Service = () => {
       <div className="Container">
         <div className="md:-mb-[11.2rem]">
           <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2">
-            <img src={subTitleShape} draggable="false" alt="Shape" />
+            <img loading="lazy" src={subTitleShape} draggable="false" alt="Shape" />
             KURIKULUM KITA
           </h5>
           <h1 className="font-AlbertSans font-bold text-xl leading-6 sm:text-[38px] sm:leading-[48px] md:text-[40px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3 border-b border-BorderColor2-0 pb-9">

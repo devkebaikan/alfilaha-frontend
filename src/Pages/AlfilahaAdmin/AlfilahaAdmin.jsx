@@ -90,7 +90,7 @@ const AlfilahaAdmin = () => {
 
   const fetchReservasi = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/reservasi");
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/reservasi`);
       if (!response.ok) throw new Error("Gagal mengambil data MySQL");
       const data = await response.json();
       setReservasi(data);
@@ -101,7 +101,7 @@ const AlfilahaAdmin = () => {
 
   const fetchWisata = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/paket");
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/paket`);
       if(response.ok) {
         const data = await response.json();
         setWisata(data);
@@ -119,7 +119,7 @@ const AlfilahaAdmin = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/paket/${editWisataModal.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/paket/${editWisataModal.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -150,7 +150,7 @@ const AlfilahaAdmin = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/paket", {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/paket`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -176,7 +176,7 @@ const AlfilahaAdmin = () => {
   const confirmHapusWisata = async (id) => {
     setDeletePaketModal({ show: false, id: null, nama_paket: '' });
     try {
-      const response = await fetch(`http://localhost:5000/api/paket/${id}`, { method: "DELETE" });
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/paket/${id}`, { method: "DELETE" });
       if(response.ok) {
         fetchWisata();
         showToast("Data paket wisata berhasil dihapus!");
@@ -191,7 +191,7 @@ const AlfilahaAdmin = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/events");
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events`);
       if(response.ok) {
         const data = await response.json();
         setEvents(data);
@@ -211,7 +211,7 @@ const AlfilahaAdmin = () => {
     if (addEventModal.image) formData.append('image', addEventModal.image);
 
     try {
-      const response = await fetch("http://localhost:5000/api/events", {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events`, {
         method: "POST",
         body: formData
       });
@@ -238,7 +238,7 @@ const AlfilahaAdmin = () => {
     if (editEventModal.image) formData.append('image', editEventModal.image);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/events/${editEventModal.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events/${editEventModal.id}`, {
         method: "PUT",
         body: formData
       });
@@ -258,7 +258,7 @@ const AlfilahaAdmin = () => {
   const confirmHapusEvent = async (id) => {
     setDeleteEventModal({ show: false, id: null, title: '' });
     try {
-      const response = await fetch(`http://localhost:5000/api/events/${id}`, { method: "DELETE" });
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events/${id}`, { method: "DELETE" });
       if(response.ok) {
         fetchEvents();
         showToast("Event berhasil dihapus!");
@@ -273,7 +273,7 @@ const AlfilahaAdmin = () => {
 
   const fetchBlogs = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/blogs");
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs`);
       if(response.ok) {
         const data = await response.json();
         setBlogs(data);
@@ -292,7 +292,7 @@ const AlfilahaAdmin = () => {
     if (addBlogModal.image) formData.append('image', addBlogModal.image);
 
     try {
-      const response = await fetch("http://localhost:5000/api/blogs", {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs`, {
         method: "POST",
         body: formData
       });
@@ -318,7 +318,7 @@ const AlfilahaAdmin = () => {
     if (editBlogModal.image) formData.append('image', editBlogModal.image);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/blogs/${editBlogModal.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs/${editBlogModal.id}`, {
         method: "PUT",
         body: formData
       });
@@ -338,7 +338,7 @@ const AlfilahaAdmin = () => {
   const confirmHapusBlog = async (id) => {
     setDeleteBlogModal({ show: false, id: null, title: '' });
     try {
-      const response = await fetch(`http://localhost:5000/api/blogs/${id}`, { method: "DELETE" });
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs/${id}`, { method: "DELETE" });
       if(response.ok) {
         fetchBlogs();
         showToast("Blog berhasil dihapus!");
@@ -365,7 +365,7 @@ const AlfilahaAdmin = () => {
 
   const updateStatusReservasi = async (id, status) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/reservasi/${id}/status`, {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/reservasi/${id}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status })
@@ -386,7 +386,7 @@ const AlfilahaAdmin = () => {
   const confirmHapusReservasi = async (id) => {
     setDeleteModal({ show: false, id: null, nama: '' });
     try {
-      const response = await fetch(`http://localhost:5000/api/reservasi/${id}`, { method: "DELETE" });
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/reservasi/${id}`, { method: "DELETE" });
       if(response.ok) {
         fetchReservasi();
         showToast("Data berhasil dihapus!");
@@ -411,7 +411,7 @@ const AlfilahaAdmin = () => {
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     try {
-      const response = await fetch("http://localhost:5000/api/login", {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
@@ -467,7 +467,7 @@ const AlfilahaAdmin = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden transition-all">
           <div className="bg-white p-10 text-center border-b border-gray-100 flex flex-col items-center">
-            <img src="/images/logo.png" alt="Alfilaha Logo" className="h-16 mb-3 object-contain" />
+            <img loading="lazy" src="/images/logo.png" alt="Alfilaha Logo" className="h-16 mb-3 object-contain" />
             <p className="text-gray-400 text-xs font-bold tracking-widest uppercase">Administrator Panel</p>
           </div>
           <div className="p-8">
@@ -549,7 +549,7 @@ const AlfilahaAdmin = () => {
       {isSidebarOpen && <div className="fixed inset-0 bg-gray-900/50 z-40 lg:hidden backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)}></div>}
       <aside className={`fixed lg:static top-0 left-0 h-screen w-72 bg-white border-r border-gray-100 flex flex-col shadow-2xl lg:shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-50 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="p-8 border-b border-gray-100 flex flex-col items-start justify-center">
-          <img src="/images/logo.png" alt="Alfilaha Logo" className="h-10 mb-2 object-contain" />
+          <img loading="lazy" src="/images/logo.png" alt="Alfilaha Logo" className="h-10 mb-2 object-contain" />
           <p className="text-gray-400 text-[10px] uppercase tracking-widest font-bold pl-1">Admin Panel</p>
         </div>
 
@@ -868,7 +868,7 @@ const AlfilahaAdmin = () => {
                 <input type="file" accept="image/*" onChange={(e) => setAddEventModal({...addEventModal, image: e.target.files[0]})} className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium" />
                 {addEventModal.image && (
                   <div className="mt-4 relative h-32 rounded-xl overflow-hidden border border-gray-200 shadow-inner">
-                    <img src={URL.createObjectURL(addEventModal.image)} alt="Preview" className="w-full h-full object-cover" />
+                    <img loading="lazy" src={URL.createObjectURL(addEventModal.image)} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                 )}
               </div>
@@ -918,7 +918,7 @@ const AlfilahaAdmin = () => {
                 <input type="file" accept="image/*" onChange={(e) => setEditEventModal({...editEventModal, image: e.target.files[0]})} className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium" />
                 {editEventModal.image && (
                   <div className="mt-4 relative h-32 rounded-xl overflow-hidden border border-gray-200 shadow-inner">
-                    <img src={URL.createObjectURL(editEventModal.image)} alt="Preview" className="w-full h-full object-cover" />
+                    <img loading="lazy" src={URL.createObjectURL(editEventModal.image)} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                 )}
                 {editEventModal.existingImage && <p className="text-xs text-gray-500 mt-2">Gambar saat ini: {editEventModal.existingImage}</p>}
@@ -1012,7 +1012,7 @@ const AlfilahaAdmin = () => {
                 <input type="file" required accept="image/*" onChange={(e) => setAddBlogModal({...addBlogModal, image: e.target.files[0]})} className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium" />
                 {addBlogModal.image && (
                   <div className="mt-4 relative h-32 rounded-xl overflow-hidden border border-gray-200 shadow-inner">
-                    <img src={URL.createObjectURL(addBlogModal.image)} alt="Preview" className="w-full h-full object-cover" />
+                    <img loading="lazy" src={URL.createObjectURL(addBlogModal.image)} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                 )}
               </div>
@@ -1049,7 +1049,7 @@ const AlfilahaAdmin = () => {
                 <input type="file" accept="image/*" onChange={(e) => setEditBlogModal({...editBlogModal, image: e.target.files[0]})} className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium" />
                 {editBlogModal.image && (
                   <div className="mt-4 relative h-32 rounded-xl overflow-hidden border border-gray-200 shadow-inner">
-                    <img src={URL.createObjectURL(editBlogModal.image)} alt="Preview" className="w-full h-full object-cover" />
+                    <img loading="lazy" src={URL.createObjectURL(editBlogModal.image)} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                 )}
                 {editBlogModal.existingImage && <p className="text-xs text-gray-500 mt-2">Gambar saat ini: {editBlogModal.existingImage}</p>}

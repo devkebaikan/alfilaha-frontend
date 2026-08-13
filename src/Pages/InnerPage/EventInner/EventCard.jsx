@@ -35,7 +35,7 @@ const EventCard = ({
   return (
     <div className="group rounded-md overflow-hidden bg-white border border-BorderColor2-0 transition-all duration-500 hover:shadow-lg flex flex-col h-full">
       <div className="relative overflow-hidden before:absolute before:bottom-0 before:left-0 before:bg-gradient-to-t before:from-[rgba(5,22,0,0.5)] before:to-transparent before:w-full before:h-full shrink-0">
-        <img
+        <img loading="lazy"
           src={eventThumb}
           alt={eventTitle}
           className="w-full h-64 object-cover transition-all duration-500 scale-100 group-hover:scale-110"

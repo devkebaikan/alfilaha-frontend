@@ -78,7 +78,7 @@ const Testimonial = () => {
   };
   return (
     <section className="py-28 bg-[url('/images/testimonial-bg2.jpg')] bg-no-repeat bg-cover bg-right lg:bg-center relative z-10 overflow-hidden testimonial">
-      <img
+      <img loading="lazy"
         src={testiMainShape}
         draggable="false"
         className="absolute -z-10 top-0 right-0 animate-dance2 hidden md:block"
@@ -86,7 +86,7 @@ const Testimonial = () => {
       <div className="Container">
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center">
           <div>
-            <img
+            <img loading="lazy"
               src={thumbShape}
               className="-ml-[18rem] 2xl:-ml-[16rem] !w-[inherit] animate-rotational hidden lg:block"
             />
@@ -94,7 +94,7 @@ const Testimonial = () => {
           <div>
             <div>
               <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2">
-                <img src={subTitleShape} draggable="false" />
+                <img loading="lazy" src={subTitleShape} draggable="false" />
                 TESTIMONI
               </h5>
               <h1 className="font-AlbertSans font-bold text-xl leading-7 sm:text-[36px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">

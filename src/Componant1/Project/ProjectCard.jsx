@@ -14,8 +14,8 @@ const ProjectCard = ({
   return (
     <div className="relative z-10 group rounded-md overflow-hidden">
       <div className="overflow-hidden relative z-10 before:absolute before:top-0 before:left-1/2 before:w-0 before:h-full before:bg-PrimaryColor-0 before:transition-all before:duration-500 group-hover:before:w-full group-hover:before:left-0 group-hover:before:opacity-0">
-        <img src={projectThumb} draggable="false" className="w-full h-[450px] object-cover" />
-        <img
+        <img loading="lazy" src={projectThumb} draggable="false" className="w-full h-[450px] object-cover" />
+        <img loading="lazy"
           src={projectShape}
           draggable="false"
           className="absolute -top-80 -right-80 animate-rotate transition-all
@@ -23,7 +23,7 @@ const ProjectCard = ({
         />
       </div>
       <div className="w-11/12 -mt-[42px] bg-[#f5f8ed] rounded-md overflow-hidden px-4 md:px-8 pb-8 transition-all duration-500 relative z-10 before:absolute before:left-0 before:w-[5px] before:h-full before:bg-PrimaryColor-0 before:-z-10 before:transition-all before:duration-500 group-hover:before:w-full group-hover:-mt-[86px]">
-        <img
+        <img loading="lazy"
           src={projectContentShape}
           draggable="false"
           className="absolute bottom-0 right-10 animate-dance2 -z-10 opacity-0 transition-all

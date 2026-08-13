@@ -16,7 +16,7 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      const response = await fetch("http://localhost:5000/api/login", {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
@@ -48,7 +48,7 @@ const AdminLogin = () => {
 
       <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl border border-white/40 relative z-10">
         <div className="text-center mb-10">
-          <img src={logo} alt="Alfilaha Logo" className="h-16 mx-auto mb-6" />
+          <img loading="lazy" src={logo} alt="Alfilaha Logo" className="h-16 mx-auto mb-6" />
           <h2 className="text-3xl font-extrabold text-gray-800">Admin Portal</h2>
           <p className="text-gray-500 mt-2 text-sm font-medium">Silakan masuk untuk mengelola website.</p>
         </div>
