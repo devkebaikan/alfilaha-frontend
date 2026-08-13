@@ -68,7 +68,7 @@ const BlogGrid = () => {
                     <BlogCard
                       blogThumb={item.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${item.image}` : '/images/blog-new-1.jpg'}
                       thumbContent={dateDisplay}
-                      blogUrl={"/blog_details"}
+                      blogUrl={`/blog_details/${item.id}`}
                       blogTitle={item.title}
                       blogDesc={item.excerpt}
                       btnContent={"Read More"}

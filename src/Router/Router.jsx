@@ -116,7 +116,7 @@ const router = createBrowserRouter([
         element: <BlogList />,
       },
       {
-        path: "/blog_details",
+        path: "/blog_details/:id",
         element: <BlogDetails />,
       },
       {

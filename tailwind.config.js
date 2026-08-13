@@ -107,5 +107,5 @@ export default {
       lineHeight: {},
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/typography')],
 };

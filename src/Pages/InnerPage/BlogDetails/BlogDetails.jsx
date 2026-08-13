@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
 import BreadCrumb from "../../../Shared/BreadCrumb/BreadCrumb";
 import blog_detailsThumb from "/images/blog-details-thumb.jpg";
 import blog_detailsImg from "/images/services-details-benifis-thumb-1.png";
@@ -26,7 +27,38 @@ import {
 } from "react-icons/fa6";
 import { BiSolidQuoteAltRight, BiSolidShare } from "react-icons/bi";
 
-const blog_details = () => {
+const BlogDetails = () => {
+  const { id } = useParams();
+  const [blog, setBlog] = useState(null);
+
+  useEffect(() => {
+    const fetchBlog = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs`);
+        if (response.ok) {
+          const data = await response.json();
+          const currentBlog = data.find(b => b.id === parseInt(id));
+          setBlog(currentBlog);
+        }
+      } catch (err) {
+        console.error("Failed to fetch blog:", err);
+      }
+    };
+    fetchBlog();
+  }, [id]);
+
+  if (!blog) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <h2 className="text-2xl font-bold text-gray-500">Memuat artikel...</h2>
+      </div>
+    );
+  }
+
+  const dateDisplay = blog.date && blog.date.includes('-') && blog.date.split('-')[0].length === 4 
+    ? `${new Date(blog.date).getDate()} ${['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'][new Date(blog.date).getMonth()]} ${new Date(blog.date).getFullYear()}` 
+    : blog.date;
+
   return (
     <>
       <BreadCrumb
@@ -35,7 +67,7 @@ const blog_details = () => {
         url={"/blog_grid"}
         breadCrumbLink={"Blog"}
         breadCrumbIcon2={<FaArrowRightLong />}
-        breadCrumbContent={"How Every Individual Can Make a Difference"}
+        breadCrumbContent={blog.title}
         bgImage={"/images/blog-new-1.jpg"}
       />
       <section className="py-28">
@@ -46,130 +78,34 @@ const blog_details = () => {
                 <div className="relative">
                   <img loading="lazy"
                     draggable="false"
-                    src={blog_detailsThumb}
-                    className="w-full"
+                    src={blog.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${blog.image}` : blog_detailsThumb}
+                    className="w-full object-cover"
+                    style={{ maxHeight: '500px' }}
                   />
                   <h6 className="font-AlbertSans text-white px-5 py-2 rounded absolute top-5 left-5 bg-PrimaryColor-0">
-                    Environment
+                    Informasi
                   </h6>
                 </div>
                 <div className="px-4 sm:px-8">
-                  <Link to={"/blog_details"}>
-                    <button className="font-AlbertSans font-bold text-left text-lg sm:text-2xl 2xl:text-3xl text-HeadingColor-0 transition-all duration-500 hover:text-PrimaryColor-0 mt-9 mb-6">
-                      How Every Individual Can Make a Difference
-                    </button>
-                  </Link>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-5 mb-7">
+                  <h2 className="font-AlbertSans font-bold text-left text-lg sm:text-2xl 2xl:text-3xl text-HeadingColor-0 mt-9 mb-6">
+                    {blog.title}
+                  </h2>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-5 mb-7 border-b border-BorderColor1-0 pb-7">
                     <h6 className="flex items-center gap-2 font-AlbertSans text-TextColor-0 font-light">
                       <FaUserCircle className="text-4xl text-[#dedede]" />
-                      Jhon Alexon
+                      Admin Alfilaha
                     </h6>
                     <h6 className="flex items-center gap-2 font-AlbertSans text-TextColor-0 font-light">
                       <FaRegCalendarCheck className="text-lg text-PrimaryColor-0" />
-                      Jan 10, 2024
-                    </h6>
-                    <h6 className="flex items-center gap-2 font-AlbertSans text-TextColor-0 font-light">
-                      <FaCommentsDollar className="text-lg text-PrimaryColor-0" />
-                      02 Comments
+                      {dateDisplay}
                     </h6>
                   </div>
-                  <p className="font-AlbertSans font-light text-TextColor-0 border-t border-BorderColor1-0 pt-5">
-                    Dramatically matrix cross-media vortals wireless
-                    deliverables. Phosfluorescently underwhelm market driven
-                    e-services and 24/365 infrastructures. Intrinsicly
-                    incentivize resource sucking markets without customer
-                    directed opportunities . Competently reinvent end-to-end
-                    bandwidth vis-a-vis go forward strategic theme areas.
-                    Monotonectally enhance reliable
-                  </p>
-                  <p className="font-AlbertSans font-light text-TextColor-0 mt-5">
-                    Enthusiastically productize collaborative interfaces before
-                    ethical leadership skills disintermediate global products
-                    before real-time portals. Quickly build efficient results
-                    rather than
-                  </p>
-                  <div className="flex flex-col bg-[#f3f4f8] sm:flex-row gap-7 px-4 sm:px-11 py-4 sm:py-10 rounded-md mt-12">
-                    <div className="text-6xl text-PrimaryColor-0">
-                      <BiSolidQuoteAltRight />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-AlbertSans text-HeadingColor-0 sm:text-lg italic">
-                        “Monotonectally impact reliable alignments vis-a-vis
-                        corporate architectures ortals through cross functional
-                        deliverables. testing procedures”
-                      </p>
-                      <h6 className="font-AlbertSans text-HeadingColor-0 pl-16 mt-4 relative before:absolute before:top-1/2 before:left-0 before:-translate-y-1/2 before:w-14 before:h-[1px] before:bg-PrimaryColor-0">
-                        CEO & Founder
-                      </h6>
-                    </div>
-                  </div>
-                  <Link to={"/blog_details"}>
-                    <button className="font-AlbertSans font-semibold text-left text-2xl text-HeadingColor-0 transition-all duration-500 hover:text-PrimaryColor-0 mt-14 mb-4">
-                      Clean Enviromnent Policy
-                    </button>
-                  </Link>
-                  <p className="font-AlbertSans font-light text-TextColor-0">
-                    Dramatically matrix cross-media vortals wireless
-                    deliverables. Phosfluorescently underwhelm market driven
-                    e-services and 24/365 infrastructures. Intrinsicly
-                    incentivize resource.
-                  </p>
-                  <ul className="flex flex-col gap-[14px] mt-7">
-                    <li className="flex gap-3 items-center font-AlbertSans font-light text-TextColor-0">
-                      <FaCircleCheck
-                        size={"20"}
-                        className="text-PrimaryColor-0"
-                      />
-                      Innovate wireless market
-                    </li>
-                    <li className="flex gap-3 items-center font-AlbertSans font-light text-TextColor-0">
-                      <FaCircleCheck
-                        size={"20"}
-                        className="text-PrimaryColor-0"
-                      />
-                      Productivate resource sucking
-                    </li>
-                    <li className="flex gap-3 items-center font-AlbertSans font-light text-TextColor-0">
-                      <FaCircleCheck
-                        size={"20"}
-                        className="text-PrimaryColor-0"
-                      />
-                      Proactively unleash oriented communities
-                    </li>
-                    <li className="flex gap-3 items-center font-AlbertSans font-light text-TextColor-0">
-                      <FaCircleCheck
-                        size={"20"}
-                        className="text-PrimaryColor-0"
-                      />
-                      Credibly develop progressive archi
-                    </li>
-                    <li className="flex gap-3 items-center font-AlbertSans font-light text-TextColor-0">
-                      <FaCircleCheck
-                        size={"20"}
-                        className="text-PrimaryColor-0"
-                      />
-                      Phosfluorescently to customer
-                    </li>
-                  </ul>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-16">
-                    <div>
-                      <img loading="lazy" draggable="false" src={blog_detailsImg} />
-                    </div>
-                    <div>
-                      <img loading="lazy" draggable="false" src={blog_detailsImg2} />
-                    </div>
-                  </div>
-                  <Link to={"/blog_details"}>
-                    <button className="font-AlbertSans font-semibold text-left text-2xl text-HeadingColor-0 transition-all duration-500 hover:text-PrimaryColor-0 mt-10 mb-4">
-                      Tree Plantation for Human
-                    </button>
-                  </Link>
-                  <p className="font-AlbertSans font-light text-TextColor-0">
-                    Dramatically matrix cross-media vortals wireless
-                    deliverables. Phosfluorescently underwhelm market driven
-                    e-services and 24/365 infrastructures. Intrinsicly
-                    incentivize resource.
-                  </p>
+                  
+                  {/* KONTEN RICH TEXT EDITOR DIRENDER DI SINI */}
+                  <div 
+                    className="font-AlbertSans font-light text-TextColor-0 prose prose-lg max-w-none text-justify"
+                    dangerouslySetInnerHTML={{ __html: blog.content || blog.excerpt || '<p>Tidak ada konten.</p>' }}
+                  />
                 </div>
                 <div className="flex flex-col sm:flex-row gap-5 items-start sm:justify-between border-t border-BorderColor1-0 mt-9 py-5 px-4 sm:px-8">
                   <div>
@@ -562,4 +498,4 @@ const blog_details = () => {
   );
 };
 
-export default blog_details;
+export default BlogDetails;

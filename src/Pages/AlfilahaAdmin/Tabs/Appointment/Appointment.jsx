@@ -89,7 +89,7 @@ const Appointment = ({
             <thead>
               <tr className="bg-slate-50 border-b border-gray-100 text-slate-500 text-sm">
                 <th className="px-6 py-5 font-bold uppercase tracking-wider">Klien</th>
-                <th className="px-6 py-5 font-bold uppercase tracking-wider">Kontak</th>
+                <th className="px-6 py-5 font-bold uppercase tracking-wider">Email & Kontak</th>
                 <th className="px-6 py-5 font-bold uppercase tracking-wider">Pesan</th>
                 <th className="px-6 py-5 font-bold uppercase tracking-wider">Status</th>
                 <th className="px-6 py-5 font-bold uppercase tracking-wider text-right">Aksi</th>

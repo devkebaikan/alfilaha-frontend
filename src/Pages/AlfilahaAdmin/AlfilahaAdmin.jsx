@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiMenu, FiHome, FiSettings, FiLogOut, FiUploadCloud, FiCheck, FiArrowLeft, FiEdit, FiTrash2, FiMap, FiCalendar, FiMessageSquare, FiStar, FiUsers, FiTrendingUp, FiX, FiSearch, FiFilter, FiEye, FiEyeOff, FiActivity, FiClock, FiGrid, FiPlus, FiBell, FiFileText } from 'react-icons/fi';
 import Beranda from './Tabs/Beranda/Beranda';
@@ -8,6 +8,7 @@ import Event from './Tabs/Event/Event';
 import PaketWisata from './Tabs/PaketWisata/PaketWisata';
 import Reservasi from './Tabs/Reservasi/Reservasi';
 import Appointment from './Tabs/Appointment/Appointment';
+import BlogForm from './Tabs/BlogForm/BlogForm';
 
 const AlfilahaAdmin = () => {
   const navigate = useNavigate();
@@ -70,8 +71,7 @@ const AlfilahaAdmin = () => {
   ]);
 
   const [blogs, setBlogs] = useState([]);
-  const [addBlogModal, setAddBlogModal] = useState({ show: false, title: '', date: '', excerpt: '', image: null });
-  const [editBlogModal, setEditBlogModal] = useState({ show: false, id: null, title: '', date: '', excerpt: '', image: null, existingImage: '' });
+  const [editingBlog, setEditingBlog] = useState(null);
   const [deleteBlogModal, setDeleteBlogModal] = useState({ show: false, id: null, title: '' });
 
 
@@ -298,54 +298,33 @@ const AlfilahaAdmin = () => {
     }
   };
 
-  const addBlog = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('title', addBlogModal.title);
-    formData.append('date', addBlogModal.date);
-    formData.append('excerpt', addBlogModal.excerpt);
-    if (addBlogModal.image) formData.append('image', addBlogModal.image);
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs`, {
-        method: "POST",
-        body: formData
-      });
-      if(response.ok) {
-        showToast("Blog berhasil ditambahkan!");
-        setAddBlogModal({ show: false, title: '', date: '', excerpt: '', image: null });
-        fetchBlogs();
-      } else {
-        showToast("Gagal menambahkan Blog.");
-      }
-    } catch(err) {
-      console.error("Add Blog Error:", err);
-      showToast("Koneksi ke server gagal.");
-    }
+  const handleOpenBlogForm = (blog = null) => {
+    setEditingBlog(blog);
+    setActiveTab('blogForm');
   };
 
-  const updateBlog = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('title', editBlogModal.title);
-    formData.append('date', editBlogModal.date);
-    formData.append('excerpt', editBlogModal.excerpt);
-    if (editBlogModal.image) formData.append('image', editBlogModal.image);
-
+  const saveBlog = async (formData, id = null) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs/${editBlogModal.id}`, {
-        method: "PUT",
+      const url = id 
+        ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs/${id}`
+        : `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs`;
+      
+      const method = id ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         body: formData
       });
+      
       if(response.ok) {
-        showToast("Blog berhasil diperbarui!");
-        setEditBlogModal({ show: false, id: null, title: '', date: '', excerpt: '', image: null, existingImage: '' });
+        showToast(`Blog berhasil ${id ? 'diperbarui' : 'ditambahkan'}!`);
         fetchBlogs();
+        setActiveTab('blogGrid');
       } else {
-        showToast("Gagal memperbarui Blog.");
+        showToast(`Gagal ${id ? 'memperbarui' : 'menambahkan'} Blog.`);
       }
     } catch(err) {
-      console.error("Update Blog Error:", err);
+      console.error("Save Blog Error:", err);
       showToast("Koneksi ke server gagal.");
     }
   };
@@ -742,7 +721,8 @@ const AlfilahaAdmin = () => {
             
             {activeTab === 'beranda' && <Beranda reservasi={reservasi} blogs={blogs} events={events} handleTabChange={handleTabChange} />}
             {activeTab === 'artikel' && <KelolaArtikel articles={articles} showToast={showToast} />}
-            {activeTab === 'blogGrid' && <BlogGrid blogs={blogs} setAddBlogModal={setAddBlogModal} setEditBlogModal={setEditBlogModal} setDeleteBlogModal={setDeleteBlogModal} />}
+            {activeTab === 'blogGrid' && <BlogGrid blogs={blogs} onAddClick={() => handleOpenBlogForm()} onEditClick={handleOpenBlogForm} setDeleteBlogModal={setDeleteBlogModal} />}
+            {activeTab === 'blogForm' && <BlogForm initialData={editingBlog} onSave={saveBlog} onCancel={() => setActiveTab('blogGrid')} showToast={showToast} />}
             {activeTab === 'event' && <Event events={events} setAddEventModal={setAddEventModal} setEditEventModal={setEditEventModal} setDeleteEventModal={setDeleteEventModal} />}
             {activeTab === 'wisata' && <PaketWisata wisata={wisata} setAddWisataModal={setAddWisataModal} setEditWisataModal={setEditWisataModal} setDeletePaketModal={setDeletePaketModal} />}
             {activeTab === 'reservasi' && <Reservasi reservasi={reservasi} searchQuery={searchQuery} setSearchQuery={setSearchQuery} filterStatus={filterStatus} setFilterStatus={setFilterStatus} updateStatusReservasi={updateStatusReservasi} setRejectModal={setRejectModal} setDeleteModal={setDeleteModal} />}
@@ -1086,81 +1066,6 @@ const AlfilahaAdmin = () => {
                 Ya, Keluar
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ADD BLOG MODAL */}
-      {addBlogModal.show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={() => setAddBlogModal({ show: false, title: '', date: '', excerpt: '', image: null })}></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-lg w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
-            <h3 className="text-2xl font-extrabold text-gray-800 mb-6">Tambah Artikel Blog</h3>
-            <form onSubmit={addBlog} className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Judul Artikel</label>
-                <input type="text" required value={addBlogModal.title} onChange={(e) => setAddBlogModal({...addBlogModal, title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Tanggal Posting</label>
-                <input type="date" required value={addBlogModal.date} onChange={(e) => setAddBlogModal({...addBlogModal, date: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Upload Gambar Utama</label>
-                <input type="file" required accept="image/*" onChange={(e) => setAddBlogModal({...addBlogModal, image: e.target.files[0]})} className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium" />
-                {addBlogModal.image && (
-                  <div className="mt-4 relative h-32 rounded-xl overflow-hidden border border-gray-200 shadow-inner">
-                    <img loading="lazy" src={URL.createObjectURL(addBlogModal.image)} alt="Preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Cuplikan (Excerpt)</label>
-                <textarea required rows="3" value={addBlogModal.excerpt} onChange={(e) => setAddBlogModal({...addBlogModal, excerpt: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"></textarea>
-              </div>
-              <div className="flex space-x-3 pt-4 border-t border-gray-100">
-                <button type="button" onClick={() => setAddBlogModal({ show: false, title: '', date: '', excerpt: '', image: null })} className="flex-1 px-4 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition">Batal</button>
-                <button type="submit" className="flex-1 px-4 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5">Simpan Post</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* EDIT BLOG MODAL */}
-      {editBlogModal.show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={() => setEditBlogModal({ show: false, id: null, title: '', date: '', excerpt: '', image: null, existingImage: '' })}></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-lg w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
-            <h3 className="text-2xl font-extrabold text-gray-800 mb-6">Edit Artikel Blog</h3>
-            <form onSubmit={updateBlog} className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Judul Artikel</label>
-                <input type="text" required value={editBlogModal.title} onChange={(e) => setEditBlogModal({...editBlogModal, title: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Tanggal Posting</label>
-                <input type="date" required value={editBlogModal.date} onChange={(e) => setEditBlogModal({...editBlogModal, date: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Ganti Gambar (Opsional)</label>
-                <input type="file" accept="image/*" onChange={(e) => setEditBlogModal({...editBlogModal, image: e.target.files[0]})} className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium" />
-                {editBlogModal.image && (
-                  <div className="mt-4 relative h-32 rounded-xl overflow-hidden border border-gray-200 shadow-inner">
-                    <img loading="lazy" src={URL.createObjectURL(editBlogModal.image)} alt="Preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
-                {editBlogModal.existingImage && <p className="text-xs text-gray-500 mt-2">Gambar saat ini: {editBlogModal.existingImage}</p>}
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Cuplikan (Excerpt)</label>
-                <textarea required rows="3" value={editBlogModal.excerpt} onChange={(e) => setEditBlogModal({...editBlogModal, excerpt: e.target.value})} className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"></textarea>
-              </div>
-              <div className="flex space-x-3 pt-4 border-t border-gray-100">
-                <button type="button" onClick={() => setEditBlogModal({ show: false, id: null, title: '', date: '', excerpt: '', image: null, existingImage: '' })} className="flex-1 px-4 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition">Batal</button>
-                <button type="submit" className="flex-1 px-4 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5">Simpan Perubahan</button>
-              </div>
-            </form>
           </div>
         </div>
       )}
