@@ -7,6 +7,7 @@ import BlogGrid from './Tabs/BlogGrid/BlogGrid';
 import Event from './Tabs/Event/Event';
 import PaketWisata from './Tabs/PaketWisata/PaketWisata';
 import Reservasi from './Tabs/Reservasi/Reservasi';
+import Appointment from './Tabs/Appointment/Appointment';
 
 const AlfilahaAdmin = () => {
   const navigate = useNavigate();
@@ -87,6 +88,20 @@ const AlfilahaAdmin = () => {
   const [reservasi, setReservasi] = useState([]);
   const [deleteModal, setDeleteModal] = useState({ show: false, id: null, nama: '' });
   const [rejectModal, setRejectModal] = useState({ show: false, id: null, nama: '' });
+
+  const [appointments, setAppointments] = useState([]);
+  const [deleteAppointmentModal, setDeleteAppointmentModal] = useState({ show: false, id: null, type: '' });
+
+  const fetchAppointments = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/appointments`);
+      if (!response.ok) throw new Error("Gagal mengambil data appointments");
+      const data = await response.json();
+      setAppointments(data);
+    } catch (error) {
+      console.error("Backend MySQL offline:", error);
+    }
+  };
 
   const fetchReservasi = async () => {
     try {
@@ -357,8 +372,12 @@ const AlfilahaAdmin = () => {
       fetchWisata();
       fetchEvents();
       fetchBlogs();
+      fetchAppointments();
       // Auto refresh tiap 2 detik untuk update otomatis dari form
-      const interval = setInterval(fetchReservasi, 2000);
+      const interval = setInterval(() => {
+        fetchReservasi();
+        fetchAppointments();
+      }, 2000);
       return () => clearInterval(interval);
     }
   }, [isLoggedIn]);
@@ -390,6 +409,42 @@ const AlfilahaAdmin = () => {
       if(response.ok) {
         fetchReservasi();
         showToast("Data berhasil dihapus!");
+      } else {
+        showToast("Gagal menghapus data dari server!");
+      }
+    } catch(err) {
+      console.error("Backend Error:", err);
+      showToast("Gagal terhubung ke database.");
+    }
+  };
+
+  const updateStatusAppointment = async (id, status) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/appointments/${id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+      
+      if(response.ok) {
+        fetchAppointments();
+        showToast(`Appointment berhasil ${status === 'Diterima' ? 'diterima' : 'ditolak'}!`);
+      } else {
+        showToast("Gagal memperbarui status di MySQL!");
+      }
+    } catch (error) {
+      console.error("Backend Error:", error);
+      showToast("Koneksi ke database MySQL terputus.");
+    }
+  };
+
+  const confirmHapusAppointment = async (id) => {
+    setDeleteAppointmentModal({ show: false, id: null, type: '' });
+    try {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/appointments/${id}`, { method: "DELETE" });
+      if(response.ok) {
+        fetchAppointments();
+        showToast("Data appointment berhasil dihapus!");
       } else {
         showToast("Gagal menghapus data dari server!");
       }
@@ -591,6 +646,18 @@ const AlfilahaAdmin = () => {
           </button>
 
           <button
+            onClick={() => handleTabChange('appointment')}
+            className={`w-full flex items-center space-x-4 px-5 py-4 rounded-2xl transition-all duration-300 ${
+              activeTab === 'appointment' 
+              ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
+              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
+            }`}
+          >
+            <FiMessageSquare className="text-xl" />
+            <span>Book Appointment</span>
+          </button>
+
+          <button
             onClick={() => handleTabChange('artikel')}
             className={`w-full flex items-center space-x-4 px-5 py-4 rounded-2xl transition-all duration-300 ${
               activeTab === 'artikel' 
@@ -679,6 +746,7 @@ const AlfilahaAdmin = () => {
             {activeTab === 'event' && <Event events={events} setAddEventModal={setAddEventModal} setEditEventModal={setEditEventModal} setDeleteEventModal={setDeleteEventModal} />}
             {activeTab === 'wisata' && <PaketWisata wisata={wisata} setAddWisataModal={setAddWisataModal} setEditWisataModal={setEditWisataModal} setDeletePaketModal={setDeletePaketModal} />}
             {activeTab === 'reservasi' && <Reservasi reservasi={reservasi} searchQuery={searchQuery} setSearchQuery={setSearchQuery} filterStatus={filterStatus} setFilterStatus={setFilterStatus} updateStatusReservasi={updateStatusReservasi} setRejectModal={setRejectModal} setDeleteModal={setDeleteModal} />}
+            {activeTab === 'appointment' && <Appointment appointments={appointments} searchQuery={searchQuery} setSearchQuery={setSearchQuery} filterStatus={filterStatus} setFilterStatus={setFilterStatus} updateStatusAppointment={updateStatusAppointment} setDeleteModal={setDeleteAppointmentModal} />}
 
 
 
@@ -740,6 +808,36 @@ const AlfilahaAdmin = () => {
               </button>
               <button 
                 onClick={() => confirmHapusReservasi(deleteModal.id)}
+                className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition"
+              >
+                Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE APPOINTMENT MODAL */}
+      {deleteAppointmentModal.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDeleteAppointmentModal({ show: false, id: null, type: '' })}></div>
+          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
+            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100">
+              <FiTrash2 className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-extrabold text-gray-800 text-center mb-2">Hapus Appointment?</h3>
+            <p className="text-gray-500 text-center text-sm font-medium mb-8">
+              Data appointment ini akan dihapus permanen.
+            </p>
+            <div className="flex space-x-3">
+              <button 
+                onClick={() => setDeleteAppointmentModal({ show: false, id: null, type: '' })}
+                className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={() => confirmHapusAppointment(deleteAppointmentModal.id)}
                 className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition"
               >
                 Ya, Hapus
