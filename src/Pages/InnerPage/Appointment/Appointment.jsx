@@ -5,8 +5,6 @@ import { Link } from "react-router-dom";
 import shape from "/images/appointment-shape.png";
 import shape2 from "/images/appointment-shape2.png";
 
-const PUBLIC_API = import.meta.env.VITE_PUBLIC_API || "http://localhost:5000/";
-
 const Appointment = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -23,7 +21,7 @@ const Appointment = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${PUBLIC_API}api/appointments`, {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/appointments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

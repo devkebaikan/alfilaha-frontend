@@ -21,7 +21,7 @@ const Appointment = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000/"}api/appointments`, {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/appointments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
