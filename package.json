@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "framer-motion": "^13.1.0",
     "fslightbox-react": "^1.7.6",
     "react": "^18.2.0",
     "react-animated-progress-bar": "^1.1.2",

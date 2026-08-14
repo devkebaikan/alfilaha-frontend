@@ -15,7 +15,7 @@ const ContactBox = () => {
                 Office Address
               </h5>
               <p className="font-AlbertSans text-white">
-                200 Navana ST, West end Right <br /> Sandigo, USA
+                Jl. Dusun Tepus, Bulukerto, Sewurejo, <br /> Kec. Mojogedang, Karanganyar
               </p>
             </div>
             <div className="group border-r-2 border-[#bbdd7f]">
@@ -23,22 +23,15 @@ const ContactBox = () => {
                 <FaPhoneVolume size={"30"} />
               </div>
               <h5 className="font-AlbertSans font-medium text-[22px] text-white mt-6 mb-3">
-                Make A Call
+                Make A Call / Chat
               </h5>
               <ul>
                 <li>
-                  <Link to={"/"}>
-                    <button className="font-AlbertSans text-white transition-all duration-500 hover:text-SecondaryColor-0 mb-2">
-                      (+880) 123 4567 890
+                  <a href="https://wa.me/6281393864052" target="_blank" rel="noreferrer">
+                    <button className="font-AlbertSans text-white transition-all duration-500 hover:text-SecondaryColor-0 mb-2 font-bold tracking-wide">
+                      +62 813-9386-4052
                     </button>
-                  </Link>
-                </li>
-                <li>
-                  <Link to={"/"}>
-                    <button className="font-AlbertSans text-white transition-all duration-500 hover:text-SecondaryColor-0">
-                      (+880) 312 4567 670
-                    </button>
-                  </Link>
+                  </a>
                 </li>
               </ul>
             </div>
@@ -47,22 +40,15 @@ const ContactBox = () => {
                 <BiSupport size={"30"} />
               </div>
               <h5 className="font-AlbertSans font-medium text-[22px] text-white mt-6 mb-3">
-                24/7 Online Support
+                Online Support
               </h5>
               <ul>
                 <li>
-                  <Link to={"/"}>
+                  <a href="mailto:info@alfilaha.com">
                     <button className="font-AlbertSans text-white transition-all duration-500 hover:text-SecondaryColor-0 mb-2">
-                      example@gmail.com
+                      info@alfilaha.com
                     </button>
-                  </Link>
-                </li>
-                <li>
-                  <Link to={"/"}>
-                    <button className="font-AlbertSans text-white transition-all duration-500 hover:text-SecondaryColor-0">
-                      info@gmail.com
-                    </button>
-                  </Link>
+                  </a>
                 </li>
               </ul>
             </div>

@@ -85,6 +85,10 @@ export default {
           from: { transform: "rotate(0deg)" },
           to: { transform: "rotate(360deg)" },
         },
+        kenburns: {
+          "0%": { transform: "scale(1)" },
+          "100%": { transform: "scale(1.1)" },
+        },
       },
       animation: {
         movebtn: "movebtn 3s linear infinite",
@@ -96,6 +100,7 @@ export default {
         dance3: "dance3 2s alternate infinite",
         dance7: "dance7 4s alternate infinite",
         swing: "swing 1s ease-in-out 1s forwards infinite alternate",
+        kenburns: "kenburns 20s ease-out alternate infinite",
         headerSlideDown:
           "500ms ease-in-out 0s normal none 1 running headerSlideDown",
       },

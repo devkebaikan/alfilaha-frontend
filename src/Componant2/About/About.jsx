@@ -1,5 +1,5 @@
-import aboutThumb from "/images/about-1.png";
-import aboutThumb2 from "/images/about-2.png";
+import aboutThumb from "/images/planting-tree.jpg";
+import aboutThumb2 from "/images/services-plant-3.jpg";
 import subTitleShape from "/images/sub-title-shape.png";
 import aboutIcon from "/images/about2-icon.png";
 import aboutIcon2 from "/images/about2-icon2.png";
@@ -7,12 +7,7 @@ import { Link } from "react-router-dom";
 import buttonShape from "/images/button-shape-1.png";
 import aboutShape from "/images/about2-shape.png";
 import aboutShape2 from "/images/testi-shape-3.png";
-import { useState } from "react";
-import FsLightbox from "fslightbox-react";
-import { CiPlay1 } from "react-icons/ci";
-
 const About = () => {
-    const [toggler, setToggler] = useState(false);
 
   return (
     <section className="py-[120px] bg-[url('/images/about-bg.jpg')] bg-cover bg-center bg-no-repeat relative overflow-hidden">
@@ -27,29 +22,17 @@ const About = () => {
         className="absolute top-32 right-20 animate-zoomInOut hidden 2xl:block"
       />
       
-      <FsLightbox
-        toggler={toggler}
-        sources={[
-          "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-        ]}
-      />
+
       <div className="Container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[92px] lg:gap-5 xl:gap-20 items-center">
           <div className="relative z-10">
-            <img loading="lazy" src={aboutThumb} draggable="false" />
+            <img loading="lazy" src={aboutThumb} draggable="false" className="rounded-2xl shadow-xl w-full max-w-[498px] h-[550px] object-cover" />
             <img loading="lazy"
               src={aboutThumb2}
               draggable="false"
-              className="absolute bottom-0 right-0 hidden sm:block"
+              className="absolute bottom-[-10%] right-[-5%] hidden sm:block rounded-2xl shadow-2xl w-[340px] h-[339px] object-cover border-8 border-white"
             />
-            <div className="absolute top-20 right-[60px] lg:right-[30px] xl:-right-[30px] 2xl:right-[60px] hidden sm:block">
-        <button
-          className="h-[88px] w-[88px] rounded-full border-4 border-white text-2xl text-white bg-PrimaryColor-0 flex justify-center items-center relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:bg-HeadingColor-0 before:opacity-50 before:-z-10 before:rounded-full before:animate-ping after:absolute after:-top-[20px] after:-left-[20px] after:w-[120px] after:h-[120px] after:bg-transparent after:border-2 after:border-dashed after:border-PrimaryColor-0 after:opacity-50 after:-z-10 after:rounded-full after:animate-rotational"
-          onClick={() => setToggler(!toggler)}
-        >
-          <CiPlay1 />
-        </button>
-      </div>
+
           </div>
           <div>
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2">

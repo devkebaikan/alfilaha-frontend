@@ -35,6 +35,7 @@ import PesanTempat from "../Pages/InnerPage/PesanTempat/PesanTempatBaru";
 import CekTanaman from "../Pages/InnerPage/CekTanaman/CekTanaman";
 import KubusAlfilaha from "../Pages/InnerPage/KubusAlfilaha/KubusAlfilaha";
 import PaketWisata from "../Pages/InnerPage/PaketWisata/PaketWisata";
+import GaleriFull from "../Pages/InnerPage/GaleriFull/GaleriFull";
 import AlfilahaAdmin from "../Pages/AlfilahaAdmin/AlfilahaAdmin";
 
 const router = createBrowserRouter([
@@ -150,6 +151,10 @@ const router = createBrowserRouter([
       {
         path: "/paket-wisata",
         element: <PaketWisata />,
+      },
+      {
+        path: "/galeri",
+        element: <GaleriFull />,
       },
     ],
   },

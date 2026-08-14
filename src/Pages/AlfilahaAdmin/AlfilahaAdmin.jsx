@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiMenu, FiHome, FiSettings, FiLogOut, FiUploadCloud, FiCheck, FiArrowLeft, FiEdit, FiTrash2, FiMap, FiCalendar, FiMessageSquare, FiStar, FiUsers, FiTrendingUp, FiX, FiSearch, FiFilter, FiEye, FiEyeOff, FiActivity, FiClock, FiGrid, FiPlus, FiBell, FiFileText } from 'react-icons/fi';
 import Beranda from './Tabs/Beranda/Beranda';
-import KelolaArtikel from './Tabs/KelolaArtikel/KelolaArtikel';
 import BlogGrid from './Tabs/BlogGrid/BlogGrid';
 import Event from './Tabs/Event/Event';
 import PaketWisata from './Tabs/PaketWisata/PaketWisata';
 import Reservasi from './Tabs/Reservasi/Reservasi';
-import Appointment from './Tabs/Appointment/Appointment';
 import BlogForm from './Tabs/BlogForm/BlogForm';
+import GaleriManager from './Tabs/Galeri/GaleriManager';
+import Appointment from './Tabs/Appointment/Appointment';
 
 const AlfilahaAdmin = () => {
   const navigate = useNavigate();
@@ -64,11 +64,6 @@ const AlfilahaAdmin = () => {
     return saved ? JSON.parse(saved) : defaultData;
   });
 
-  const [articles, setArticles] = useState([
-    { id: 1, title: 'Menjaga Kualitas Beras Organik', date: '12 Okt 2023', image: '/images/blog-new-1.jpg', excerpt: 'Beras organik bebas dari pestisida buatan dan pupuk sintetis, sehingga lebih aman bagi...' },
-    { id: 2, title: 'Promo Spesial Ramadhan 1445H', date: '15 Okt 2023', image: '/images/blog-new-2.jpg', excerpt: 'Menyambut bulan suci Ramadhan, Alfilaha memberikan promo khusus untuk semua jenis...' },
-    { id: 3, title: 'Pentingnya Irigasi yang Tepat', date: '20 Okt 2023', image: '/images/blog-new-3.jpg', excerpt: 'Sistem irigasi yang efisien adalah kunci keberhasilan pertanian modern untuk...' }
-  ]);
 
   const [blogs, setBlogs] = useState([]);
   const [editingBlog, setEditingBlog] = useState(null);
@@ -84,6 +79,21 @@ const AlfilahaAdmin = () => {
   const [editWisataModal, setEditWisataModal] = useState({ show: false, id: null, nama_paket: '', harga: '', deskripsi: '' });
   const [addWisataModal, setAddWisataModal] = useState({ show: false, nama_paket: '', harga: '', deskripsi: '' });
   const [deletePaketModal, setDeletePaketModal] = useState({ show: false, id: null, nama_paket: '' });
+
+  const [galeri, setGaleri] = useState([]);
+  const [isGaleriOpen, setIsGaleriOpen] = useState(false); // Sidebar Galeri Dropdown
+  
+  const fetchGaleri = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/galeri`);
+      if(response.ok) {
+        const data = await response.json();
+        setGaleri(data);
+      }
+    } catch(err) {
+      console.error("Gagal menarik data Galeri", err);
+    }
+  };
 
   const [reservasi, setReservasi] = useState([]);
   const [deleteModal, setDeleteModal] = useState({ show: false, id: null, nama: '' });
@@ -300,7 +310,7 @@ const AlfilahaAdmin = () => {
 
   const handleOpenBlogForm = (blog = null) => {
     setEditingBlog(blog);
-    setActiveTab('blogForm');
+    setActiveTab('blog-form');
   };
 
   const saveBlog = async (formData, id = null) => {
@@ -319,7 +329,7 @@ const AlfilahaAdmin = () => {
       if(response.ok) {
         showToast(`Blog berhasil ${id ? 'diperbarui' : 'ditambahkan'}!`);
         fetchBlogs();
-        setActiveTab('blogGrid');
+        setActiveTab('blog-grid');
       } else {
         showToast(`Gagal ${id ? 'memperbarui' : 'menambahkan'} Blog.`);
       }
@@ -352,6 +362,7 @@ const AlfilahaAdmin = () => {
       fetchEvents();
       fetchBlogs();
       fetchAppointments();
+      fetchGaleri();
       // Auto refresh tiap 2 detik untuk update otomatis dari form
       const interval = setInterval(() => {
         fetchReservasi();
@@ -587,91 +598,125 @@ const AlfilahaAdmin = () => {
           <p className="text-gray-400 text-[10px] uppercase tracking-widest font-bold pl-1">Admin Panel</p>
         </div>
 
-        <nav className="flex-1 p-5 space-y-3">
+        <nav className="flex-1 p-5 space-y-2 overflow-y-auto">
           <button
             onClick={() => handleTabChange('beranda')}
-            className={`w-full flex items-center space-x-4 px-5 py-4 rounded-2xl transition-all duration-300 ${
+            className={`w-full flex items-center space-x-4 px-4 py-3 rounded-2xl transition-all duration-300 ${
               activeTab === 'beranda' 
               ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
               : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
             }`}
           >
-            <FiHome className="text-xl" />
-            <span>Beranda Website</span>
+            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab === 'beranda' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiHome size={20} /></div>
+            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Beranda</span>
           </button>
-          
+
           <button
             onClick={() => handleTabChange('wisata')}
-            className={`w-full flex items-center space-x-4 px-5 py-4 rounded-2xl transition-all duration-300 ${
+            className={`w-full flex items-center space-x-4 px-4 py-3 rounded-2xl transition-all duration-300 ${
               activeTab === 'wisata' 
               ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
               : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
             }`}
           >
-            <FiMap className="text-xl" />
-            <span>Paket Wisata</span>
+            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab === 'wisata' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiMap size={20} /></div>
+            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Eduwisata</span>
           </button>
-          
+
           <button
             onClick={() => handleTabChange('reservasi')}
-            className={`w-full flex items-center space-x-4 px-5 py-4 rounded-2xl transition-all duration-300 ${
+            className={`w-full flex items-center space-x-4 px-4 py-3 rounded-2xl transition-all duration-300 ${
               activeTab === 'reservasi' 
               ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
               : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
             }`}
           >
-            <FiCalendar className="text-xl" />
-            <span>Reservasi</span>
+            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab === 'reservasi' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiBell size={20} /></div>
+            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Reservasi</span>
+            {reservasi.filter(r => r.status === 'Pending').length > 0 && (
+              <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
+                {reservasi.filter(r => r.status === 'Pending').length}
+              </span>
+            )}
           </button>
 
           <button
             onClick={() => handleTabChange('appointment')}
-            className={`w-full flex items-center space-x-4 px-5 py-4 rounded-2xl transition-all duration-300 ${
+            className={`w-full flex items-center space-x-4 px-4 py-3 rounded-2xl transition-all duration-300 ${
               activeTab === 'appointment' 
               ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
               : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
             }`}
           >
-            <FiMessageSquare className="text-xl" />
-            <span>Book Appointment</span>
+            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab === 'appointment' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiMessageSquare size={20} /></div>
+            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Pesan Masuk</span>
+            {appointments.filter(r => r.status === 'Pending').length > 0 && (
+              <span className="ml-auto bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
+                {appointments.filter(r => r.status === 'Pending').length}
+              </span>
+            )}
           </button>
 
           <button
-            onClick={() => handleTabChange('artikel')}
-            className={`w-full flex items-center space-x-4 px-5 py-4 rounded-2xl transition-all duration-300 ${
-              activeTab === 'artikel' 
-              ? 'bg-green-50 text-green-700 font-bold shadow-inner' 
+            onClick={() => handleTabChange('blog-grid')}
+            className={`w-full flex items-center space-x-4 px-4 py-3 rounded-2xl transition-all duration-300 ${
+              activeTab === 'blog-grid' || activeTab === 'blog-form'
+              ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
               : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
             }`}
           >
-            <FiEdit className="text-xl" />
-            <span>Kelola Artikel</span>
+            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab === 'blog-grid' || activeTab === 'blog-form' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiFileText size={20} /></div>
+            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Artikel</span>
           </button>
 
           <button
             onClick={() => handleTabChange('event')}
-            className={`w-full flex items-center space-x-4 px-5 py-4 rounded-2xl transition-all duration-300 ${
+            className={`w-full flex items-center space-x-4 px-4 py-3 rounded-2xl transition-all duration-300 ${
               activeTab === 'event' 
-              ? 'bg-green-50 text-green-700 font-bold shadow-inner' 
+              ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
               : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
             }`}
           >
-            <FiActivity className="text-xl" />
-            <span>Event & Kegiatan</span>
+            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab === 'event' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiCalendar size={20} /></div>
+            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Event</span>
           </button>
 
-          <button
-            onClick={() => handleTabChange('blogGrid')}
-            className={`w-full flex items-center space-x-4 px-5 py-4 rounded-2xl transition-all duration-300 ${
-              activeTab === 'blogGrid' 
-              ? 'bg-green-50 text-green-700 font-bold shadow-inner' 
-              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
-            }`}
-          >
-            <FiGrid className="text-xl" />
-            <span>Blog Grid</span>
-          </button>
+          <div className="pt-2 mt-2 border-t border-gray-100">
+            <button 
+              onClick={() => setIsGaleriOpen(!isGaleriOpen)}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 ${
+                activeTab.startsWith('galeri-') 
+                ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
+                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
+              }`}
+            >
+              <div className="flex items-center space-x-4 overflow-hidden flex-1">
+                <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab.startsWith('galeri-') ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiGrid size={20} /></div>
+                <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Galeri</span>
+              </div>
+              <span className={`transform transition-transform shrink-0 ml-2 ${isGaleriOpen ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+            {isGaleriOpen && (
+              <div className="mt-2 pl-14 space-y-2">
+                {['Semua', 'Lahan Pertanian', 'Kegiatan Santri', 'Edukasi', 'Panen', 'Camping', 'Kegiatan Masyarakat'].map((cat) => {
+                  const slug = cat === 'Semua' ? 'galeri-semua' : `galeri-${cat.toLowerCase().replace(/ /g, '-')}`;
+                  return (
+                    <button
+                      key={slug}
+                      onClick={() => handleTabChange(slug)}
+                      className={`block w-full text-left py-2 px-3 rounded-lg text-sm transition-colors truncate ${
+                        activeTab === slug ? 'bg-green-100 text-green-700 font-bold' : 'text-gray-500 hover:bg-gray-100'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </nav>
+
 
         <div className="p-6 border-t border-gray-100 space-y-3">
           <button onClick={() => navigate('/')} className="w-full flex items-center justify-center space-x-2 py-3.5 text-sm font-bold text-gray-600 hover:text-green-700 transition bg-gray-50 hover:bg-green-50 rounded-xl border border-gray-100">
@@ -719,14 +764,31 @@ const AlfilahaAdmin = () => {
         <div className="flex-1 overflow-y-auto p-10">
           <div className="max-w-6xl mx-auto">
             
-            {activeTab === 'beranda' && <Beranda reservasi={reservasi} blogs={blogs} events={events} handleTabChange={handleTabChange} />}
-            {activeTab === 'artikel' && <KelolaArtikel articles={articles} showToast={showToast} />}
-            {activeTab === 'blogGrid' && <BlogGrid blogs={blogs} onAddClick={() => handleOpenBlogForm()} onEditClick={handleOpenBlogForm} setDeleteBlogModal={setDeleteBlogModal} />}
-            {activeTab === 'blogForm' && <BlogForm initialData={editingBlog} onSave={saveBlog} onCancel={() => setActiveTab('blogGrid')} showToast={showToast} />}
-            {activeTab === 'event' && <Event events={events} setAddEventModal={setAddEventModal} setEditEventModal={setEditEventModal} setDeleteEventModal={setDeleteEventModal} />}
+            {activeTab === 'beranda' && <Beranda reservasi={reservasi} blogs={blogs} events={events} appointments={appointments} handleTabChange={handleTabChange} />}
+            {activeTab === 'blog-grid' && <BlogGrid blogs={blogs} onAddClick={() => handleOpenBlogForm()} onEditClick={handleOpenBlogForm} setDeleteBlogModal={setDeleteBlogModal} />}
+            {activeTab === 'appointment' && (
+              <Appointment 
+                appointments={appointments} 
+                searchQuery={searchQuery} 
+                setSearchQuery={setSearchQuery} 
+                filterStatus={filterStatus} 
+                setFilterStatus={setFilterStatus} 
+                updateStatusAppointment={updateStatusAppointment} 
+                setDeleteModal={setDeleteAppointmentModal} 
+              />
+            )}
+            {activeTab === 'blog-form' && <BlogForm initialData={editingBlog} onSave={saveBlog} onCancel={() => setActiveTab('blog-grid')} showToast={showToast} />}
+            {activeTab === 'event' && <Event events={events} onAdd={() => setAddEventModal({...addEventModal, show: true})} onEdit={(event) => setEditEventModal({ show: true, ...event, existingImage: event.image })} onDelete={(event) => setDeleteEventModal({ show: true, id: event.id, title: event.title })} />}
+            
+            {activeTab.startsWith('galeri-') && (
+              <GaleriManager 
+                galeriList={galeri}
+                activeCategory={activeTab === 'galeri-semua' ? 'Semua' : activeTab.replace('galeri-', '').split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                fetchGaleri={fetchGaleri}
+              />
+            )}
             {activeTab === 'wisata' && <PaketWisata wisata={wisata} setAddWisataModal={setAddWisataModal} setEditWisataModal={setEditWisataModal} setDeletePaketModal={setDeletePaketModal} />}
             {activeTab === 'reservasi' && <Reservasi reservasi={reservasi} searchQuery={searchQuery} setSearchQuery={setSearchQuery} filterStatus={filterStatus} setFilterStatus={setFilterStatus} updateStatusReservasi={updateStatusReservasi} setRejectModal={setRejectModal} setDeleteModal={setDeleteModal} />}
-            {activeTab === 'appointment' && <Appointment appointments={appointments} searchQuery={searchQuery} setSearchQuery={setSearchQuery} filterStatus={filterStatus} setFilterStatus={setFilterStatus} updateStatusAppointment={updateStatusAppointment} setDeleteModal={setDeleteAppointmentModal} />}
 
 
 
