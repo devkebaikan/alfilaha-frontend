@@ -415,9 +415,9 @@ const Home1 = () => {
               
               <motion.div variants={fadeInUp} className="space-y-6">
                  {[
-                   { icon: <FaMapMarkerAlt />, title: "Lokasi", desc: "Kawasan Pertanian Alfilaha, Jl. Pesantren Pertanian No. 123, Kabupaten Sukabumi, Jawa Barat" },
+                   { icon: <FaMapMarkerAlt />, title: "Lokasi", desc: <a href="https://maps.app.goo.gl/WsvvC7m3VqbzU6ip8" target="_blank" rel="noreferrer" className="hover:text-PrimaryColor-0 transition-colors">Jl. Dusun Tepus, Bulukerto, Sewurejo, Kec. Mojogedang, Kabupaten Karanganyar, Jawa Tengah 57752</a> },
                    { icon: <FaWhatsapp />, title: "WhatsApp", desc: "+62 812-3456-7890" },
-                   { icon: <FaEnvelope />, title: "Email", desc: "halo@alfilaha.id" },
+                   { icon: <FaEnvelope />, title: "Email", desc: "-" },
                  ].map((info, idx) => (
                    <div key={idx} className="flex items-center gap-6 p-6 bg-white rounded-2xl shadow-sm border border-BorderColor2-0 hover:border-PrimaryColor-0 hover:shadow-md transition-all group">
                      <div className="w-[60px] h-[60px] bg-[#e6f2f0] rounded-full flex items-center justify-center flex-shrink-0 text-PrimaryColor-0 text-2xl group-hover:bg-PrimaryColor-0 group-hover:text-white transition-colors">
@@ -440,7 +440,7 @@ const Home1 = () => {
             
             <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="h-[550px] lg:h-[700px] rounded-[2.5rem] overflow-hidden shadow-shadow border-[10px] border-white relative z-10">
               <iframe 
-                src="https://maps.google.com/maps?q=CX9X%2B3C%20Sewurejo,%20Kabupaten%20Karanganyar,%20Jawa%20Tengah&t=&z=15&ie=UTF8&iwloc=&output=embed" 
+                src="https://maps.google.com/maps?q=-7.5823424,110.9985186&t=&z=15&ie=UTF8&iwloc=&output=embed" 
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 

@@ -105,12 +105,12 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
                 <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded-md mb-2 inline-block">{foto.category}</span>
                 <h4 className="font-bold text-gray-800 mb-1 line-clamp-2">{foto.title}</h4>
               </div>
-              <div className="flex justify-end gap-3 mt-auto pt-3 border-t border-gray-200">
-                <button onClick={() => openEditModal(foto)} className="text-blue-500 hover:text-blue-700 flex items-center gap-1 text-sm font-semibold transition-colors">
-                  <FiEdit/> Edit
+              <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
+                <button onClick={() => openEditModal(foto)} className="text-green-600 hover:text-white hover:bg-green-600 bg-green-50 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1">
+                  <FiEdit className="w-4 h-4" /> Edit
                 </button>
-                <button onClick={() => handleDelete(foto.id)} className="text-red-500 hover:text-red-700 flex items-center gap-1 text-sm font-semibold transition-colors">
-                  <FiTrash2/> Hapus
+                <button onClick={() => handleDelete(foto.id)} className="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1">
+                  <FiTrash2 className="w-4 h-4" /> Hapus
                 </button>
               </div>
             </div>

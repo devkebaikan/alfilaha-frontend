@@ -2,14 +2,73 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { FaBars } from "react-icons/fa6";
 import { BiChevronDown } from "react-icons/bi";
 import Logo from "/images/logo.webp";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { IoMdClose } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
+  const navigate = useNavigate();
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setIsSearchOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if(searchQuery.trim()) {
+      const queryStr = searchQuery.toLowerCase().trim();
+      
+      const DIRECT_ROUTES = [
+        { keywords: ["beranda", "home", "awal"], path: "/" },
+        { keywords: ["tentang", "about", "profil", "sejarah"], path: "/about" },
+        { keywords: ["layanan", "service", "penanaman", "daur ulang", "komposting"], path: "/service" },
+        { keywords: ["kubus", "program kubus"], path: "/kubus-alfilaha" },
+        { keywords: ["wisata", "paket", "edukasi", "camping", "outbond"], path: "/paket-wisata" },
+        { keywords: ["event", "kegiatan", "agenda"], path: "/event" },
+        { keywords: ["galeri", "foto", "dokumentasi", "video", "gallery"], path: "/galeri" },
+        { keywords: ["pesan", "reservasi", "booking", "daftar"], path: "/pesan-tempat" },
+        { keywords: ["cek tanaman", "tanaman", "botani", "pertumbuhan"], path: "/cek-tanaman" },
+        { keywords: ["kontak", "hubungi", "lokasi", "alamat", "peta"], path: "/contact" },
+        { keywords: ["donasi", "sumbangan"], path: "/donation_inner" },
+        { keywords: ["blog", "artikel", "berita", "news"], path: "/blog_grid" },
+        { keywords: ["admin", "dashboard", "panel"], path: "/admin" }
+      ];
+
+      const directMatch = DIRECT_ROUTES.find(route => 
+        route.keywords.some(kw => 
+          kw === queryStr || 
+          (queryStr.length >= 4 && (kw.includes(queryStr) || queryStr.includes(kw)))
+        )
+      );
+
+      setIsSearchOpen(false);
+      setSearchQuery("");
+
+      if (directMatch) {
+        navigate(directMatch.path);
+      } else {
+        navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      }
+    }
+  };
 
   const toggleNavbar = () => {
     setIsOpen(!isOpen);
@@ -23,6 +82,7 @@ const Navbar = () => {
   useEffect(() => {
     setIsOpen(false);
     setOpenDropdown(null);
+    setIsSearchOpen(false);
   }, [location.pathname]);
 
   // Lock body scroll when mobile menu is open
@@ -74,8 +134,8 @@ const Navbar = () => {
   return (
     <>
       <nav className={`w-full transition-all duration-300 bg-black/60 backdrop-blur-md fixed top-0 left-0 z-[50] shadow-sm`}>
-        <header className="header-section bg-transparent border-b border-white/10">
-          <div className="Container">
+        <header className="header-section bg-transparent border-b border-white/10 relative">
+          <div className="Container relative" ref={searchRef}>
             <div className="flex items-center justify-between h-[70px] lg:h-[100px] px-2 md:px-4 lg:px-0">
               
               {/* Website Logo */}
@@ -85,15 +145,24 @@ const Navbar = () => {
                 </Link>
               </div>
 
-              {/* Mobile Toggle Button */}
-              <button
-                className="lg:hidden flex items-center justify-center w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 transition-colors focus:outline-none"
-                onClick={toggleNavbar}
-                aria-label="Buka menu"
-                aria-expanded={isOpen}
-              >
-                <FaBars className="w-5 h-5 text-white" />
-              </button>
+              {/* Mobile Right Actions & Toggle Button */}
+              <div className="flex items-center gap-3 lg:hidden">
+                <button
+                  aria-label="Search"
+                  onClick={() => setIsSearchOpen(!isSearchOpen)}
+                  className={`flex items-center justify-center w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 transition-colors focus:outline-none ${isSearchOpen ? 'text-PrimaryColor-0' : 'text-white'}`}
+                >
+                  <IoSearch className="w-5 h-5" />
+                </button>
+                <button
+                  className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 transition-colors focus:outline-none"
+                  onClick={toggleNavbar}
+                  aria-label="Buka menu"
+                  aria-expanded={isOpen}
+                >
+                  <FaBars className="w-5 h-5 text-white" />
+                </button>
+              </div>
 
               {/* Desktop NavLinks */}
               <div className="hidden lg:flex flex-1 justify-center items-center">
@@ -133,15 +202,40 @@ const Navbar = () => {
 
               {/* Desktop Right Actions */}
               <div className="hidden lg:flex items-center gap-4 xl:gap-6">
-                <button aria-label="Search" className="text-white hover:text-PrimaryColor-0 transition-colors">
+                <button 
+                  aria-label="Search" 
+                  onClick={() => setIsSearchOpen(!isSearchOpen)} 
+                  className={`text-white transition-colors hover:text-PrimaryColor-0 ${isSearchOpen ? 'text-PrimaryColor-0' : ''}`}
+                >
                   <IoSearch className="text-2xl" />
                 </button>
+                
                 <Link to={"/pesan-tempat"} className="px-5 py-2.5 xl:px-6 xl:py-3 bg-PrimaryColor-0 hover:bg-[#0a6658] text-white rounded-full text-sm xl:text-base font-bold transition-all shadow-lg hover:-translate-y-1">
                   Pesan Tempat
                 </Link>
               </div>
 
             </div>
+
+            {/* Simple Search Popover (Desktop & Mobile) */}
+            {isSearchOpen && (
+              <div className="absolute right-4 lg:right-0 top-full mt-2 lg:mt-0 bg-white rounded-lg shadow-xl p-2 w-[calc(100vw-32px)] sm:w-[360px] border border-gray-100 z-[100] animate-fade-in-up before:absolute before:-top-2 before:right-6 lg:before:right-28 before:w-4 before:h-4 before:bg-white before:rotate-45 before:border-l before:border-t before:border-gray-100">
+                <form onSubmit={handleSearchSubmit} className="flex relative z-10">
+                  <input 
+                    type="text" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Cari halaman atau artikel..." 
+                    className="flex-1 bg-gray-50 text-gray-800 text-sm outline-none px-4 py-3 rounded-l-md border border-gray-200 focus:border-PrimaryColor-0 focus:ring-1 focus:ring-PrimaryColor-0 transition-all"
+                    autoFocus
+                  />
+                  <button type="submit" className="bg-PrimaryColor-0 hover:bg-[#0a6658] text-white px-5 rounded-r-md transition-colors flex items-center justify-center">
+                    <IoSearch size={20} />
+                  </button>
+                </form>
+              </div>
+            )}
+            
           </div>
         </header>
       </nav>

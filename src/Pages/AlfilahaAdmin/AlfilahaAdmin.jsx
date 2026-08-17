@@ -742,12 +742,7 @@ const AlfilahaAdmin = () => {
             <h2 className="text-xl md:text-2xl font-black text-gray-800 tracking-tight hidden sm:block">Dashboard Overview</h2>
           </div>
           <div className="flex items-center space-x-4 md:space-x-6">
-            <div className="relative cursor-pointer hover:bg-gray-100 p-2.5 rounded-full transition" onClick={() => handleTabChange('reservasi')} title="Reservasi Pending">
-              <FiBell className="w-6 h-6 text-gray-500" />
-              {reservasi.filter(r => r.status === 'Pending').length > 0 && (
-                <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 border-2 border-white rounded-full animate-pulse"></span>
-              )}
-            </div>
+
             <div className="flex items-center space-x-4 bg-gray-50 py-2 px-5 rounded-full border border-gray-100">
               <div className="text-right hidden md:block">
                 <p className="text-sm font-bold text-gray-800">Admin Utama</p>

@@ -10,6 +10,7 @@ const ContactInner = () => {
         breadCrumbTitle={"Contact Us"}
         breadCrumbIcon={<FaArrowRightLong />}
         breadCrumbLink={"Contact Us"}
+        bgImage={"/images/pesan-tempat-bg.jpg"}
       />
       <ContactBox />
       <Appointment />

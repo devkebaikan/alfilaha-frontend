@@ -313,8 +313,26 @@ const Beranda = ({ reservasi = [], blogs = [], events = [], appointments = [], h
               upcomingEvents.map(ev => (
                 <div key={ev.id} className="flex items-center p-4 rounded-2xl border border-gray-100 hover:border-green-200 hover:shadow-sm transition-all bg-white group cursor-pointer" onClick={() => handleTabChange('event')}>
                   <div className="w-14 h-14 rounded-xl bg-green-50 text-green-600 flex flex-col items-center justify-center shrink-0 border border-green-100 group-hover:bg-green-600 group-hover:text-white transition-colors">
-                    <span className="text-xs font-bold uppercase">{ev.date.split(' ')[1] || ev.date.substring(0,3)}</span>
-                    <span className="text-lg font-black leading-none mt-0.5">{ev.date.split(' ')[0] || '12'}</span>
+                    {(() => {
+                      let monthStr = ev.date.split(' ')[1] || ev.date.substring(0,3);
+                      let dayStr = ev.date.split(' ')[0] || '12';
+                      
+                      if (ev.date && ev.date.includes('-') && ev.date.split('-')[0].length === 4) {
+                        const dateObj = new Date(ev.date);
+                        if (!isNaN(dateObj)) {
+                          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                          monthStr = months[dateObj.getMonth()];
+                          dayStr = dateObj.getDate().toString();
+                        }
+                      }
+                      
+                      return (
+                        <>
+                          <span className="text-xs font-bold uppercase">{monthStr}</span>
+                          <span className="text-lg font-black leading-none mt-0.5">{dayStr}</span>
+                        </>
+                      );
+                    })()}
                   </div>
                   <div className="ml-4 flex-1 overflow-hidden">
                     <h4 className="font-bold text-gray-800 text-base truncate group-hover:text-green-700 transition-colors">{ev.title}</h4>

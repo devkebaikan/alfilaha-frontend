@@ -59,7 +59,7 @@ const GaleriAlfilaha = ({ isHome = false }) => {
   const handleNextImage = (e) => {
     e.stopPropagation();
     setSelectedImageIndex((prev) => (prev < filteredGaleri.length - 1 ? prev + 1 : 0));
-  };
+  }; 
 
   const handleKeyDown = (e) => {
     if (selectedImageIndex !== null) {

@@ -14,8 +14,10 @@ const ContactBox = () => {
               <h5 className="font-AlbertSans font-medium text-[22px] text-white mt-6 mb-3">
                 Office Address
               </h5>
-              <p className="font-AlbertSans text-white">
-                Jl. Dusun Tepus, Bulukerto, Sewurejo, <br /> Kec. Mojogedang, Karanganyar
+              <p className="font-AlbertSans text-white hover:text-SecondaryColor-0 transition-colors">
+                <a href="https://maps.app.goo.gl/WsvvC7m3VqbzU6ip8" target="_blank" rel="noreferrer">
+                  Jl. Dusun Tepus, Bulukerto, Sewurejo, <br /> Kec. Mojogedang, Kabupaten Karanganyar, Jawa Tengah 57752
+                </a>
               </p>
             </div>
             <div className="group border-r-2 border-[#bbdd7f]">
@@ -44,9 +46,9 @@ const ContactBox = () => {
               </h5>
               <ul>
                 <li>
-                  <a href="mailto:info@alfilaha.com">
+                  <a href="#" className="pointer-events-none">
                     <button className="font-AlbertSans text-white transition-all duration-500 hover:text-SecondaryColor-0 mb-2">
-                      info@alfilaha.com
+                      -
                     </button>
                   </a>
                 </li>

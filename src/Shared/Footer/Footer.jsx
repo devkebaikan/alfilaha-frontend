@@ -7,12 +7,10 @@ import footerLine from "/images/footer-line.png";
 import {
   FaArrowRightLong,
   FaChevronRight,
-  FaFacebookF,
-  FaLinkedinIn,
   FaLocationDot,
   FaPhone,
-  FaPinterestP,
-  FaXTwitter,
+  FaWhatsapp,
+  FaInstagram,
 } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 
@@ -44,24 +42,14 @@ const Footer = () => {
                 </h5>
                 <ul className="flex gap-3">
                   <li>
-                    <button className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-white overflow-hidden transition-all duration-500 hover:text-PrimaryColor-0 relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-white before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
-                      <FaFacebookF />
-                    </button>
+                    <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-white overflow-hidden transition-all duration-500 hover:text-PrimaryColor-0 relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-white before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
+                      <FaWhatsapp />
+                    </a>
                   </li>
                   <li>
-                    <button className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-white overflow-hidden transition-all duration-500 hover:text-PrimaryColor-0 relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-white before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
-                      <FaXTwitter />
-                    </button>
-                  </li>
-                  <li>
-                    <button className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-white overflow-hidden transition-all duration-500 hover:text-PrimaryColor-0 relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-white before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
-                      <FaLinkedinIn />
-                    </button>
-                  </li>
-                  <li>
-                    <button className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-white overflow-hidden transition-all duration-500 hover:text-PrimaryColor-0 relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-white before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
-                      <FaPinterestP />
-                    </button>
+                    <a href="https://www.instagram.com/alfilaha_id/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-white overflow-hidden transition-all duration-500 hover:text-PrimaryColor-0 relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-white before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
+                      <FaInstagram />
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -99,10 +87,10 @@ const Footer = () => {
                   +62 812-3456-7890
                 </button>
               </Link>
-              <Link to={"/"} className="mt-[18px] block">
+              <Link to={"/"} className="mt-[18px] block pointer-events-none">
                 <button className="flex items-center gap-3 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0">
                   <MdEmail size={"18"} className="text-PrimaryColor-0" />
-                  info@alfilaha.id
+                  -
                 </button>
               </Link>
             </div>
@@ -207,10 +195,12 @@ const Footer = () => {
             </h4>
             <p className="font-AlbertSans text-TextColor-0 font-medium mb-[22px] flex gap-3">
               <FaLocationDot className="text-PrimaryColor-0 mt-1 shrink-0" />
-              Jl. Contoh Alamat No. 1, Kecamatan, Kabupaten, Provinsi
+              <a href="https://maps.app.goo.gl/WsvvC7m3VqbzU6ip8" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+                Jl. Dusun Tepus, Bulukerto, Sewurejo, Kec. Mojogedang, Kabupaten Karanganyar, Jawa Tengah 57752
+              </a>
             </p>
             <a
-              href="https://maps.google.com"
+              href="https://maps.app.goo.gl/WsvvC7m3VqbzU6ip8"
               target="_blank"
               rel="noreferrer"
               className="w-full h-[58px] rounded-full border border-PrimaryColor-0 bg-PrimaryColor-0 gap-2 px-6 py-2 text-white font-AlbertSans uppercase flex items-center justify-center relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:rounded-full before:bg-[#041e15] before:-z-10 before:scale-0 before:transition-all before:duration-500 hover:before:scale-100"

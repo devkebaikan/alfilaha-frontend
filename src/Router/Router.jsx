@@ -37,6 +37,7 @@ import KubusAlfilaha from "../Pages/InnerPage/KubusAlfilaha/KubusAlfilaha";
 import PaketWisata from "../Pages/InnerPage/PaketWisata/PaketWisata";
 import GaleriFull from "../Pages/InnerPage/GaleriFull/GaleriFull";
 import AlfilahaAdmin from "../Pages/AlfilahaAdmin/AlfilahaAdmin";
+import Search from "../Pages/InnerPage/Search/Search";
 
 const router = createBrowserRouter([
   {
@@ -155,6 +156,10 @@ const router = createBrowserRouter([
       {
         path: "/galeri",
         element: <GaleriFull />,
+      },
+      {
+        path: "/search",
+        element: <Search />,
       },
     ],
   },
