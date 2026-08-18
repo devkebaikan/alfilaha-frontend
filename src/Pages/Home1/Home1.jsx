@@ -505,7 +505,7 @@ const Home1 = () => {
       {/* 6. EDUWISATA (Using Data from API) */}
       <section className="py-[120px] bg-[#f8fcfb] relative overflow-hidden">
         <div className="Container">
-          <div className="flex flex-col lg:flex-row justify-between items-end mb-16 gap-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 gap-6">
             <div className="max-w-2xl">
               <div className="flex mb-3">
                 <h5 className="font-AlbertSans font-semibold text-PrimaryColor-0 flex items-center gap-2 uppercase tracking-[0.1em]">
