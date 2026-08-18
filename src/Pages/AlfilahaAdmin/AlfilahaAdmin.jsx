@@ -34,6 +34,13 @@ const AlfilahaAdmin = () => {
     }
   }, [tab]);
 
+  // If not logged in and accessing a specific tab, redirect to /admin
+  useEffect(() => {
+    if (!isLoggedIn && tab) {
+      navigate('/admin', { replace: true });
+    }
+  }, [isLoggedIn, tab, navigate]);
+
   const handleTabChange = (tabName) => {
     navigate(`/admin/${tabName}`);
     if (window.innerWidth < 1024) setIsSidebarOpen(false); // Close sidebar on mobile after clicking
@@ -509,75 +516,107 @@ const AlfilahaAdmin = () => {
   // ==========================================
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden transition-all">
-          <div className="bg-white p-10 text-center border-b border-gray-100 flex flex-col items-center">
-            <img loading="lazy" src="/images/logo.png" alt="Alfilaha Logo" className="h-16 mb-3 object-contain" />
-            <p className="text-gray-400 text-xs font-bold tracking-widest uppercase">Administrator Panel</p>
-          </div>
-          <div className="p-8">
-            {loginError && (
-              <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm mb-6 text-center font-bold border border-red-100">
-                {loginError}
-              </div>
-            )}
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Username</label>
-                <input 
-                  type="text" 
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
-                  placeholder="Masukkan Username"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Password</label>
-                <div className="relative">
-                  <input 
-                    type={showPassword ? "text" : "password"} 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-5 pr-12 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
-                    placeholder="Masukkan Password"
-                    required
-                  />
+      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-green-950 via-green-900 to-emerald-900">
+        {/* Subtle animated background shapes */}
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-green-500/20 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div className="max-w-md w-full relative z-10">
+          <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden">
+            <div className="p-8 sm:p-10 pb-6 text-center flex flex-col items-center">
+              <img loading="lazy" src="/images/logo.png" alt="Alfilaha Logo" className="h-20 mb-4 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
+              <h2 className="text-2xl font-bold text-white tracking-wide">Administrator Panel</h2>
+              <p className="mt-2 text-green-100/70 text-sm font-medium">Masuk untuk mengelola sistem Alfilaha</p>
+            </div>
+            
+            <div className="px-6 sm:px-8 pb-8 sm:pb-10">
+              {loginError && (
+                <div className="bg-red-500/20 text-red-200 p-4 rounded-xl text-sm mb-6 text-center font-bold border border-red-500/30 flex items-center justify-center space-x-2">
+                  <FiX className="w-4 h-4 shrink-0" />
+                  <span>{loginError}</span>
+                </div>
+              )}
+              
+              <form onSubmit={handleLogin} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-medium text-green-50 mb-1.5 ml-1">Username</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <FiUsers className="h-5 w-5 text-green-200/50 group-focus-within:text-white transition-colors" />
+                    </div>
+                    <input 
+                      type="text" 
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="block w-full pl-11 pr-4 py-3.5 rounded-xl border border-white/10 focus:ring-2 focus:ring-white/30 focus:border-white/40 outline-none transition-all bg-white/5 focus:bg-white/10 text-white placeholder-green-100/30 font-medium"
+                      placeholder="Masukkan Username"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-green-50 mb-1.5 ml-1">Password</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <FiSettings className="h-5 w-5 text-green-200/50 group-focus-within:text-white transition-colors" />
+                    </div>
+                    <input 
+                      type={showPassword ? "text" : "password"} 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="block w-full pl-11 pr-12 py-3.5 rounded-xl border border-white/10 focus:ring-2 focus:ring-white/30 focus:border-white/40 outline-none transition-all bg-white/5 focus:bg-white/10 text-white placeholder-green-100/30 font-medium"
+                      placeholder="Masukkan Password"
+                      required
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-green-200/50 hover:text-white focus:outline-none transition-colors"
+                    >
+                      {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-4">
                   <button 
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                    type="submit" 
+                    disabled={loginLoading}
+                    className={`relative w-full overflow-hidden rounded-xl text-green-950 font-bold text-lg py-3.5 shadow-lg transition-all flex items-center justify-center space-x-2 group ${
+                      loginLoading ? 'bg-white/50 cursor-wait' : 'bg-white hover:bg-green-50 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(255,255,255,0.2)]'
+                    }`}
                   >
-                    {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+                    <div className="relative flex items-center justify-center space-x-2">
+                      {loginLoading ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5 text-green-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>Memproses...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Masuk Dashboard</span>
+                          <FiArrowLeft className="w-5 h-5 rotate-180 transform group-hover:translate-x-1 transition-transform" />
+                        </>
+                      )}
+                    </div>
                   </button>
                 </div>
+              </form>
+
+              <div className="mt-8 text-center pt-6 border-t border-white/10">
+                <button onClick={() => navigate('/')} className="inline-flex justify-center items-center space-x-2 text-sm font-medium text-green-100/60 hover:text-white transition-colors group">
+                  <FiArrowLeft className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" />
+                  <span>Kembali ke Website Utama</span>
+                </button>
               </div>
-              <button 
-                type="submit" 
-                disabled={loginLoading}
-                className={`w-full py-4 rounded-xl text-white font-bold text-lg shadow-xl transition-all flex items-center justify-center space-x-3 ${
-                  loginLoading ? 'bg-green-400 cursor-wait' : 'bg-green-600 hover:bg-green-700 hover:-translate-y-1 hover:shadow-green-500/30'
-                }`}
-              >
-                {loginLoading ? (
-                  <>
-                    <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span>Memproses...</span>
-                  </>
-                ) : (
-                  <span>Masuk Dashboard</span>
-                )}
-              </button>
-            </form>
-            <div className="mt-8 text-center border-t border-gray-100 pt-6">
-              <button onClick={() => navigate('/')} className="text-gray-400 hover:text-green-600 text-sm font-bold transition flex items-center justify-center mx-auto space-x-2">
-                <FiArrowLeft /> <span>Kembali ke Website Utama</span>
-              </button>
             </div>
+          </div>
+          <div className="text-center mt-6 text-green-100/40 text-xs tracking-wide">
+            &copy; {new Date().getFullYear()} Alfilaha. All rights reserved.
           </div>
         </div>
       </div>
@@ -588,53 +627,54 @@ const AlfilahaAdmin = () => {
   // RENDER DASHBOARD SCREEN
   // ==========================================
   return (
-    <div className="min-h-screen bg-gray-50 flex font-sans text-gray-800 selection:bg-green-200">
+    <div className="min-h-screen bg-slate-50 flex font-sans text-gray-800 selection:bg-green-200">
       
       {/* SIDEBAR & MOBILE OVERLAY */}
-      {isSidebarOpen && <div className="fixed inset-0 bg-gray-900/50 z-40 lg:hidden backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)}></div>}
-      <aside className={`fixed lg:static top-0 left-0 h-screen w-72 bg-white border-r border-gray-100 flex flex-col shadow-2xl lg:shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-50 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        <div className="p-8 border-b border-gray-100 flex flex-col items-start justify-center">
-          <img loading="lazy" src="/images/logo.png" alt="Alfilaha Logo" className="h-10 mb-2 object-contain" />
-          <p className="text-gray-400 text-[10px] uppercase tracking-widest font-bold pl-1">Admin Panel</p>
+      {isSidebarOpen && <div className="fixed inset-0 bg-green-950/80 z-40 lg:hidden backdrop-blur-sm transition-opacity" onClick={() => setIsSidebarOpen(false)}></div>}
+      <aside className={`fixed lg:static top-0 left-0 h-screen w-72 bg-gradient-to-b from-green-950 to-emerald-950 flex flex-col shadow-2xl z-50 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="p-8 border-b border-white/10 flex flex-col items-center justify-center text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-2xl"></div>
+          <img loading="lazy" src="/images/logo.png" alt="Alfilaha Logo" className="h-14 mb-3 object-contain drop-shadow-lg relative z-10" />
+          <p className="text-green-300 text-[10px] uppercase tracking-[0.2em] font-bold relative z-10">Admin Workspace</p>
         </div>
 
         <nav className="flex-1 p-5 space-y-2 overflow-y-auto">
           <button
             onClick={() => handleTabChange('beranda')}
-            className={`w-full flex items-center space-x-4 px-4 py-3 rounded-2xl transition-all duration-300 ${
+            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === 'beranda' 
-              ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
-              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
+              ? 'bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20' 
+              : 'text-green-100/70 hover:bg-white/5 hover:text-white font-medium'
             }`}
           >
-            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab === 'beranda' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiHome size={20} /></div>
+            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === 'beranda' ? 'bg-green-500 text-white shadow-md' : 'bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white'}`}><FiHome size={20} /></div>
             <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Beranda</span>
           </button>
 
           <button
             onClick={() => handleTabChange('wisata')}
-            className={`w-full flex items-center space-x-4 px-4 py-3 rounded-2xl transition-all duration-300 ${
+            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === 'wisata' 
-              ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
-              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
+              ? 'bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20' 
+              : 'text-green-100/70 hover:bg-white/5 hover:text-white font-medium'
             }`}
           >
-            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab === 'wisata' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiMap size={20} /></div>
+            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === 'wisata' ? 'bg-green-500 text-white shadow-md' : 'bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white'}`}><FiMap size={20} /></div>
             <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Eduwisata</span>
           </button>
 
           <button
             onClick={() => handleTabChange('reservasi')}
-            className={`w-full flex items-center space-x-4 px-4 py-3 rounded-2xl transition-all duration-300 ${
+            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === 'reservasi' 
-              ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
-              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
+              ? 'bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20' 
+              : 'text-green-100/70 hover:bg-white/5 hover:text-white font-medium'
             }`}
           >
-            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab === 'reservasi' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiBell size={20} /></div>
+            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === 'reservasi' ? 'bg-green-500 text-white shadow-md' : 'bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white'}`}><FiBell size={20} /></div>
             <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Reservasi</span>
             {reservasi.filter(r => r.status === 'Pending').length > 0 && (
-              <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
+              <span className="ml-auto bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
                 {reservasi.filter(r => r.status === 'Pending').length}
               </span>
             )}
@@ -642,16 +682,16 @@ const AlfilahaAdmin = () => {
 
           <button
             onClick={() => handleTabChange('appointment')}
-            className={`w-full flex items-center space-x-4 px-4 py-3 rounded-2xl transition-all duration-300 ${
+            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === 'appointment' 
-              ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
-              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
+              ? 'bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20' 
+              : 'text-green-100/70 hover:bg-white/5 hover:text-white font-medium'
             }`}
           >
-            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab === 'appointment' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiMessageSquare size={20} /></div>
+            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === 'appointment' ? 'bg-green-500 text-white shadow-md' : 'bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white'}`}><FiMessageSquare size={20} /></div>
             <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Pesan Masuk</span>
             {appointments.filter(r => r.status === 'Pending').length > 0 && (
-              <span className="ml-auto bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
+              <span className="ml-auto bg-rose-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
                 {appointments.filter(r => r.status === 'Pending').length}
               </span>
             )}
@@ -659,53 +699,53 @@ const AlfilahaAdmin = () => {
 
           <button
             onClick={() => handleTabChange('blog-grid')}
-            className={`w-full flex items-center space-x-4 px-4 py-3 rounded-2xl transition-all duration-300 ${
+            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === 'blog-grid' || activeTab === 'blog-form'
-              ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
-              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
+              ? 'bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20' 
+              : 'text-green-100/70 hover:bg-white/5 hover:text-white font-medium'
             }`}
           >
-            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab === 'blog-grid' || activeTab === 'blog-form' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiFileText size={20} /></div>
+            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === 'blog-grid' || activeTab === 'blog-form' ? 'bg-green-500 text-white shadow-md' : 'bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white'}`}><FiFileText size={20} /></div>
             <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Artikel</span>
           </button>
 
           <button
             onClick={() => handleTabChange('event')}
-            className={`w-full flex items-center space-x-4 px-4 py-3 rounded-2xl transition-all duration-300 ${
+            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === 'event' 
-              ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
-              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
+              ? 'bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20' 
+              : 'text-green-100/70 hover:bg-white/5 hover:text-white font-medium'
             }`}
           >
-            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab === 'event' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiCalendar size={20} /></div>
+            <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === 'event' ? 'bg-green-500 text-white shadow-md' : 'bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white'}`}><FiCalendar size={20} /></div>
             <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Event</span>
           </button>
 
-          <div className="pt-2 mt-2 border-t border-gray-100">
+          <div className="pt-3 mt-3 border-t border-white/10">
             <button 
               onClick={() => setIsGaleriOpen(!isGaleriOpen)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 ${
+              className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
                 activeTab.startsWith('galeri-') 
-                ? 'bg-green-50 text-green-900 font-bold shadow-inner' 
-                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800 font-medium'
+                ? 'bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20' 
+                : 'text-green-100/70 hover:bg-white/5 hover:text-white font-medium'
               }`}
             >
               <div className="flex items-center space-x-4 overflow-hidden flex-1">
-                <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 ${activeTab.startsWith('galeri-') ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}><FiGrid size={20} /></div>
+                <div className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab.startsWith('galeri-') ? 'bg-green-500 text-white shadow-md' : 'bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white'}`}><FiGrid size={20} /></div>
                 <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">Galeri</span>
               </div>
-              <span className={`transform transition-transform shrink-0 ml-2 ${isGaleriOpen ? 'rotate-180' : ''}`}>▼</span>
+              <span className={`transform transition-transform shrink-0 ml-2 ${isGaleriOpen ? 'rotate-180 text-white' : 'text-green-200/50'}`}>▼</span>
             </button>
             {isGaleriOpen && (
-              <div className="mt-2 pl-14 space-y-2">
+              <div className="mt-2 pl-14 space-y-1">
                 {['Semua', 'Lahan Pertanian', 'Kegiatan Santri', 'Edukasi', 'Panen', 'Camping', 'Kegiatan Masyarakat'].map((cat) => {
                   const slug = cat === 'Semua' ? 'galeri-semua' : `galeri-${cat.toLowerCase().replace(/ /g, '-')}`;
                   return (
                     <button
                       key={slug}
                       onClick={() => handleTabChange(slug)}
-                      className={`block w-full text-left py-2 px-3 rounded-lg text-sm transition-colors truncate ${
-                        activeTab === slug ? 'bg-green-100 text-green-700 font-bold' : 'text-gray-500 hover:bg-gray-100'
+                      className={`block w-full text-left py-2.5 px-4 rounded-xl text-sm transition-all truncate ${
+                        activeTab === slug ? 'bg-green-500/20 text-green-300 font-bold' : 'text-green-100/60 hover:bg-white/5 hover:text-white'
                       }`}
                     >
                       {cat}
@@ -718,12 +758,12 @@ const AlfilahaAdmin = () => {
         </nav>
 
 
-        <div className="p-6 border-t border-gray-100 space-y-3">
-          <button onClick={() => navigate('/')} className="w-full flex items-center justify-center space-x-2 py-3.5 text-sm font-bold text-gray-600 hover:text-green-700 transition bg-gray-50 hover:bg-green-50 rounded-xl border border-gray-100">
+        <div className="p-6 border-t border-white/10 space-y-3 bg-green-950/30">
+          <button onClick={() => navigate('/')} className="w-full flex items-center justify-center space-x-2 py-3.5 text-sm font-bold text-green-100/70 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-xl border border-white/10">
             <FiArrowLeft />
             <span>Website Utama</span>
           </button>
-          <button onClick={handleLogout} className="w-full flex items-center justify-center space-x-2 py-3.5 text-sm font-bold text-red-500 hover:text-white transition hover:bg-red-500 rounded-xl border border-red-50 hover:border-red-500 bg-red-50">
+          <button onClick={handleLogout} className="w-full flex items-center justify-center space-x-2 py-3.5 text-sm font-bold text-rose-400 hover:text-white transition-colors hover:bg-rose-500 rounded-xl border border-rose-400/20 hover:border-rose-500 bg-rose-500/10">
             <FiLogOut />
             <span>Keluar</span>
           </button>
@@ -731,24 +771,39 @@ const AlfilahaAdmin = () => {
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50/50">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F4F7F6]">
         
         {/* HEADER */}
-        <header className="h-24 bg-white border-b border-gray-100 flex items-center justify-between px-6 md:px-10 shadow-sm shrink-0 sticky top-0 z-40">
+        <header className="h-20 sm:h-24 bg-white/80 backdrop-blur-md border-b border-gray-200/80 flex items-center justify-between px-4 sm:px-6 md:px-10 shadow-[0_4px_30px_rgba(0,0,0,0.03)] shrink-0 sticky top-0 z-30">
           <div className="flex items-center">
-            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-xl mr-3 transition">
+            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-gray-500 hover:bg-green-50 hover:text-green-600 rounded-xl mr-3 transition-colors">
               <FiMenu className="w-6 h-6" />
             </button>
-            <h2 className="text-xl md:text-2xl font-black text-gray-800 tracking-tight hidden sm:block">Dashboard Overview</h2>
+            <div>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-black text-gray-800 tracking-tight truncate max-w-[160px] sm:max-w-none">
+                {activeTab === 'beranda' && 'Dashboard Overview'}
+                {activeTab === 'wisata' && 'Manajemen Eduwisata'}
+                {activeTab === 'reservasi' && 'Daftar Reservasi'}
+                {activeTab === 'appointment' && 'Pesan & Pertanyaan'}
+                {(activeTab === 'blog-grid' || activeTab === 'blog-form') && 'Manajemen Artikel'}
+                {activeTab === 'event' && 'Manajemen Event'}
+                {activeTab.startsWith('galeri-') && 'Galeri Alfilaha'}
+              </h2>
+              <p className="text-xs font-semibold text-gray-500 mt-0.5 hidden sm:block">
+                {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
           </div>
           <div className="flex items-center space-x-4 md:space-x-6">
-
-            <div className="flex items-center space-x-4 bg-gray-50 py-2 px-5 rounded-full border border-gray-100">
+            <div className="flex items-center space-x-4 bg-white py-2 px-4 rounded-full border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
               <div className="text-right hidden md:block">
                 <p className="text-sm font-bold text-gray-800">Admin Utama</p>
-                <p className="text-[11px] text-green-600 font-bold uppercase tracking-wider">Online</p>
+                <div className="flex items-center justify-end space-x-1.5">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                  <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">Online</p>
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-green-600 to-green-400 text-white flex items-center justify-center font-bold text-lg shadow-sm border-2 border-white">
+              <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-green-600 to-emerald-400 text-white flex items-center justify-center font-bold text-lg shadow-sm border-2 border-white ring-2 ring-gray-50">
                 A
               </div>
             </div>
@@ -756,8 +811,8 @@ const AlfilahaAdmin = () => {
         </header>
 
         {/* CONTENT AREA */}
-        <div className="flex-1 overflow-y-auto p-10">
-          <div className="max-w-6xl mx-auto">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-10">
+          <div className="max-w-7xl mx-auto">
             
             {activeTab === 'beranda' && <Beranda reservasi={reservasi} blogs={blogs} events={events} appointments={appointments} handleTabChange={handleTabChange} />}
             {activeTab === 'blog-grid' && <BlogGrid blogs={blogs} onAddClick={() => handleOpenBlogForm()} onEditClick={handleOpenBlogForm} setDeleteBlogModal={setDeleteBlogModal} />}
@@ -784,8 +839,6 @@ const AlfilahaAdmin = () => {
             )}
             {activeTab === 'wisata' && <PaketWisata wisata={wisata} setAddWisataModal={setAddWisataModal} setEditWisataModal={setEditWisataModal} setDeletePaketModal={setDeletePaketModal} />}
             {activeTab === 'reservasi' && <Reservasi reservasi={reservasi} searchQuery={searchQuery} setSearchQuery={setSearchQuery} filterStatus={filterStatus} setFilterStatus={setFilterStatus} updateStatusReservasi={updateStatusReservasi} setRejectModal={setRejectModal} setDeleteModal={setDeleteModal} />}
-
-
 
           </div>
         </div>
