@@ -263,22 +263,22 @@ const GaleriAlfilaha = ({ isHome = false }) => {
               onClick={e => e.stopPropagation()}
             >
               {/* Image constraints handled by responsive classes */}
-              <div className="relative overflow-hidden rounded-lg shadow-2xl">
+              <div className="relative overflow-hidden rounded-2xl shadow-2xl w-[92vw] md:w-[85vw] max-w-6xl aspect-[4/3] md:aspect-[16/9] bg-black/80 flex items-center justify-center">
                 <img 
                   src={filteredGaleri[selectedImageIndex].isLocal ? filteredGaleri[selectedImageIndex].image_url : `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${filteredGaleri[selectedImageIndex].image_url}`} 
                   alt={filteredGaleri[selectedImageIndex].title} 
-                  className="block object-contain w-auto h-auto max-w-[92vw] max-h-[75vh] md:max-w-[88vw] md:max-h-[78vh] lg:max-h-[85vh]"
+                  className="block w-full h-full object-contain"
                 />
                 
                 {/* Modal Overlay Text (Inside the Image div) */}
                 <div 
-                  className="absolute left-0 right-0 bottom-0 pt-16 pb-4 px-5 md:px-8 pointer-events-none"
-                  style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0))' }}
+                  className="absolute left-0 right-0 bottom-0 pt-20 pb-6 px-6 md:px-10 pointer-events-none"
+                  style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0))' }}
                 >
-                  <span className="block text-green-300 font-bold text-[11px] sm:text-xs tracking-[0.05em] uppercase mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                  <span className="block text-green-300 font-bold text-xs md:text-sm tracking-[0.1em] uppercase mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                     {filteredGaleri[selectedImageIndex].category}
                   </span>
-                  <h3 className="text-xl md:text-3xl font-bold text-white leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                  <h3 className="text-2xl md:text-4xl font-bold text-white leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                     {filteredGaleri[selectedImageIndex].title}
                   </h3>
                 </div>

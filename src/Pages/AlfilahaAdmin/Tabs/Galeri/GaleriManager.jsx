@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { FiPlus, FiTrash2, FiEdit, FiX } from 'react-icons/fi';
+import imageCompression from 'browser-image-compression';
 
 const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ title: '', category: activeCategory });
+  const [formData, setFormData] = useState({ title: '', category: activeCategory, quality: '150' });
   const [imageFile, setImageFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -26,14 +27,14 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
 
   const openAddModal = () => {
     setEditingId(null);
-    setFormData({ title: '', category: activeCategory });
+    setFormData({ title: '', category: activeCategory, quality: '150' });
     setImageFile(null);
     setIsModalOpen(true);
   };
 
   const openEditModal = (foto) => {
     setEditingId(foto.id);
-    setFormData({ title: foto.title, category: foto.category });
+    setFormData({ title: foto.title, category: foto.category, quality: '150' });
     setImageFile(null); // Optional to change image
     setIsModalOpen(true);
   };
@@ -53,8 +54,21 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
     const form = new FormData();
     form.append('title', formData.title);
     form.append('category', formData.category);
+    
     if (imageFile) {
-      form.append('image', imageFile);
+      try {
+        const maxSizeMB = formData.quality === '150' ? 0.15 : 0.05;
+        const options = {
+          maxSizeMB: maxSizeMB,
+          maxWidthOrHeight: formData.quality === '150' ? 1920 : 1080,
+          useWebWorker: true
+        };
+        const compressedFile = await imageCompression(imageFile, options);
+        form.append('image', compressedFile, compressedFile.name);
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        form.append('image', imageFile); // fallback to original if compression fails
+      }
     }
 
     try {
@@ -159,6 +173,19 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
                   onChange={e => setFormData({...formData, title: e.target.value})}
                   required
                 />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-bold text-gray-700 mb-2">Kualitas Gambar</label>
+                <select 
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
+                  value={formData.quality}
+                  onChange={e => setFormData({...formData, quality: e.target.value})}
+                >
+                  <option value="150">Gambar Besar / HD (Maks. ~150 KB)</option>
+                  <option value="50">Gambar Kecil / Standar (Maks. ~50 KB)</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-2">*Otomatis dikompres agar website tidak berat (tidak blur).</p>
               </div>
 
               <div className="mb-6">
