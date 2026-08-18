@@ -11,7 +11,9 @@ const EventInner = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events`);
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events`,
+        );
         if (response.ok) {
           const data = await response.json();
           setEvents(data);
@@ -22,7 +24,7 @@ const EventInner = () => {
         setLoading(false);
       }
     };
-    
+
     fetchEvents();
   }, []);
   return (
@@ -38,7 +40,12 @@ const EventInner = () => {
         <div className="Container">
           <div className="text-center mb-12">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center justify-center gap-2">
-              <img loading="lazy" src={subTitleShape} draggable="false" alt="" />
+              <img
+                loading="lazy"
+                src={subTitleShape}
+                draggable="false"
+                alt=""
+              />
               EVENT & KEGIATAN
             </h5>
             <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5">
@@ -51,15 +58,23 @@ const EventInner = () => {
             </p>
           </div>
           {loading ? (
-            <div className="text-center py-20 text-gray-500 font-bold">Memuat Event...</div>
+            <div className="text-center py-20 text-gray-500 font-bold">
+              Memuat Event...
+            </div>
           ) : events.length === 0 ? (
-            <div className="text-center py-20 text-gray-500 font-bold">Belum ada event saat ini.</div>
+            <div className="text-center py-20 text-gray-500 font-bold">
+              Belum ada event saat ini.
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 mt-[60px]">
               {events.map((event) => (
                 <div key={event.id}>
                   <EventCard
-                    eventThumb={event.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${event.image}` : "/images/blog-list.png"}
+                    eventThumb={
+                      event.image
+                        ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${event.image}`
+                        : "/images/blog-list.png"
+                    }
                     eventDate={event.date}
                     eventCategory={event.category}
                     eventTitle={event.title}

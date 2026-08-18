@@ -6,7 +6,8 @@ import bannerShape from "/images/hero4-shape.png";
 const Banner = () => {
   return (
     <section className="bg-[url('/images/hero4-bg.jpg')] bg-cover bg-left lg:bg-center bg-no-repeat h-[600px] md:h-[650px] lg:h-[700px] xl:h-[802px] flex items-center relative">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={bannerShape}
         className="absolute lg:top-10 2xl:top-20 lg:left-10 2xl:left-[5%] animate-rotational lg:block hidden"
       />
@@ -19,13 +20,18 @@ const Banner = () => {
             Renewable Solar
             <br />
             <span className="flex items-center gap-3 md:gap-16">
-              Solutions <img loading="lazy" src={heroImg} className="w-4/12 md:w-[inherit]"/>
+              Solutions{" "}
+              <img
+                loading="lazy"
+                src={heroImg}
+                className="w-4/12 md:w-[inherit]"
+              />
             </span>
           </h1>
           <p className="font-AlbertSans text-TextColor-0 mt-4">
             Sometimes goods can arrive early when they being brought into the
-            solution other times <br className="hidden md:block"/> need a place for can a headquarters have
-            enough space your needs.
+            solution other times <br className="hidden md:block" /> need a place
+            for can a headquarters have enough space your needs.
           </p>
           <div className="mt-11 inline-block">
             <Link to={"/about"}>

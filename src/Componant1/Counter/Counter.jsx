@@ -58,7 +58,7 @@ const Counter = () => {
                   />
                 </div>
               );
-            }
+            },
           )}
         </div>
       </div>

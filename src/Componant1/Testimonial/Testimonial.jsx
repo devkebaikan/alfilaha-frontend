@@ -83,22 +83,26 @@ const Testimonial = () => {
   };
   return (
     <section className="py-28 bg-[#f5f8ed] relative z-10 before:absolute before:top-0 before:left-1/2 before:-translate-x-1/2 before:w-2/3 before:-z-10 before:h-2/3 before:bg-[url('/images/map.png')] before:bg-center before:bg-cover before:bg-no-repeat overflow-hidden testimonial">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={testiMainShape1}
         draggable="false"
         className="absolute -z-10 top-44 right-[5%] animate-zoomInOut"
       />
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={testiMainShape2}
         draggable="false"
         className="absolute -z-10 top-16 right-[20%] animate-zoomInOut"
       />
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={testiMainShape3}
         draggable="false"
         className="absolute -z-10 top-44 left-[5%] animate-zoomInOut"
       />
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={testiMainShape4}
         draggable="false"
         className="absolute -z-10 top-16 left-[20%] animate-zoomInOut"
@@ -142,7 +146,7 @@ const Testimonial = () => {
                       </div>
                     </SwiperSlide>
                   );
-                }
+                },
               )}
             </div>
           </Swiper>

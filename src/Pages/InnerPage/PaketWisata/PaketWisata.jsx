@@ -10,12 +10,14 @@ const PaketWisata = () => {
   useEffect(() => {
     const fetchPaket = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/paket`);
-        if(response.ok) {
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/paket`,
+        );
+        if (response.ok) {
           const data = await response.json();
           setPaketList(data);
         }
-      } catch(err) {
+      } catch (err) {
         console.error("Gagal memuat paket wisata:", err);
       }
     };
@@ -46,14 +48,15 @@ const PaketWisata = () => {
         </div>
         <div className="mb-6">
           <ul className="space-y-3">
-            {paket.deskripsi && paket.deskripsi.split('\n').map((feature, idx) => (
-              <li key={idx} className="flex items-start gap-3">
-                <FaCheck className="text-PrimaryColor-0 mt-1 flex-shrink-0" />
-                <span className="font-AlbertSans text-TextColor-0">
-                  {feature.trim()}
-                </span>
-              </li>
-            ))}
+            {paket.deskripsi &&
+              paket.deskripsi.split("\n").map((feature, idx) => (
+                <li key={idx} className="flex items-start gap-3">
+                  <FaCheck className="text-PrimaryColor-0 mt-1 flex-shrink-0" />
+                  <span className="font-AlbertSans text-TextColor-0">
+                    {feature.trim()}
+                  </span>
+                </li>
+              ))}
           </ul>
         </div>
         <Link to="/pesan-tempat">
@@ -85,7 +88,12 @@ const PaketWisata = () => {
         <div className="Container">
           <div className="text-center mb-16">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center justify-center gap-2">
-              <img loading="lazy" src={subTitleShape} draggable="false" alt="Shape" />
+              <img
+                loading="lazy"
+                src={subTitleShape}
+                draggable="false"
+                alt="Shape"
+              />
               PAKET WISATA
             </h5>
             <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5">
@@ -93,7 +101,9 @@ const PaketWisata = () => {
               Wisata Umum
             </h1>
             <p className="font-AlbertSans text-TextColor-0 mt-4 max-w-3xl mx-auto">
-              Kami menyiapkan beragam paket, harus paket kegiatan yang bisa dibook atau diatur dengan kegiatan lain sesuai kebutuhan Anda. Silakan pilih mana yang paling pas untuk rombongan kita.
+              Kami menyiapkan beragam paket, harus paket kegiatan yang bisa
+              dibook atau diatur dengan kegiatan lain sesuai kebutuhan Anda.
+              Silakan pilih mana yang paling pas untuk rombongan kita.
             </p>
           </div>
 

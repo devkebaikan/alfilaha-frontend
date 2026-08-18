@@ -98,12 +98,14 @@ const Donation = () => {
   };
   return (
     <section className="service relative pt-28 pb-[120px] bg-[#f5f8ed] z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-1/2 before:bg-[url('/images/service2-bg.jpg')] before:-z-10 before:bg-cover before:bg-center before:bg-no-repeat">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={serviceMainShape1}
         draggable="false"
         className="absolute top-32 left-20 animate-dance2 hidden lg:block"
       />
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={serviceMainShape2}
         draggable="false"
         className="absolute top-32 right-20 animate-movebtn hidden lg:block"
@@ -155,7 +157,7 @@ const Donation = () => {
                     </SwiperSlide>
                   </>
                 );
-              }
+              },
             )}
           </Swiper>
         </div>

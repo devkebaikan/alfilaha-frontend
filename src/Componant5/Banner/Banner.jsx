@@ -44,8 +44,8 @@ const Banner = () => {
                   </h1>
                   <p className="banner5-copy font-AlbertSans text-[17px] sm:text-xl text-white/90 mb-12 max-w-[650px] leading-relaxed drop-shadow-md">
                     Bukan sekadar menghafal kitab. Kita mencetak pemuda mandiri
-                    yang paham agama, menyatu
-                    dengan alam, dan punya keahlian hidup.
+                    yang paham agama, menyatu dengan alam, dan punya keahlian
+                    hidup.
                   </p>
                   <div>
                     <Link to={"/appointment"}>
@@ -55,7 +55,7 @@ const Banner = () => {
                       </button>
                     </Link>
                   </div>
-{/* <div className="banner-contact hidden xl:flex gap-[100px] items-center -rotate-90 absolute top-full -translate-y-1/2 md:-left-[23%] lg:-left-[35%] xl:-left-[55%] 2xl:-left-[80%]">
+                  {/* <div className="banner-contact hidden xl:flex gap-[100px] items-center -rotate-90 absolute top-full -translate-y-1/2 md:-left-[23%] lg:-left-[35%] xl:-left-[55%] 2xl:-left-[80%]">
                     <ul className="flex items-center gap-[34px]">
                       <li>
                         <Link
@@ -82,7 +82,7 @@ const Banner = () => {
                   </div> */}
                 </div>
               </div>
-{/* <div className="banner5-livecam relative -bottom-[9.1rem] bg-[url('/images/video-bg.png')] bg-no-repeat bg-cover bg-center rounded-md 2xl:inline-block hidden">
+              {/* <div className="banner5-livecam relative -bottom-[9.1rem] bg-[url('/images/video-bg.png')] bg-no-repeat bg-cover bg-center rounded-md 2xl:inline-block hidden">
                 <div className="flex items-center justify-center gap-[80px] py-[85px] px-[130px]">
                   <h4 className="banner5-livecam-text text-lg font-AlbertSans font-medium text-white">
                     Live Cam 470x200
@@ -120,8 +120,8 @@ const Banner = () => {
                   </h1>
                   <p className="banner5-copy font-AlbertSans text-[17px] sm:text-xl text-white/90 mb-12 max-w-[650px] leading-relaxed drop-shadow-md">
                     Bukan sekadar menghafal kitab. Kita mencetak pemuda mandiri
-                    yang paham agama, menyatu
-                    dengan alam, dan punya keahlian hidup.
+                    yang paham agama, menyatu dengan alam, dan punya keahlian
+                    hidup.
                   </p>
                   <div>
                     <Link to={"/appointment"}>
@@ -131,7 +131,7 @@ const Banner = () => {
                       </button>
                     </Link>
                   </div>
-{/* <div className="banner-contact hidden xl:flex gap-[100px] items-center -rotate-90 absolute top-full -translate-y-1/2 md:-left-[23%] lg:-left-[35%] xl:-left-[55%] 2xl:-left-[80%]">
+                  {/* <div className="banner-contact hidden xl:flex gap-[100px] items-center -rotate-90 absolute top-full -translate-y-1/2 md:-left-[23%] lg:-left-[35%] xl:-left-[55%] 2xl:-left-[80%]">
                     <ul className="flex items-center gap-[34px]">
                       <li>
                         <Link
@@ -158,7 +158,7 @@ const Banner = () => {
                   </div> */}
                 </div>
               </div>
-{/* <div className="banner5-livecam relative -bottom-[9.1rem] bg-[url('/images/video-bg.png')] bg-no-repeat bg-cover bg-center rounded-md 2xl:inline-block hidden">
+              {/* <div className="banner5-livecam relative -bottom-[9.1rem] bg-[url('/images/video-bg.png')] bg-no-repeat bg-cover bg-center rounded-md 2xl:inline-block hidden">
                 <div className="flex items-center justify-center gap-[80px] py-[85px] px-[130px]">
                   <h4 className="banner5-livecam-text text-lg font-AlbertSans font-medium text-white">
                     Live Cam 470x200

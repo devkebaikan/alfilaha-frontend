@@ -8,31 +8,36 @@ import buttonShape from "/images/button-shape-1.png";
 import aboutShape from "/images/about2-shape.png";
 import aboutShape2 from "/images/testi-shape-3.png";
 const About = () => {
-
   return (
     <section className="py-[120px] bg-[url('/images/about-bg.jpg')] bg-cover bg-center bg-no-repeat relative overflow-hidden">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={aboutShape}
         draggable="false"
         className="absolute -bottom-52 -right-20"
       />
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={aboutShape2}
         draggable="false"
         className="absolute top-32 right-20 animate-zoomInOut hidden 2xl:block"
       />
-      
 
       <div className="Container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[92px] lg:gap-5 xl:gap-20 items-center">
           <div className="relative z-10">
-            <img loading="lazy" src={aboutThumb} draggable="false" className="rounded-2xl shadow-xl w-full max-w-[498px] h-[550px] object-cover" />
-            <img loading="lazy"
+            <img
+              loading="lazy"
+              src={aboutThumb}
+              draggable="false"
+              className="rounded-2xl shadow-xl w-full max-w-[498px] h-[550px] object-cover"
+            />
+            <img
+              loading="lazy"
               src={aboutThumb2}
               draggable="false"
               className="absolute bottom-[-10%] right-[-5%] hidden sm:block rounded-2xl shadow-2xl w-[340px] h-[339px] object-cover border-8 border-white"
             />
-
           </div>
           <div>
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2">

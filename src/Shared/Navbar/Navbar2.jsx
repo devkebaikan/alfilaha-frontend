@@ -122,7 +122,8 @@ const Navbar2 = () => {
               {/* website Logo */}
               <div>
                 <Link to="/">
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={Logo}
                     className="hidden lg:block w-full brightness-0 invert-[1]"
                   />
@@ -132,7 +133,8 @@ const Navbar2 = () => {
               <div className="w-full lg:hidden flex justify-between h-[70px] items-center py-3">
                 <div className="w-28">
                   <Link to="/">
-                    <img loading="lazy"
+                    <img
+                      loading="lazy"
                       draggable="false"
                       src={Logo}
                       className="block lg:hidden brightness-0 invert-[1]"
@@ -168,8 +170,8 @@ const Navbar2 = () => {
                         isPending
                           ? "pending"
                           : isActive
-                          ? "active"
-                          : ""} text-white text-left font-AlbertSans font-medium text-[15px] lg:border-b-0 px-5 lg:px-3 xl:px-5 py-2 w-full block transition-all duration-300 group relative`}
+                            ? "active"
+                            : ""} text-white text-left font-AlbertSans font-medium text-[15px] lg:border-b-0 px-5 lg:px-3 xl:px-5 py-2 w-full block transition-all duration-300 group relative`}
                     >
                       <span className="flex items-center">
                         Home
@@ -184,7 +186,7 @@ const Navbar2 = () => {
                           <div className="px-5 group hover:bg-PrimaryColor-0 ">
                             <li className="hover:ml-3 duration-300">
                               <Link to={"/"} className="py-2 block">
-                               Environmental Demo 01
+                                Environmental Demo 01
                               </Link>
                             </li>
                           </div>
@@ -224,8 +226,8 @@ const Navbar2 = () => {
                         isPending
                           ? "pending"
                           : isActive
-                          ? "active"
-                          : ""} text-white text-left font-AlbertSans font-medium text-[15px]hover:text-PrimaryColor-0 lg:border-b-0 px-5 lg:px-3 xl:px-5 py-2 w-full block transition-all duration-300 group relative `}
+                            ? "active"
+                            : ""} text-white text-left font-AlbertSans font-medium text-[15px]hover:text-PrimaryColor-0 lg:border-b-0 px-5 lg:px-3 xl:px-5 py-2 w-full block transition-all duration-300 group relative `}
                       to={"/about"}
                     >
                       <span>about</span>
@@ -235,8 +237,8 @@ const Navbar2 = () => {
                         isPending
                           ? "pending"
                           : isActive
-                          ? "active"
-                          : ""}text-white text-left font-AlbertSans font-medium text-[15px] lg:border-b-0 px-5 lg:px-3 xl:px-5 py-2 w-full block transition-all duration-300 group relative `}
+                            ? "active"
+                            : ""}text-white text-left font-AlbertSans font-medium text-[15px] lg:border-b-0 px-5 lg:px-3 xl:px-5 py-2 w-full block transition-all duration-300 group relative `}
                       to={"#"}
                     >
                       <span className="flex items-center">
@@ -270,8 +272,8 @@ const Navbar2 = () => {
                         isPending
                           ? "pending"
                           : isActive
-                          ? "active"
-                          : ""} text-white text-left font-AlbertSans font-medium text-[15px] lg:border-b-0 px-5 lg:px-3 xl:px-5 py-2 w-full block transition-all duration-300 group relative `}
+                            ? "active"
+                            : ""} text-white text-left font-AlbertSans font-medium text-[15px] lg:border-b-0 px-5 lg:px-3 xl:px-5 py-2 w-full block transition-all duration-300 group relative `}
                       to={"#"}
                     >
                       <span className="flex items-center">
@@ -375,8 +377,8 @@ const Navbar2 = () => {
                         isPending
                           ? "pending"
                           : isActive
-                          ? "active"
-                          : ""} text-white text-left font-AlbertSans font-medium text-[15px] lg:border-b-0 px-5 lg:px-3 xl:px-5 py-2 w-full block transition-all duration-300 group relative `}
+                            ? "active"
+                            : ""} text-white text-left font-AlbertSans font-medium text-[15px] lg:border-b-0 px-5 lg:px-3 xl:px-5 py-2 w-full block transition-all duration-300 group relative `}
                       to={"#"}
                     >
                       <span className="flex items-center">
@@ -414,8 +416,8 @@ const Navbar2 = () => {
                         isPending
                           ? "pending"
                           : isActive
-                          ? "active"
-                          : ""} text-white text-left font-AlbertSans font-medium text-[15px] lg:border-b-0 px-5 lg:px-3 xl:px-5 py-2 w-full block transition-all duration-300`}
+                            ? "active"
+                            : ""} text-white text-left font-AlbertSans font-medium text-[15px] lg:border-b-0 px-5 lg:px-3 xl:px-5 py-2 w-full block transition-all duration-300`}
                       to={"/contact"}
                     >
                       Contact

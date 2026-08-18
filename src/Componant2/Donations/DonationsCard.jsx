@@ -17,7 +17,8 @@ const DonationsCard = ({
   return (
     <div className="inline-block group">
       <div className="relative z-10 overflow-hidden rounded-t-md">
-        <img loading="lazy"
+        <img
+          loading="lazy"
           src={donateImg}
           className="w-full transition-all duration-500 group-hover:blur-[2px]"
         />
@@ -59,17 +60,11 @@ const DonationsCard = ({
         <div className="flex justify-between mt-4">
           <h6 className="font-AlbertSans text-TextColor-0">
             {percentTitle}
-            <span className="text-HeadingColor-0">
-              {" "}
-              {percentNumber}
-            </span>
+            <span className="text-HeadingColor-0"> {percentNumber}</span>
           </h6>
           <h6 className="font-AlbertSans text-TextColor-0">
             {percentTitle2}
-            <span className="text-HeadingColor-0">
-              {" "}
-              {percentNumber2}
-            </span>
+            <span className="text-HeadingColor-0"> {percentNumber2}</span>
           </h6>
         </div>
       </div>

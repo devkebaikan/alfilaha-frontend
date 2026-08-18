@@ -34,10 +34,12 @@ const BlogDetails = () => {
   useEffect(() => {
     const fetchBlog = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs`);
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs`,
+        );
         if (response.ok) {
           const data = await response.json();
-          const currentBlog = data.find(b => b.id === parseInt(id));
+          const currentBlog = data.find((b) => b.id === parseInt(id));
           setBlog(currentBlog);
         }
       } catch (err) {
@@ -55,9 +57,10 @@ const BlogDetails = () => {
     );
   }
 
-  const dateDisplay = blog.date && blog.date.includes('-') && blog.date.split('-')[0].length === 4 
-    ? `${new Date(blog.date).getDate()} ${['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'][new Date(blog.date).getMonth()]} ${new Date(blog.date).getFullYear()}` 
-    : blog.date;
+  const dateDisplay =
+    blog.date && blog.date.includes("-") && blog.date.split("-")[0].length === 4
+      ? `${new Date(blog.date).getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][new Date(blog.date).getMonth()]} ${new Date(blog.date).getFullYear()}`
+      : blog.date;
 
   return (
     <>
@@ -76,11 +79,16 @@ const BlogDetails = () => {
             <div className="col-span-2">
               <div className="border border-BorderColor2-0 rounded-md overflow-hidden">
                 <div className="relative">
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     draggable="false"
-                    src={blog.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${blog.image}` : blog_detailsThumb}
+                    src={
+                      blog.image
+                        ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${blog.image}`
+                        : blog_detailsThumb
+                    }
                     className="w-full object-cover"
-                    style={{ maxHeight: '500px' }}
+                    style={{ maxHeight: "500px" }}
                   />
                   <h6 className="font-AlbertSans text-white px-5 py-2 rounded absolute top-5 left-5 bg-PrimaryColor-0">
                     Informasi
@@ -100,11 +108,16 @@ const BlogDetails = () => {
                       {dateDisplay}
                     </h6>
                   </div>
-                  
+
                   {/* KONTEN RICH TEXT EDITOR DIRENDER DI SINI */}
-                  <div 
+                  <div
                     className="font-AlbertSans font-light text-TextColor-0 prose prose-lg max-w-none text-justify"
-                    dangerouslySetInnerHTML={{ __html: blog.content || blog.excerpt || '<p>Tidak ada konten.</p>' }}
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        blog.content ||
+                        blog.excerpt ||
+                        "<p>Tidak ada konten.</p>",
+                    }}
                   />
                 </div>
                 <div className="flex flex-col sm:flex-row gap-5 items-start sm:justify-between border-t border-BorderColor1-0 mt-9 py-5 px-4 sm:px-8">

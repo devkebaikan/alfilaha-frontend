@@ -10,7 +10,8 @@ const ProcessCard = ({
     <div className="text-center group relative">
       <img loading="lazy" src={processShape} className="absolute right-0" />
       <div className="w-28 h-28 bg-white rounded-2xl flex items-center justify-center shadow-shadow m-auto relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:scale-0 before:h-full before:rounded-2xl before:bg-SecondaryColor-0 before:transition-all before:duration-500 group-hover:before:scale-100">
-        <img loading="lazy"
+        <img
+          loading="lazy"
           src={processIcon}
           className="transition-all duration-500 group-hover:brightness-0 group-hover:invert-[1]"
         />

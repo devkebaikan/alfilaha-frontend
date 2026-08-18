@@ -11,12 +11,14 @@ const BlogGrid = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs`);
-        if(response.ok) {
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs`,
+        );
+        if (response.ok) {
           const data = await response.json();
           setBlogs(data);
         }
-      } catch(err) {
+      } catch (err) {
         console.error("Backend Error:", err);
       }
     };
@@ -58,25 +60,34 @@ const BlogGrid = () => {
           </div>
           <div className="mt-[60px]">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-              {blogs.length > 0 ? blogs.map((item) => {
-                const dateDisplay = item.date && item.date.includes('-') && item.date.split('-')[0].length === 4 
-                  ? `${new Date(item.date).getDate()} ${['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'][new Date(item.date).getMonth()]} ${new Date(item.date).getFullYear()}` 
-                  : item.date;
+              {blogs.length > 0 ? (
+                blogs.map((item) => {
+                  const dateDisplay =
+                    item.date &&
+                    item.date.includes("-") &&
+                    item.date.split("-")[0].length === 4
+                      ? `${new Date(item.date).getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][new Date(item.date).getMonth()]} ${new Date(item.date).getFullYear()}`
+                      : item.date;
 
-                return (
-                  <div key={item.id}>
-                    <BlogCard
-                      blogThumb={item.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${item.image}` : '/images/blog-new-1.jpg'}
-                      thumbContent={dateDisplay}
-                      blogUrl={`/blog_details/${item.id}`}
-                      blogTitle={item.title}
-                      blogDesc={item.excerpt}
-                      btnContent={"Read More"}
-                      btnIcon={<FaArrowRightLong />}
-                    />
-                  </div>
-                );
-              }) : (
+                  return (
+                    <div key={item.id}>
+                      <BlogCard
+                        blogThumb={
+                          item.image
+                            ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${item.image}`
+                            : "/images/blog-new-1.jpg"
+                        }
+                        thumbContent={dateDisplay}
+                        blogUrl={`/blog_details/${item.id}`}
+                        blogTitle={item.title}
+                        blogDesc={item.excerpt}
+                        btnContent={"Read More"}
+                        btnIcon={<FaArrowRightLong />}
+                      />
+                    </div>
+                  );
+                })
+              ) : (
                 <div className="col-span-full text-center py-10 text-gray-500 font-bold">
                   Belum ada artikel blog yang tersedia saat ini.
                 </div>

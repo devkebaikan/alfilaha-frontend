@@ -21,12 +21,14 @@ import { HiOutlineMail } from "react-icons/hi";
 const Footer4 = () => {
   return (
     <footer className="bg-HeadingColor-0 relative z-10 overflow-hidden">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={footerLine}
         draggable="false"
         className="absolute -z-10 right-0 -bottom-20 opacity-70"
       />
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={footerShape3}
         draggable="false"
         className="absolute -z-10 top-0 left-0 animate-dance2"
@@ -201,7 +203,8 @@ const Footer4 = () => {
             <ul className="grid grid-cols-3 gap-2">
               <li>
                 <Link to={"/"}>
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={post1}
                     draggable={false}
                     className="w-full rounded"
@@ -210,7 +213,8 @@ const Footer4 = () => {
               </li>
               <li>
                 <Link to={"/"}>
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={post2}
                     draggable={false}
                     className="w-full rounded"
@@ -219,7 +223,8 @@ const Footer4 = () => {
               </li>
               <li>
                 <Link to={"/"}>
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={post3}
                     draggable={false}
                     className="w-full rounded"
@@ -228,7 +233,8 @@ const Footer4 = () => {
               </li>
               <li>
                 <Link to={"/"}>
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={post4}
                     draggable={false}
                     className="w-full rounded"
@@ -237,7 +243,8 @@ const Footer4 = () => {
               </li>
               <li>
                 <Link to={"/"}>
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={post5}
                     draggable={false}
                     className="w-full h-full rounded"
@@ -246,7 +253,8 @@ const Footer4 = () => {
               </li>
               <li>
                 <Link to={"/"}>
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={post6}
                     draggable={false}
                     className="w-full rounded"

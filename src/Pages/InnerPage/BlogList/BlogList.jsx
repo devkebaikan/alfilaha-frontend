@@ -158,7 +158,7 @@ const BlogList = () => {
                       />
                     </div>
                   );
-                }
+                },
               )}
             </div>
             <div className="col-span-2 lg:col-span-1">

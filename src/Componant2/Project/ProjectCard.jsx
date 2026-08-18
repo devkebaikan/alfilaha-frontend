@@ -13,15 +13,22 @@ const ProjectCard = ({
   return (
     <div className="relative z-10 group rounded-md overflow-hidden">
       <div className="overflow-hidden relative z-10 before:absolute before:top-0 before:left-1/2 before:w-0 before:h-full before:bg-PrimaryColor-0 before:transition-all before:duration-500 group-hover:before:w-full group-hover:before:left-0 group-hover:before:opacity-0">
-        <img loading="lazy" src={projectThumb} draggable="false" className="w-full" />
-        <img loading="lazy"
+        <img
+          loading="lazy"
+          src={projectThumb}
+          draggable="false"
+          className="w-full"
+        />
+        <img
+          loading="lazy"
           src={projectShape}
           draggable="false"
           className="absolute -top-80 -right-80 animate-rotate transition-all duration-500 group-hover:-top-[180px] group-hover:-right-[190px]"
         />
         <div className="project-content flex justify-between items-center absolute -bottom-full transition-all duration-500 left-0 2xl:left-7 2xl:w-8/12 -mt-[42px] bg-[#f5f8ed] rounded-t-md overflow-hidden px-4 md:px-8 z-10 border-b-[5px] border-PrimaryColor-0">
           <div>
-            <img loading="lazy"
+            <img
+              loading="lazy"
               src={projectContentShape}
               draggable="false"
               className="absolute bottom-0 right-10 animate-dance2 -z-10 opacity-0 transition-all

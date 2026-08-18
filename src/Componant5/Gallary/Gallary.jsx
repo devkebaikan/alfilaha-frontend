@@ -133,7 +133,9 @@ const Gallary = () => {
               <div className="text-left">
                 <p className="font-AlbertSans text-white mb-1">Call Any Time</p>
                 <Link to={"/"}>
-                  <button className="font-AlbertSans font-semibold text-xl text-white">+31 65 792 63 11</button>
+                  <button className="font-AlbertSans font-semibold text-xl text-white">
+                    +31 65 792 63 11
+                  </button>
                 </Link>
               </div>
             </div>

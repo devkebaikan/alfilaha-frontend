@@ -91,7 +91,7 @@ const Blog = () => {
                     />
                   </div>
                 );
-              }
+              },
             )}
           </div>
         </div>

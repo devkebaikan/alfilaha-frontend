@@ -46,7 +46,8 @@ const Navbar3 = () => {
               {/* website Logo */}
               <div>
                 <Link to="/">
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     draggable="false"
                     src={Logo}
                     className="hidden lg:block w-full"
@@ -58,7 +59,8 @@ const Navbar3 = () => {
               <div className="px-3 w-full lg:hidden flex justify-between bg-khaki h-[70px] items-center p-3">
                 <div>
                   <Link to="/">
-                    <img loading="lazy"
+                    <img
+                      loading="lazy"
                       draggable="false"
                       src={Logo}
                       className="block lg:hidden"
@@ -92,8 +94,8 @@ const Navbar3 = () => {
                       isPending
                         ? "pending"
                         : isActive
-                        ? "active"
-                        : ""} text-HeadingColor-0 hover:text-PrimaryColor-0 text-left lg:border-b-0 px-3 lg:px-1 2xl:px-3 py-2 w-full block transition-all duration-300 group relative`}
+                          ? "active"
+                          : ""} text-HeadingColor-0 hover:text-PrimaryColor-0 text-left lg:border-b-0 px-3 lg:px-1 2xl:px-3 py-2 w-full block transition-all duration-300 group relative`}
                   >
                     <span className="flex items-center">
                       Home
@@ -108,7 +110,7 @@ const Navbar3 = () => {
                         <div className="px-5 group hover:bg-PrimaryColor-0 ">
                           <li className="hover:ml-3 duration-300">
                             <Link to="/" className="py-2 block">
-                             Environmental Demo 01
+                              Environmental Demo 01
                             </Link>
                           </li>
                         </div>
@@ -148,8 +150,8 @@ const Navbar3 = () => {
                       isPending
                         ? "pending"
                         : isActive
-                        ? "active"
-                        : ""} text-HeadingColor-0 hover:text-PrimaryColor-0 text-left lg:border-b-0 px-3 lg:px-1 2xl:px-3 py-2 w-full block transition-all duration-300 group relative `}
+                          ? "active"
+                          : ""} text-HeadingColor-0 hover:text-PrimaryColor-0 text-left lg:border-b-0 px-3 lg:px-1 2xl:px-3 py-2 w-full block transition-all duration-300 group relative `}
                     to="/about"
                   >
                     <span>About</span>
@@ -159,8 +161,8 @@ const Navbar3 = () => {
                       isPending
                         ? "pending"
                         : isActive
-                        ? "active"
-                        : ""} text-HeadingColor-0 hover:text-PrimaryColor-0 text-left lg:border-b-0 px-3 lg:px-1 2xl:px-3 py-2 w-full block transition-all duration-300 group relative `}
+                          ? "active"
+                          : ""} text-HeadingColor-0 hover:text-PrimaryColor-0 text-left lg:border-b-0 px-3 lg:px-1 2xl:px-3 py-2 w-full block transition-all duration-300 group relative `}
                     to="#"
                   >
                     <span className="flex items-center">
@@ -191,8 +193,8 @@ const Navbar3 = () => {
                       isPending
                         ? "pending"
                         : isActive
-                        ? "active"
-                        : ""} text-HeadingColor-0 hover:text-PrimaryColor-0 text-left lg:border-b-0 px-3 lg:px-1 2xl:px-3 py-2 w-full block transition-all duration-300 group relative `}
+                          ? "active"
+                          : ""} text-HeadingColor-0 hover:text-PrimaryColor-0 text-left lg:border-b-0 px-3 lg:px-1 2xl:px-3 py-2 w-full block transition-all duration-300 group relative `}
                     to="#"
                   >
                     <span className="flex items-center">
@@ -287,8 +289,8 @@ const Navbar3 = () => {
                       isPending
                         ? "pending"
                         : isActive
-                        ? "active"
-                        : ""} text-HeadingColor-0 hover:text-PrimaryColor-0 text-left lg:border-b-0 px-3 lg:px-1 2xl:px-3 py-2 w-full block transition-all duration-300 group relative `}
+                          ? "active"
+                          : ""} text-HeadingColor-0 hover:text-PrimaryColor-0 text-left lg:border-b-0 px-3 lg:px-1 2xl:px-3 py-2 w-full block transition-all duration-300 group relative `}
                     to="#"
                   >
                     <span className="flex items-center">
@@ -326,8 +328,8 @@ const Navbar3 = () => {
                       isPending
                         ? "pending"
                         : isActive
-                        ? "active"
-                        : ""} text-HeadingColor-0 text-left lg:border-b-0 px-3 lg:px-1 2xl:px-3 py-2 w-full block transition-all duration-300`}
+                          ? "active"
+                          : ""} text-HeadingColor-0 text-left lg:border-b-0 px-3 lg:px-1 2xl:px-3 py-2 w-full block transition-all duration-300`}
                     to="/contact"
                   >
                     Contact

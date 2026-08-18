@@ -5,7 +5,8 @@ import supportShape from "/images/address-thumb.png";
 const Support = () => {
   return (
     <div className="bg-[url('/images/address-bg.png')] bg-cover bg-center bg-no-repeat py-[60px] relative">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={supportShape}
         className="absolute bottom-0 w-[inherit] h-[inherit] left-1/2 hidden lg:block"
       />

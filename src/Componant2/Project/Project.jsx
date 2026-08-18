@@ -128,7 +128,7 @@ const Project = () => {
                     </div>
                   </SwiperSlide>
                 );
-              }
+              },
             )}
           </div>
         </Swiper>

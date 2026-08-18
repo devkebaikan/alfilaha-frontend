@@ -8,34 +8,34 @@ import animalIcon6 from "/images/animal-icon-6.png";
 import { useEffect } from "react";
 
 const Animal = () => {
-    useEffect(() => {
-      const handleMouseEnter = (event) => {
-        event.target.classList.add("active");
+  useEffect(() => {
+    const handleMouseEnter = (event) => {
+      event.target.classList.add("active");
 
-        // Remove 'active' class from siblings
-        const parent = event.target.parentElement;
-        if (parent) {
-          const siblings = parent.querySelectorAll(".animal-box");
-          siblings.forEach((sibling) => {
-            if (sibling !== event.target) {
-              sibling.classList.remove("active");
-            }
-          });
-        }
-      };
-
-      const elements = document.querySelectorAll(".animal-box");
-      elements.forEach((element) => {
-        element.addEventListener("mouseenter", handleMouseEnter);
-      });
-
-      // Clean up event listeners when component unmounts
-      return () => {
-        elements.forEach((element) => {
-          element.removeEventListener("mouseenter", handleMouseEnter);
+      // Remove 'active' class from siblings
+      const parent = event.target.parentElement;
+      if (parent) {
+        const siblings = parent.querySelectorAll(".animal-box");
+        siblings.forEach((sibling) => {
+          if (sibling !== event.target) {
+            sibling.classList.remove("active");
+          }
         });
-      };
-    }, []);
+      }
+    };
+
+    const elements = document.querySelectorAll(".animal-box");
+    elements.forEach((element) => {
+      element.addEventListener("mouseenter", handleMouseEnter);
+    });
+
+    // Clean up event listeners when component unmounts
+    return () => {
+      elements.forEach((element) => {
+        element.removeEventListener("mouseenter", handleMouseEnter);
+      });
+    };
+  }, []);
   return (
     <section className="relative pt-[160px] pb-[120px] bg-[#f5f5f5] bg-cover bg-no-repeat bg-center">
       <div className="Container">

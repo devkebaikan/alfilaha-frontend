@@ -28,7 +28,7 @@ const ProjectData = [
     projectThumb: projectThumb2,
     projectSubTitle: "Environment",
     projectTitle: "Echology Energy",
-    projectUrl: "/project_details",   
+    projectUrl: "/project_details",
     buttonIcon: <FaArrowRightLong />,
     projectContentShape: projectContentShape,
     projectShape: projectShape,
@@ -126,7 +126,7 @@ const ProjectInner = () => {
                     />
                   </div>
                 );
-              }
+              },
             )}
           </div>
         </div>

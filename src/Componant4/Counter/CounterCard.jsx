@@ -11,9 +11,7 @@ const CounterCard = ({
   return (
     <div className="text-center relative z-10 pl-[80px]">
       <div>
-        <h1
-          className="counter-stroke font-AlbertSans text-transparent text-[150px] absolute top-1/2 -translate-y-1/2 left-0 opacity-20 -z-10"
-        >
+        <h1 className="counter-stroke font-AlbertSans text-transparent text-[150px] absolute top-1/2 -translate-y-1/2 left-0 opacity-20 -z-10">
           {counterIcon}
         </h1>
       </div>

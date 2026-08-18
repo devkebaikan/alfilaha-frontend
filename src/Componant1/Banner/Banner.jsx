@@ -55,7 +55,12 @@ const Banner = () => {
                     <Link to={"/about"}>
                       <button className="primary-btn">
                         Selengkapnya
-                        <img loading="lazy" src={buttonShape} draggable="false" alt="Button Shape" />
+                        <img
+                          loading="lazy"
+                          src={buttonShape}
+                          draggable="false"
+                          alt="Button Shape"
+                        />
                       </button>
                     </Link>
                     <div className="text-lg font-AlbertSans font-medium text-white flex items-center gap-4">
@@ -115,7 +120,7 @@ const Banner = () => {
         <SwiperSlide>
           <section
             className="relative bg-cover bg-center bg-no-repeat h-[750px] sm:h-[700px] md:h-[750px] lg:h-[760px] xl:h-[960px] flex items-center"
-              style={{ backgroundImage: "url('/images/banner-bg-backup.jpg')" }}
+            style={{ backgroundImage: "url('/images/banner-bg-backup.jpg')" }}
           >
             {/* Overlay gelap */}
             <div className="absolute inset-0 bg-black bg-opacity-35"></div>
@@ -142,7 +147,12 @@ const Banner = () => {
                     <Link to={"/kubus-alfilaha"}>
                       <button className="primary-btn">
                         Pelajari Lebih Lanjut
-                        <img loading="lazy" src={buttonShape} draggable="false" alt="Button Shape" />
+                        <img
+                          loading="lazy"
+                          src={buttonShape}
+                          draggable="false"
+                          alt="Button Shape"
+                        />
                       </button>
                     </Link>
                     <div className="text-lg font-AlbertSans font-medium text-white flex items-center gap-4">

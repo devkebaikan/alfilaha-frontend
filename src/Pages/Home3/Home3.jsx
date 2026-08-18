@@ -20,7 +20,7 @@ const Home3 = () => {
       <WhyChoose />
       <Pricing />
       <TeamMember />
-      <Benefits/>
+      <Benefits />
       <Testimonial />
       <Blog />
       <Appointment />

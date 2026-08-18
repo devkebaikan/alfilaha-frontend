@@ -124,7 +124,8 @@ const Navbar4 = () => {
             {/* website Logo */}
             <div className="w-48 lg:w-52">
               <Link to="/">
-                <img loading="lazy"
+                <img
+                  loading="lazy"
                   draggable="false"
                   src={Logo}
                   className="hidden lg:block"
@@ -136,7 +137,8 @@ const Navbar4 = () => {
             <div className="px-3 w-full lg:hidden flex justify-between bg-khaki h-[70px] items-center p-3">
               <div className="w-28">
                 <Link to="/">
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     draggable="false"
                     src={Logo}
                     className="block lg:hidden "
@@ -171,8 +173,8 @@ const Navbar4 = () => {
                     isPending
                       ? "pending"
                       : isActive
-                      ? "active"
-                      : ""} text-HeadingColor-0 text-left hover:text-PrimaryColor-0 lg:border-b-0 px-3 lg:px-2 xl:px-3 w-full block transition-all duration-300 group relative`}
+                        ? "active"
+                        : ""} text-HeadingColor-0 text-left hover:text-PrimaryColor-0 lg:border-b-0 px-3 lg:px-2 xl:px-3 w-full block transition-all duration-300 group relative`}
                 >
                   <span className="flex items-center">
                     Home
@@ -187,7 +189,7 @@ const Navbar4 = () => {
                       <div className="px-5 group hover:bg-PrimaryColor-0 ">
                         <li className="hover:ml-3 duration-300">
                           <Link to="/" className="py-2 block">
-                           Environmental Demo 01
+                            Environmental Demo 01
                           </Link>
                         </li>
                       </div>
@@ -227,8 +229,8 @@ const Navbar4 = () => {
                     isPending
                       ? "pending"
                       : isActive
-                      ? "active"
-                      : ""} text-HeadingColor-0 text-left hover:text-PrimaryColor-0 lg:border-b-0 px-3 lg:px-2 xl:px-3 w-full block transition-all duration-300 group relative `}
+                        ? "active"
+                        : ""} text-HeadingColor-0 text-left hover:text-PrimaryColor-0 lg:border-b-0 px-3 lg:px-2 xl:px-3 w-full block transition-all duration-300 group relative `}
                   to="/about"
                 >
                   <span>About</span>
@@ -238,8 +240,8 @@ const Navbar4 = () => {
                     isPending
                       ? "pending"
                       : isActive
-                      ? "active"
-                      : ""} text-HeadingColor-0 text-left hover:text-PrimaryColor-0 lg:border-b-0 px-3 lg:px-2 xl:px-3 w-full block transition-all duration-300 group relative `}
+                        ? "active"
+                        : ""} text-HeadingColor-0 text-left hover:text-PrimaryColor-0 lg:border-b-0 px-3 lg:px-2 xl:px-3 w-full block transition-all duration-300 group relative `}
                   to="#"
                 >
                   <span className="flex items-center">
@@ -270,8 +272,8 @@ const Navbar4 = () => {
                     isPending
                       ? "pending"
                       : isActive
-                      ? "active"
-                      : ""} text-HeadingColor-0 text-left hover:text-PrimaryColor-0 lg:border-b-0 px-3 lg:px-2 xl:px-3 w-full block transition-all duration-300 group relative `}
+                        ? "active"
+                        : ""} text-HeadingColor-0 text-left hover:text-PrimaryColor-0 lg:border-b-0 px-3 lg:px-2 xl:px-3 w-full block transition-all duration-300 group relative `}
                   to="#"
                 >
                   <span className="flex items-center">
@@ -366,8 +368,8 @@ const Navbar4 = () => {
                     isPending
                       ? "pending"
                       : isActive
-                      ? "active"
-                      : ""} text-HeadingColor-0 text-left hover:text-PrimaryColor-0 lg:border-b-0 px-3 lg:px-2 xl:px-3 w-full block transition-all duration-300 group relative `}
+                        ? "active"
+                        : ""} text-HeadingColor-0 text-left hover:text-PrimaryColor-0 lg:border-b-0 px-3 lg:px-2 xl:px-3 w-full block transition-all duration-300 group relative `}
                   to="#"
                 >
                   <span className="flex items-center">
@@ -405,8 +407,8 @@ const Navbar4 = () => {
                     isPending
                       ? "pending"
                       : isActive
-                      ? "active"
-                      : ""} text-HeadingColor-0 text-left lg:border-b-0 px-3 lg:px-2 xl:px-3 w-full block transition-all duration-300`}
+                        ? "active"
+                        : ""} text-HeadingColor-0 text-left lg:border-b-0 px-3 lg:px-2 xl:px-3 w-full block transition-all duration-300`}
                   to="/contact"
                 >
                   Contact

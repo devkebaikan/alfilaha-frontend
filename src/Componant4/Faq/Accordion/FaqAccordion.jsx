@@ -23,8 +23,7 @@ const PricingAccordion = ({ children, title, id, active = false }) => {
         >
           <span
             className={`text-HeadingColor-0 transition !leading-5 duration-400 group-hover:text-PrimaryColor-0 text-base sm:text-lg md:text-xl lg:text-base xl:text-xl flex items-center gap-4 border-b border-transparent w-full pb-[26px] hover:border-b-BorderColor2-0  ${
-              accordionOpen &&
-              "!text-PrimaryColor-0 border-b-BorderColor2-0 "
+              accordionOpen && "!text-PrimaryColor-0 border-b-BorderColor2-0 "
             }`}
           >
             <span>{title}</span>

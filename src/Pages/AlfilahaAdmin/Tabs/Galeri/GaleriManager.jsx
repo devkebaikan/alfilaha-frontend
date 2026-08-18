@@ -1,40 +1,49 @@
-import React, { useState } from 'react';
-import { FiPlus, FiTrash2, FiEdit, FiX } from 'react-icons/fi';
-import imageCompression from 'browser-image-compression';
+import React, { useState } from "react";
+import { FiPlus, FiTrash2, FiEdit, FiX } from "react-icons/fi";
+import imageCompression from "browser-image-compression";
 
 const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ title: '', category: activeCategory, quality: '150' });
+  const [formData, setFormData] = useState({
+    title: "",
+    category: activeCategory,
+    quality: "150",
+  });
   const [imageFile, setImageFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
   // Filter gambar hanya untuk kategori yang sedang diklik di sidebar
-  const filteredGaleri = galeriList.filter(item => item.category === activeCategory);
+  const filteredGaleri = galeriList.filter(
+    (item) => item.category === activeCategory,
+  );
 
   const handleDelete = async (id) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus foto ini?')) {
+    if (window.confirm("Apakah Anda yakin ingin menghapus foto ini?")) {
       try {
-        await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/galeri/${id}`, {
-          method: 'DELETE',
-        });
+        await fetch(
+          `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/galeri/${id}`,
+          {
+            method: "DELETE",
+          },
+        );
         fetchGaleri();
       } catch (error) {
-        console.error('Error deleting photo:', error);
+        console.error("Error deleting photo:", error);
       }
     }
   };
 
   const openAddModal = () => {
     setEditingId(null);
-    setFormData({ title: '', category: activeCategory, quality: '150' });
+    setFormData({ title: "", category: activeCategory, quality: "150" });
     setImageFile(null);
     setIsModalOpen(true);
   };
 
   const openEditModal = (foto) => {
     setEditingId(foto.id);
-    setFormData({ title: foto.title, category: foto.category, quality: '150' });
+    setFormData({ title: foto.title, category: foto.category, quality: "150" });
     setImageFile(null); // Optional to change image
     setIsModalOpen(true);
   };
@@ -49,34 +58,34 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
       alert("Judul wajib diisi!");
       return;
     }
-    
+
     setIsSubmitting(true);
     const form = new FormData();
-    form.append('title', formData.title);
-    form.append('category', formData.category);
-    
+    form.append("title", formData.title);
+    form.append("category", formData.category);
+
     if (imageFile) {
       try {
-        const maxSizeMB = formData.quality === '150' ? 0.15 : 0.05;
+        const maxSizeMB = formData.quality === "150" ? 0.15 : 0.05;
         const options = {
           maxSizeMB: maxSizeMB,
-          maxWidthOrHeight: formData.quality === '150' ? 1920 : 1080,
-          useWebWorker: true
+          maxWidthOrHeight: formData.quality === "150" ? 1920 : 1080,
+          useWebWorker: true,
         };
         const compressedFile = await imageCompression(imageFile, options);
-        form.append('image', compressedFile, compressedFile.name);
+        form.append("image", compressedFile, compressedFile.name);
       } catch (error) {
-        console.error('Error compressing image:', error);
-        form.append('image', imageFile); // fallback to original if compression fails
+        console.error("Error compressing image:", error);
+        form.append("image", imageFile); // fallback to original if compression fails
       }
     }
 
     try {
-      const url = editingId 
+      const url = editingId
         ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/galeri/${editingId}`
         : `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/galeri`;
-      
-      const method = editingId ? 'PUT' : 'POST';
+
+      const method = editingId ? "PUT" : "POST";
 
       await fetch(url, {
         method: method,
@@ -85,10 +94,10 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
       setIsModalOpen(false);
       setImageFile(null);
       setEditingId(null);
-      setFormData({ title: '', category: activeCategory });
+      setFormData({ title: "", category: activeCategory });
       fetchGaleri();
     } catch (error) {
-      console.error('Error saving photo:', error);
+      console.error("Error saving photo:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -101,29 +110,51 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
           <h2 className="text-2xl font-bold text-gray-800 capitalize">
             Galeri: {activeCategory}
           </h2>
-          <p className="text-gray-500 mt-1">Total {filteredGaleri.length} foto.</p>
+          <p className="text-gray-500 mt-1">
+            Total {filteredGaleri.length} foto.
+          </p>
         </div>
-        <button onClick={openAddModal} className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-colors">
+        <button
+          onClick={openAddModal}
+          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-colors"
+        >
           <FiPlus /> Tambah Foto Baru
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredGaleri.map((foto) => (
-          <div key={foto.id} className="border border-gray-100 rounded-2xl overflow-hidden group hover:shadow-xl transition-all">
+          <div
+            key={foto.id}
+            className="border border-gray-100 rounded-2xl overflow-hidden group hover:shadow-xl transition-all"
+          >
             <div className="h-48 overflow-hidden bg-gray-100">
-              <img src={`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${foto.image_url}`} alt={foto.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <img
+                src={`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${foto.image_url}`}
+                alt={foto.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
             </div>
             <div className="p-4 bg-gray-50 flex flex-col h-[180px]">
               <div>
-                <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded-md mb-2 inline-block">{foto.category}</span>
-                <h4 className="font-bold text-gray-800 mb-1 line-clamp-2">{foto.title}</h4>
+                <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded-md mb-2 inline-block">
+                  {foto.category}
+                </span>
+                <h4 className="font-bold text-gray-800 mb-1 line-clamp-2">
+                  {foto.title}
+                </h4>
               </div>
               <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
-                <button onClick={() => openEditModal(foto)} className="text-green-600 hover:text-white hover:bg-green-600 bg-green-50 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1">
+                <button
+                  onClick={() => openEditModal(foto)}
+                  className="text-green-600 hover:text-white hover:bg-green-600 bg-green-50 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1"
+                >
                   <FiEdit className="w-4 h-4" /> Edit
                 </button>
-                <button onClick={() => handleDelete(foto.id)} className="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1">
+                <button
+                  onClick={() => handleDelete(foto.id)}
+                  className="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1"
+                >
                   <FiTrash2 className="w-4 h-4" /> Hapus
                 </button>
               </div>
@@ -142,72 +173,109 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in-up">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg text-gray-800">{editingId ? 'Edit Foto' : 'Upload Foto Baru'}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors"><FiX size={24} /></button>
+              <h3 className="font-bold text-lg text-gray-800">
+                {editingId ? "Edit Foto" : "Upload Foto Baru"}
+              </h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <FiX size={24} />
+              </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-6">
               <div className="mb-4">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Kategori</label>
-                <select 
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Kategori
+                </label>
+                <select
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
                   value={formData.category}
-                  onChange={e => setFormData({...formData, category: e.target.value})}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
                 >
                   <option value="Lahan Pertanian">Lahan Pertanian</option>
                   <option value="Kegiatan Santri">Kegiatan Santri</option>
                   <option value="Edukasi">Edukasi</option>
                   <option value="Panen">Panen</option>
                   <option value="Camping">Camping</option>
-                  <option value="Kegiatan Masyarakat">Kegiatan Masyarakat</option>
+                  <option value="Kegiatan Masyarakat">
+                    Kegiatan Masyarakat
+                  </option>
                 </select>
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Judul Foto</label>
-                <input 
-                  type="text" 
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Judul Foto
+                </label>
+                <input
+                  type="text"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
                   placeholder="Contoh: Panen Raya 2024"
                   value={formData.title}
-                  onChange={e => setFormData({...formData, title: e.target.value})}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
                   required
                 />
               </div>
-              
+
               <div className="mb-4">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Kualitas Gambar</label>
-                <select 
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Kualitas Gambar
+                </label>
+                <select
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
                   value={formData.quality}
-                  onChange={e => setFormData({...formData, quality: e.target.value})}
+                  onChange={(e) =>
+                    setFormData({ ...formData, quality: e.target.value })
+                  }
                 >
                   <option value="150">Gambar Besar / HD (Maks. ~150 KB)</option>
-                  <option value="50">Gambar Kecil / Standar (Maks. ~50 KB)</option>
+                  <option value="50">
+                    Gambar Kecil / Standar (Maks. ~50 KB)
+                  </option>
                 </select>
-                <p className="text-xs text-gray-500 mt-2">*Otomatis dikompres agar website tidak berat (tidak blur).</p>
+                <p className="text-xs text-gray-500 mt-2">
+                  *Otomatis dikompres agar website tidak berat (tidak blur).
+                </p>
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-bold text-gray-700 mb-2">File Gambar (JPG/PNG)</label>
-                <input 
-                  type="file" 
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  File Gambar (JPG/PNG)
+                </label>
+                <input
+                  type="file"
                   accept="image/*"
                   className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl focus:outline-none focus:border-green-500 cursor-pointer"
-                  onChange={e => setImageFile(e.target.files[0])}
+                  onChange={(e) => setImageFile(e.target.files[0])}
                   required={!editingId}
                 />
                 {editingId && (
-                  <p className="text-xs text-gray-500 mt-2">*Kosongkan jika tidak ingin mengubah gambar.</p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    *Kosongkan jika tidak ingin mengubah gambar.
+                  </p>
                 )}
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-6 py-2.5 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
                   Batal
                 </button>
-                <button type="submit" disabled={isSubmitting} className="px-6 py-2.5 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 flex items-center gap-2 transition-colors shadow-md hover:shadow-lg">
-                  {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 flex items-center gap-2 transition-colors shadow-md hover:shadow-lg"
+                >
+                  {isSubmitting ? "Menyimpan..." : "Simpan"}
                 </button>
               </div>
             </form>

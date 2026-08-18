@@ -85,7 +85,7 @@ const TeamMember = () => {
                   />
                 </div>
               );
-            }
+            },
           )}
         </div>
       </div>

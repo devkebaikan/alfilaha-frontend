@@ -139,7 +139,7 @@ const TestimonialInner = () => {
                     />
                   </div>
                 );
-              }
+              },
             )}
           </div>
         </div>

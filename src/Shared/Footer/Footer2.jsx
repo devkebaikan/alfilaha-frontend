@@ -8,12 +8,14 @@ import { MdEmail } from "react-icons/md";
 const Footer2 = () => {
   return (
     <footer className="bg-[url('/images/footer-bg.jpg')] bg-no-repeat bg-center bg-cover relative z-10 pt-28 overflow-hidden">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={footerLine}
         draggable="false"
         className="absolute -z-10 right-0 -bottom-20 opacity-70"
       />
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={footerShape3}
         draggable="false"
         className="absolute -z-10 top-0 left-0 animate-dance2"

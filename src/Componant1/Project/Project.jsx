@@ -110,7 +110,7 @@ const Project = () => {
                   buttonIcon,
                 }) => {
                   return (
-                    <SwiperSlide key={id} >
+                    <SwiperSlide key={id}>
                       <div className="pt-[144px]">
                         <ProjectCard
                           projectThumb={projectThumb}
@@ -125,7 +125,7 @@ const Project = () => {
                       </div>
                     </SwiperSlide>
                   );
-                }
+                },
               )}
             </div>
             <ProjectNavigation />

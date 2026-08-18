@@ -14,7 +14,8 @@ const TeamCard = ({
   return (
     <div className="group">
       <div className=" flex justify-center relative z-20 -mb-[6rem]">
-        <img loading="lazy"
+        <img
+          loading="lazy"
           src={teamThumb}
           className="m-auto w-9/12 rounded-full border-[10px] border-HoverColor-0 transition-all duration-500 group-hover:border-SecondaryColor-0"
         />
@@ -23,7 +24,8 @@ const TeamCard = ({
         className="text-center bg-white rounded-md pt-[126px] 2xl:pt-[140px] relative z-10 overflow-hidden
        before:absolute before:bottom-0 before:left-0 before:w-full before:h-0 before:bg-SecondaryColor-0 before:transition-all before:duration-500 before:-z-10 group-hover:before:top-0 group-hover:before:h-full"
       >
-        <img loading="lazy"
+        <img
+          loading="lazy"
           src={teamShape}
           className="absolute bottom-1/4 left-1/4 animate-dance2 -z-10"
         />

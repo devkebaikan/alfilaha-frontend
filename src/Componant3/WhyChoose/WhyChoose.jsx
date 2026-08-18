@@ -9,7 +9,8 @@ const WhyChoose = () => {
       <div className="Container">
         <div className="grid grid-cols-1 lg:items-center lg:grid-cols-2 2xl:gap-20">
           <div className="bg-SecondaryColor-0 rounded-t-md">
-            <img loading="lazy"
+            <img
+              loading="lazy"
               src={WhyChooseImg}
               draggable="false"
               className="w-full lg:w-[inherit] max-w-[inherit] rounded-r-md lg:-ml-[30em] xl:-ml-[25rem] 2xl:-ml-[20rem] mb-10 lg:mb-0"
@@ -25,8 +26,8 @@ const WhyChoose = () => {
               <br /> untuk Rombongan Kita.
             </h1>
             <p className="font-AlbertSans text-TextColor-0 font-light">
-              Untuk rombongan sekolah atau perusahaan yang butuh ruang dan
-              waktu lebih lama untuk belajar bersama alam.
+              Untuk rombongan sekolah atau perusahaan yang butuh ruang dan waktu
+              lebih lama untuk belajar bersama alam.
             </p>
             <div className="flex flex-col sm:flex-row sm:items-center gap-7 mt-12">
               <div>

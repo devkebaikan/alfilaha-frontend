@@ -47,7 +47,8 @@ const teamData = [
 const TeamMember = () => {
   return (
     <section className="bg-[url('/images/team-bg.jpg')] bg-no-repeat bg-cover bg-center pt-[244px] pb-28 relative -mt-[130px]">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={skillMainShape}
         draggable="false"
         className="absolute -z-10 top-10 left-10 animate-dance2 hidden xl:block"
@@ -87,7 +88,7 @@ const TeamMember = () => {
                   />
                 </div>
               );
-            }
+            },
           )}
         </div>
       </div>

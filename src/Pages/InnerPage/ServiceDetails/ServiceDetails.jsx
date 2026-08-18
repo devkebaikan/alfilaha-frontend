@@ -31,7 +31,8 @@ const ServiceDetails = () => {
         <div className="Container">
           <div className="grid grid-cols-3 gap-[70px]">
             <div className="col-span-3 lg:col-span-2">
-              <img loading="lazy"
+              <img
+                loading="lazy"
                 src={serviceDetailsThumb}
                 draggable="false"
                 className="w-full"
@@ -57,7 +58,11 @@ const ServiceDetails = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-7">
                 <div className="flex flex-col md:flex-row lg:flex-col xl:flex-row gap-5 bg-[#f3f4f8] rounded-md px-6 py-7">
                   <div className="w-[72px] h-[72px] rounded-full bg-white flex justify-center items-center">
-                    <img loading="lazy" src={serviceDetailsIcon} draggable="false" />
+                    <img
+                      loading="lazy"
+                      src={serviceDetailsIcon}
+                      draggable="false"
+                    />
                   </div>
                   <div className="flex-1">
                     <h6 className="font-AlbertSans font-semibold text-[22px] text-HeadingColor-0">
@@ -71,7 +76,11 @@ const ServiceDetails = () => {
                 </div>
                 <div className="flex flex-col md:flex-row lg:flex-col xl:flex-row gap-5 bg-[#f3f4f8] rounded-md px-6 py-7">
                   <div className="w-[72px] h-[72px] rounded-full bg-white flex justify-center items-center">
-                    <img loading="lazy" src={serviceDetailsIcon2} draggable="false" />
+                    <img
+                      loading="lazy"
+                      src={serviceDetailsIcon2}
+                      draggable="false"
+                    />
                   </div>
                   <div className="flex-1">
                     <h6 className="font-AlbertSans font-semibold text-[22px] text-HeadingColor-0">
@@ -107,7 +116,8 @@ const ServiceDetails = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-9">
                 <div className="text-center group">
                   <div className="overflow-hidden rounded">
-                    <img loading="lazy"
+                    <img
+                      loading="lazy"
                       src={projectDetialsBoxImg}
                       draggable="false"
                       className="transition-all duration-500 group-hover:scale-110"
@@ -131,7 +141,8 @@ const ServiceDetails = () => {
                 </div>
                 <div className="text-center group">
                   <div className="overflow-hidden rounded">
-                    <img loading="lazy"
+                    <img
+                      loading="lazy"
                       src={projectDetialsBoxImg2}
                       draggable="false"
                       className="transition-all duration-500 group-hover:scale-110"

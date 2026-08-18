@@ -49,8 +49,7 @@ const serviceData = [
     serviceIcon: serviceIcon4,
     serviceThumb: serviceThumb4,
     serviceTitle: `Seri Eksplorasi`,
-    serviceDesc:
-      "Membuat karya seni bahan alam dan jalan-jalan tadabur alam.",
+    serviceDesc: "Membuat karya seni bahan alam dan jalan-jalan tadabur alam.",
     serviceUrl: "/service_details",
     serviceBtn: `Selengkapnya`,
     serviceBtnIcon: <FaArrowRightLong />,
@@ -75,9 +74,8 @@ const Service = () => {
           <div>
             <p className="font-AlbertSans text-TextColor-0 font-light">
               Bawa keluarga, sekolah, atau komunitas kita. Tinggalkan layar
-              kaca, mari sentuh tanah dan rasakan udara segar. Kita punya
-              banyak pilihan kegiatan, silakan pilih yang paling pas untuk
-              rombongan.
+              kaca, mari sentuh tanah dan rasakan udara segar. Kita punya banyak
+              pilihan kegiatan, silakan pilih yang paling pas untuk rombongan.
             </p>
           </div>
         </div>
@@ -107,7 +105,7 @@ const Service = () => {
                 />
               </div>
             );
-          }
+          },
         )}
       </div>
     </section>

@@ -8,7 +8,8 @@ import bannerShape from "/images/banner-shape.png";
 const Banner = () => {
   return (
     <section className="bg-[url('/images/hero-bg.jpg')] bg-cover bg-center bg-no-repeat h-[650px] sm:h-[680px] lg:h-[660px] xl:h-[872px] flex items-center relative z-10 overflow-hidden">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={bannerShape}
         draggable="false"
         className="absolute top-0 -left-5 animate-dance2 hidden lg:block"
@@ -25,8 +26,8 @@ const Banner = () => {
               di Atas Tanah
             </h1>
             <p className="font-AlbertSans text-lg text-TextColor-0 mb-10 mt-4">
-              Lebih dari sekadar lahan pertanian. Ini adalah laboratorium
-              tempat mempraktikkan budaya regeneratif dan tga adab utama.
+              Lebih dari sekadar lahan pertanian. Ini adalah laboratorium tempat
+              mempraktikkan budaya regeneratif dan tga adab utama.
             </p>
             <div className="flex flex-col sm:flex-row gap-5">
               <Link to={"/project"}>
@@ -69,7 +70,8 @@ const Banner = () => {
             </div>
           </div>
           <div className="absolute -z-10 top-0 lg:-right-[27rem] xl:-right-[18rem] 2xl:right-0 hidden lg:block">
-            <img loading="lazy"
+            <img
+              loading="lazy"
               src={bannerImg}
               draggable="false"
               className="lg:w-8/12 xl:w-9/12 2xl:w-[inherit]"

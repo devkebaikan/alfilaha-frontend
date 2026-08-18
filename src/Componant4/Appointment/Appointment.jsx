@@ -17,17 +17,26 @@ const Appointment = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/appointments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/appointments`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
         },
-        body: JSON.stringify(formData),
-      });
+      );
 
       if (response.ok) {
         alert("Appointment berhasil dikirim!");
-        setFormData({ name: "", number: "", email: "", address: "", message: "" });
+        setFormData({
+          name: "",
+          number: "",
+          email: "",
+          address: "",
+          message: "",
+        });
       } else {
         alert("Gagal mengirim appointment.");
       }
@@ -42,7 +51,7 @@ const Appointment = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
         <div className="relative">
           <iframe
-            src="https://maps.google.com/maps?q=CX9X%2B3C%20Sewurejo,%20Kabupaten%20Karanganyar,%20Jawa%20Tengah&t=&z=15&ie=UTF8&iwloc=&output=embed"
+            src="https://maps.google.com/maps?q=-7.5823424,110.9985186&t=&z=15&ie=UTF8&iwloc=&output=embed"
             width="100%"
             height="684"
             allowFullScreen=""

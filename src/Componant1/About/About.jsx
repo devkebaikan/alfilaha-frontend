@@ -11,7 +11,8 @@ import { Link } from "react-router-dom";
 const About = () => {
   return (
     <section className="py-[120px] bg-[url('/images/about-bg.jpg')] bg-no-repeat bg-center bg-cover relative">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={aboutShape2}
         draggable="false"
         className="absolute top-32 right-20 animate-zoomInOut hidden 2xl:block"
@@ -19,8 +20,15 @@ const About = () => {
       <div className="Container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[92px] lg:gap-5 xl:gap-24 items-center">
           <div className="relative z-10">
-            <img loading="lazy" src={aboutThumb} draggable="false" className="w-full h-[400px] sm:h-[500px] lg:h-[650px] rounded-3xl shadow-2xl object-cover" alt="Tentang Alfilaha" />
-            <img loading="lazy"
+            <img
+              loading="lazy"
+              src={aboutThumb}
+              draggable="false"
+              className="w-full h-[400px] sm:h-[500px] lg:h-[650px] rounded-3xl shadow-2xl object-cover"
+              alt="Tentang Alfilaha"
+            />
+            <img
+              loading="lazy"
               src={aboutAward}
               draggable="false"
               className="absolute bottom-10 left-0 animate-movebtn hidden sm:block"
@@ -58,8 +66,8 @@ const About = () => {
                   Agama Melebur dalam Keseharian
                 </h5>
                 <p className="font-AlbertSans text-TextColor-0 pt-3">
-                  Kita tidak memisahkan agama dari keseharian, semuanya
-                  melebur dalam setiap kegiatan.
+                  Kita tidak memisahkan agama dari keseharian, semuanya melebur
+                  dalam setiap kegiatan.
                 </p>
               </div>
             </div>
@@ -69,7 +77,8 @@ const About = () => {
                 <img loading="lazy" src={buttonShape} draggable="false" />
               </button>
             </Link>
-            <img loading="lazy"
+            <img
+              loading="lazy"
               src={aboutShape}
               draggable="false"
               className="absolute -bottom-0 left-1/2 animate-dance3 hidden sm:block"

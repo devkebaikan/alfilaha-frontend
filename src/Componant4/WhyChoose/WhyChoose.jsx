@@ -7,7 +7,8 @@ import mainShape from "/images/hero4-shape.png";
 const WhyChoose = () => {
   return (
     <section className="py-[120px] bg-[url('/images/why-choose-bg.png')] bg-cover bg-right lg:bg-center bg-no-repeat relative">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={mainShape}
         draggable="false"
         className="absolute top-24 left-1/3 animate-rotational hidden lg:block"
@@ -34,19 +35,34 @@ const WhyChoose = () => {
             </p>
             <div className="bg-white flex justify-around pt-[48px] pb-10 rounded-md mt-12">
               <div className="text-center">
-                <img loading="lazy" src={icon} draggable="false" className="m-auto" />
+                <img
+                  loading="lazy"
+                  src={icon}
+                  draggable="false"
+                  className="m-auto"
+                />
                 <h5 className="font-AlbertSans text-HeadingColor-0 font-medium sm:text-lg mt-[14px]">
                   Our Mission
                 </h5>
               </div>
               <div className="text-center">
-                <img loading="lazy" src={icon2} draggable="false" className="m-auto" />
+                <img
+                  loading="lazy"
+                  src={icon2}
+                  draggable="false"
+                  className="m-auto"
+                />
                 <h5 className="font-AlbertSans text-HeadingColor-0 font-medium sm:text-lg mt-[14px]">
                   Our Vission
                 </h5>
               </div>
               <div className="text-center">
-                <img loading="lazy" src={icon3} draggable="false" className="m-auto" />
+                <img
+                  loading="lazy"
+                  src={icon3}
+                  draggable="false"
+                  className="m-auto"
+                />
                 <h5 className="font-AlbertSans text-HeadingColor-0 font-medium sm:text-lg mt-[14px]">
                   Philosophy
                 </h5>

@@ -4,14 +4,25 @@ import BreadCrumb from "../../../Shared/BreadCrumb/BreadCrumb";
 
 const PesanTempat = () => {
   const [formData, setFormData] = useState({
-    name: "", phone: "", email: "", instansi: "",
-    paket: "", peserta: "", tanggal: "", waktu: "", message: ""
+    name: "",
+    phone: "",
+    email: "",
+    instansi: "",
+    paket: "",
+    peserta: "",
+    tanggal: "",
+    waktu: "",
+    message: "",
   });
   const [paketList, setPaketList] = useState([
     { id: 1, nama_paket: "Edukasi Basic", harga: "Rp 20.000 / orang" },
     { id: 2, nama_paket: "Edukasi Premium", harga: "Rp 100.000 / orang" },
-    { id: 3, nama_paket: "Paket Wisata Keluarga", harga: "Rp 150.000 / keluarga" },
-    { id: 4, nama_paket: "Panen buah & Sayuran", harga: "Rp 30.000 / Orang" }
+    {
+      id: 3,
+      nama_paket: "Paket Wisata Keluarga",
+      harga: "Rp 150.000 / keluarga",
+    },
+    { id: 4, nama_paket: "Panen buah & Sayuran", harga: "Rp 30.000 / Orang" },
   ]);
   const [fetchError, setFetchError] = useState("");
   const [status, setStatus] = useState("");
@@ -19,7 +30,8 @@ const PesanTempat = () => {
 
   // Helper untuk mendapatkan API URL utama
   const getApiUrl = () => {
-    const defaultApi = import.meta.env.VITE_PUBLIC_API || "http://localhost:5000";
+    const defaultApi =
+      import.meta.env.VITE_PUBLIC_API || "http://localhost:5000";
     if (defaultApi.includes("localhost")) return ""; // Gunakan proxy
     return defaultApi;
   };
@@ -29,7 +41,7 @@ const PesanTempat = () => {
       try {
         setFetchError("");
         let response = await fetch(`/api/paket`).catch(() => null);
-        
+
         if (!response || !response.ok) {
           const directUrl = `http://${window.location.hostname}:5000/api/paket`;
           response = await fetch(directUrl).catch(() => null);
@@ -41,8 +53,11 @@ const PesanTempat = () => {
             setPaketList(data);
           }
         }
-      } catch(err) {
-        console.error("Gagal memuat paket wisata, menggunakan data fallback:", err);
+      } catch (err) {
+        console.error(
+          "Gagal memuat paket wisata, menggunakan data fallback:",
+          err,
+        );
       }
     };
     fetchPaket();
@@ -65,7 +80,7 @@ const PesanTempat = () => {
         instansi: formData.instansi,
         tanggal: `${formData.tanggal} ${formData.waktu}`,
         jumlah: formData.peserta + " Orang - " + formData.paket,
-        pesan: formData.message
+        pesan: formData.message,
       };
 
       let response = await fetch(`${getApiUrl()}/api/reservasi`, {
@@ -86,7 +101,17 @@ const PesanTempat = () => {
 
       if (response && response.ok) {
         setStatus("success");
-        setFormData({ name: "", phone: "", email: "", instansi: "", paket: "", peserta: "", tanggal: "", waktu: "", message: "" });
+        setFormData({
+          name: "",
+          phone: "",
+          email: "",
+          instansi: "",
+          paket: "",
+          peserta: "",
+          tanggal: "",
+          waktu: "",
+          message: "",
+        });
       } else {
         setStatus("error");
       }
@@ -112,25 +137,27 @@ const PesanTempat = () => {
               Reservasi Tempat
             </h1>
             <p className="font-AlbertSans text-TextColor-0 max-w-2xl mx-auto">
-              Isi formulir di bawah ini untuk melakukan reservasi. Tim kami
-              akan menghubungi Anda dalam waktu 1x24 jam.
+              Isi formulir di bawah ini untuk melakukan reservasi. Tim kami akan
+              menghubungi Anda dalam waktu 1x24 jam.
             </p>
           </div>
 
           <div className="max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-lg shadow-lg border border-BorderColor2-0">
-            {status === 'success' && (
+            {status === "success" && (
               <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-lg text-center font-bold border border-green-200">
-                ✅ Reservasi berhasil dikirim! Tim kami akan segera menghubungi Anda.
+                ✅ Reservasi berhasil dikirim! Tim kami akan segera menghubungi
+                Anda.
               </div>
             )}
-            {status === 'error' && (
+            {status === "error" && (
               <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg text-center font-bold border border-red-200">
                 ❌ Gagal mengirim reservasi. Pastikan backend server menyala.
               </div>
             )}
             {fetchError && (
               <div className="mb-6 p-4 bg-yellow-100 text-yellow-800 rounded-lg text-sm border border-yellow-300">
-                ⚠️ Peringatan: Gagal memuat daftar paket ({fetchError}). Apakah backend menyala di port 5000?
+                ⚠️ Peringatan: Gagal memuat daftar paket ({fetchError}). Apakah
+                backend menyala di port 5000?
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -325,9 +352,9 @@ const PesanTempat = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`primary-btn w-full sm:w-auto flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  className={`primary-btn w-full sm:w-auto flex items-center justify-center gap-2 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
                 >
-                  {isSubmitting ? 'Mengirim...' : 'Kirim Reservasi'}
+                  {isSubmitting ? "Mengirim..." : "Kirim Reservasi"}
                   <FaArrowRightLong />
                 </button>
               </div>
@@ -342,8 +369,7 @@ const PesanTempat = () => {
             <ul className="space-y-2 font-AlbertSans text-TextColor-0">
               <li>• Reservasi minimal H-7 untuk memastikan ketersediaan</li>
               <li>
-                • Tim kami akan menghubungi Anda untuk konfirmasi dalam 1x24
-                jam
+                • Tim kami akan menghubungi Anda untuk konfirmasi dalam 1x24 jam
               </li>
               <li>
                 • Pembayaran: DP 50% saat konfirmasi, pelunasan H-3 sebelum

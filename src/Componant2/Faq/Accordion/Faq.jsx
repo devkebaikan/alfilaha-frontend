@@ -42,7 +42,8 @@ const Faq = () => {
       <div className="Container">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 items-center">
           <div className="relative">
-            <img loading="lazy"
+            <img
+              loading="lazy"
               src={faqMainShape}
               className="absolute -top-28 right-10 animate-movebtn"
             />

@@ -150,7 +150,7 @@ const DonationInner = () => {
                     </div>
                   </>
                 );
-              }
+              },
             )}
           </div>
         </div>

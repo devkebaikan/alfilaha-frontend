@@ -17,12 +17,14 @@ import { MdEmail } from "react-icons/md";
 const Footer = () => {
   return (
     <footer className="bg-[url('/images/footer-bg-new.jpg')] bg-no-repeat bg-center bg-cover relative z-10 pt-28 overflow-hidden before:absolute before:inset-0 before:bg-black/70 before:-z-10">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={footerLine}
         draggable="false"
         className="absolute -z-10 right-0 -bottom-20 opacity-70"
       />
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={footerShape3}
         draggable="false"
         className="absolute -z-10 top-0 left-0 animate-dance2"
@@ -42,12 +44,22 @@ const Footer = () => {
                 </h5>
                 <ul className="flex gap-3">
                   <li>
-                    <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-white overflow-hidden transition-all duration-500 hover:text-PrimaryColor-0 relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-white before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
+                    <a
+                      href="https://wa.me/6281234567890"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-white overflow-hidden transition-all duration-500 hover:text-PrimaryColor-0 relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-white before:transition-all before:duration-500 before:scale-0 hover:before:scale-100"
+                    >
                       <FaWhatsapp />
                     </a>
                   </li>
                   <li>
-                    <a href="https://www.instagram.com/alfilaha_id/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-white overflow-hidden transition-all duration-500 hover:text-PrimaryColor-0 relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-white before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
+                    <a
+                      href="https://www.instagram.com/alfilaha_id/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-white overflow-hidden transition-all duration-500 hover:text-PrimaryColor-0 relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-white before:transition-all before:duration-500 before:scale-0 hover:before:scale-100"
+                    >
                       <FaInstagram />
                     </a>
                   </li>
@@ -55,14 +67,16 @@ const Footer = () => {
               </div>
             </div>
             <div className="md:flex justify-center items-center w-full absolute top-1/4 left-16 md:left-1/3 lg:left-16 hidden ">
-              <img loading="lazy"
+              <img
+                loading="lazy"
                 src={footerShape2}
                 draggable="false"
                 className="animate-zoomInOut"
               />
             </div>
           </div>
-          <img loading="lazy"
+          <img
+            loading="lazy"
             src={footerShape}
             draggable="false"
             className="absolute -z-10 -bottom-[70px] -right-[10px] animate-dance2"
@@ -89,8 +103,7 @@ const Footer = () => {
               </Link>
               <Link to={"/"} className="mt-[18px] block pointer-events-none">
                 <button className="flex items-center gap-3 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0">
-                  <MdEmail size={"18"} className="text-PrimaryColor-0" />
-                  -
+                  <MdEmail size={"18"} className="text-PrimaryColor-0" />-
                 </button>
               </Link>
             </div>
@@ -195,12 +208,18 @@ const Footer = () => {
             </h4>
             <p className="font-AlbertSans text-TextColor-0 font-medium mb-[22px] flex gap-3">
               <FaLocationDot className="text-PrimaryColor-0 mt-1 shrink-0" />
-              <a href="https://maps.app.goo.gl/WsvvC7m3VqbzU6ip8" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
-                Jl. Dusun Tepus, Bulukerto, Sewurejo, Kec. Mojogedang, Kabupaten Karanganyar, Jawa Tengah 57752
+              <a
+                href="https://maps.app.goo.gl/YkgSNQFk1tjz67n18"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-white transition-colors"
+              >
+                Jl. Dusun Tepus, Bulukerto, Sewurejo, Kec. Mojogedang, Kabupaten
+                Karanganyar, Jawa Tengah 57752, Indonesia
               </a>
             </p>
             <a
-              href="https://maps.app.goo.gl/WsvvC7m3VqbzU6ip8"
+              href="https://maps.app.goo.gl/YkgSNQFk1tjz67n18"
               target="_blank"
               rel="noreferrer"
               className="w-full h-[58px] rounded-full border border-PrimaryColor-0 bg-PrimaryColor-0 gap-2 px-6 py-2 text-white font-AlbertSans uppercase flex items-center justify-center relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:rounded-full before:bg-[#041e15] before:-z-10 before:scale-0 before:transition-all before:duration-500 hover:before:scale-100"

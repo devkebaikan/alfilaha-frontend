@@ -88,7 +88,8 @@ const TeamInner = () => {
         breadCrumbLink={"Team Member"}
       />
       <section className="bg-[url('/images/team-bg.jpg')] bg-no-repeat bg-cover bg-center py-28 relative">
-        <img loading="lazy"
+        <img
+          loading="lazy"
           src={skillMainShape}
           draggable="false"
           className="absolute -z-10 top-10 left-10 animate-dance2 hidden xl:block"
@@ -128,7 +129,7 @@ const TeamInner = () => {
                     />
                   </div>
                 );
-              }
+              },
             )}
           </div>
         </div>

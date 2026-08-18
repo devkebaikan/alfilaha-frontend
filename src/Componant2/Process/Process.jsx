@@ -34,13 +34,15 @@ const Process = () => {
   return (
     <section className="pt-[90px] pb-10 relative">
       <div className="processShape">
-        <img loading="lazy"
+        <img
+          loading="lazy"
           src={processShape}
           className="absolute left-0 top-1/3 -translate-y-1/2 animate-dance3 hidden 2xl:block"
         />
       </div>
       <div className="processShape2">
-        <img loading="lazy"
+        <img
+          loading="lazy"
           src={processShape2}
           className="absolute right-[5%] top-[20%] -translate-y-1/2 animate-movebtn hidden 2xl:block"
         />
@@ -55,8 +57,10 @@ const Process = () => {
               Langkah Mudah Bekerja Sama
             </h1>
             <p className="font-AlbertSans text-TextColor-0 font-light lg:w-3/5 2xl:w-3/4 mx-auto">
-              Kami memastikan setiap tahapan berjalan dengan transparan, terarah, dan 
-              <br className="hidden md:block" /> efisien demi mencapai hasil yang optimal.
+              Kami memastikan setiap tahapan berjalan dengan transparan,
+              terarah, dan
+              <br className="hidden md:block" /> efisien demi mencapai hasil
+              yang optimal.
             </p>
           </div>
         </div>
@@ -74,7 +78,7 @@ const Process = () => {
                     />
                   </div>
                 );
-              }
+              },
             )}
           </div>
         </div>

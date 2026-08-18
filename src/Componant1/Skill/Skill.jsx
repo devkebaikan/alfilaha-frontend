@@ -9,7 +9,8 @@ import ProgressBar from "react-animated-progress-bar";
 const Skill = () => {
   return (
     <section className="py-[120px] bg-[#f5f8ed] relative overflow-hidden z-10">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={skillMainShape}
         draggable="false"
         className="absolute -z-10 top-0 left-0 animate-dance2 hidden xl:block"
@@ -103,13 +104,21 @@ const Skill = () => {
             </div>
           </div>
           <div className="relative z-10">
-            <img loading="lazy" src={skillThumb} draggable="false" className="md:ml-16 w-full h-[400px] sm:h-[500px] lg:h-[617px] rounded-3xl shadow-2xl object-cover" alt="Our Skills Team" />
-            <img loading="lazy"
+            <img
+              loading="lazy"
+              src={skillThumb}
+              draggable="false"
+              className="md:ml-16 w-full h-[400px] sm:h-[500px] lg:h-[617px] rounded-3xl shadow-2xl object-cover"
+              alt="Our Skills Team"
+            />
+            <img
+              loading="lazy"
               src={skillShape}
               draggable="false"
               className="absolute top-0 left-10 animate-movebtn hidden sm:block"
             />
-            <img loading="lazy"
+            <img
+              loading="lazy"
               src={skillShape2}
               draggable="false"
               className="absolute -z-10 bottom-0 right-0 animate-dance2"

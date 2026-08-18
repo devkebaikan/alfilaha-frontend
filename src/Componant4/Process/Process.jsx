@@ -34,13 +34,15 @@ const Process = () => {
   return (
     <section className="pt-[90px] pb-10 relative">
       <div className="processShape">
-        <img loading="lazy"
+        <img
+          loading="lazy"
           src={processShape}
           className="absolute left-0 top-1/3 -translate-y-1/2 animate-dance3 hidden 2xl:block"
         />
       </div>
       <div className="processShape2">
-        <img loading="lazy"
+        <img
+          loading="lazy"
           src={processShape2}
           className="absolute right-[5%] top-[20%] -translate-y-1/2 animate-movebtn hidden 2xl:block"
         />
@@ -75,7 +77,7 @@ const Process = () => {
                     />
                   </div>
                 );
-              }
+              },
             )}
           </div>
         </div>

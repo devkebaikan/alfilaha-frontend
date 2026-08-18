@@ -31,7 +31,11 @@ const ServiceDetails4 = () => {
         <div className="Container">
           <div className="grid grid-cols-3 gap-[70px]">
             <div className="col-span-3 lg:col-span-2">
-              <img loading="lazy" src={serviceDetailsThumb} className="w-full" />
+              <img
+                loading="lazy"
+                src={serviceDetailsThumb}
+                className="w-full"
+              />
               <h2 className="font-AlbertSans font-bold text-[24px] sm:text-4xl text-HeadingColor-0 mt-8">
                 Ocean Cleaning Services
               </h2>
@@ -103,7 +107,8 @@ const ServiceDetails4 = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-9">
                 <div className="text-center group">
                   <div className="overflow-hidden rounded">
-                    <img loading="lazy"
+                    <img
+                      loading="lazy"
                       src={projectDetialsBoxImg}
                       className="transition-all duration-500 group-hover:scale-110"
                     />
@@ -126,7 +131,8 @@ const ServiceDetails4 = () => {
                 </div>
                 <div className="text-center group">
                   <div className="overflow-hidden rounded">
-                    <img loading="lazy"
+                    <img
+                      loading="lazy"
                       src={projectDetialsBoxImg2}
                       className="transition-all duration-500 group-hover:scale-110"
                     />

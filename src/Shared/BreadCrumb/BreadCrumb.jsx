@@ -13,7 +13,7 @@ const BreadCrumb = ({
   overlayClass = "bg-black/60",
 }) => {
   return (
-    <div 
+    <div
       className="relative bg-no-repeat bg-cover bg-center flex items-center h-[400px] sm:h-[530px] text-center pt-20"
       style={{ backgroundImage: `url(${bgImage})` }}
     >

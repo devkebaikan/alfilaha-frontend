@@ -110,7 +110,7 @@ const Portfolio = () => {
                     </div>
                   </SwiperSlide>
                 );
-              }
+              },
             )}
           </div>
         </Swiper>

@@ -144,7 +144,7 @@ const ServiceInner = () => {
                       </div>
                     </>
                   );
-                }
+                },
               )}
             </div>
           </div>

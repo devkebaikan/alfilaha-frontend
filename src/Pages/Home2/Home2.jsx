@@ -22,7 +22,7 @@ const Home2 = () => {
       <Brand />
       <Donation />
       <Testimonial />
-      <ContentSlider2/>
+      <ContentSlider2 />
       <Blog />
     </>
   );

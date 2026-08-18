@@ -2,19 +2,27 @@ import { Link } from "react-router-dom";
 import footerLogo from "/images/logo.png";
 import footerShape3 from "/images/footer-shape.png";
 import footerLine from "/images/footer-line.png";
-import footerImg from "/images/blog-thumb2.jpg"
-import footerImg2 from "/images/blog-thumb3.jpg"
-import { FaChevronRight, FaFacebookF, FaLinkedinIn, FaPinterestP, FaXTwitter } from "react-icons/fa6";
+import footerImg from "/images/blog-thumb2.jpg";
+import footerImg2 from "/images/blog-thumb3.jpg";
+import {
+  FaChevronRight,
+  FaFacebookF,
+  FaLinkedinIn,
+  FaPinterestP,
+  FaXTwitter,
+} from "react-icons/fa6";
 
 const Footer3 = () => {
   return (
     <footer className="bg-[url('/images/footer4-bg.jpg')] bg-no-repeat bg-center bg-cover relative z-10 pt-28 overflow-hidden">
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={footerLine}
         draggable="false"
         className="absolute -z-10 right-0 -bottom-20 opacity-70"
       />
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={footerShape3}
         draggable="false"
         className="absolute -z-10 top-0 left-0 animate-dance2"
@@ -166,7 +174,11 @@ const Footer3 = () => {
             </h4>
             <Link to={"/"} className="flex items-center gap-[18px] group">
               <div>
-                <img loading="lazy" src={footerImg} className="w-[80px] h-[80px] rounded" />
+                <img
+                  loading="lazy"
+                  src={footerImg}
+                  className="w-[80px] h-[80px] rounded"
+                />
               </div>
               <div className="flex-1">
                 <h6 className="font-AlbertSans text-sm sm:text-base lg:text-sm text-white opacity-60 transition-all duration-500 group-hover:opacity-100">
@@ -179,7 +191,11 @@ const Footer3 = () => {
             </Link>
             <Link to={"/"} className="flex items-center gap-[18px] group mt-5">
               <div>
-                <img loading="lazy" src={footerImg2} className="w-[80px] h-[80px] rounded" />
+                <img
+                  loading="lazy"
+                  src={footerImg2}
+                  className="w-[80px] h-[80px] rounded"
+                />
               </div>
               <div className="flex-1">
                 <h6 className="font-AlbertSans text-sm sm:text-base lg:text-sm text-white opacity-60 transition-all duration-500 group-hover:opacity-100">
