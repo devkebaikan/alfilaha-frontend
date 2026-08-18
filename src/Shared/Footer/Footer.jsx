@@ -84,8 +84,14 @@ const Footer = () => {
         </div>
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
           <div>
-            <Link to={"/"}>
-              <img loading="lazy" src={footerLogo} draggable={false} />
+            <Link to={"/"} className="inline-block">
+              <img 
+                loading="lazy" 
+                src={footerLogo} 
+                draggable={false} 
+                className="w-40 sm:w-48 md:w-56 lg:w-64 object-contain"
+                alt="Alfilaha Footer Logo"
+              />
             </Link>
             <p className="font-AlbertSans text-white mt-7 mb-5">
               Pesantren, kebun, dan ruang belajar terbuka untuk keluarga,

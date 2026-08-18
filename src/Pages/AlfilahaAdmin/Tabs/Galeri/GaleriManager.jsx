@@ -7,7 +7,7 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
   const [formData, setFormData] = useState({
     title: "",
     category: activeCategory,
-    quality: "150",
+    quality: "200",
   });
   const [imageFile, setImageFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,14 +36,14 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
 
   const openAddModal = () => {
     setEditingId(null);
-    setFormData({ title: "", category: activeCategory, quality: "150" });
+    setFormData({ title: "", category: activeCategory, quality: "200" });
     setImageFile(null);
     setIsModalOpen(true);
   };
 
   const openEditModal = (foto) => {
     setEditingId(foto.id);
-    setFormData({ title: foto.title, category: foto.category, quality: "150" });
+    setFormData({ title: foto.title, category: foto.category, quality: "200" });
     setImageFile(null); // Optional to change image
     setIsModalOpen(true);
   };
@@ -66,11 +66,12 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
 
     if (imageFile) {
       try {
-        const maxSizeMB = formData.quality === "150" ? 0.15 : 0.05;
+        const maxSizeMB = formData.quality === "200" ? 0.20 : 0.06;
         const options = {
           maxSizeMB: maxSizeMB,
-          maxWidthOrHeight: formData.quality === "150" ? 1920 : 1080,
+          maxWidthOrHeight: formData.quality === "200" ? 2560 : 1280,
           useWebWorker: true,
+          initialQuality: 0.85,
         };
         const compressedFile = await imageCompression(imageFile, options);
         form.append("image", compressedFile, compressedFile.name);
@@ -234,9 +235,9 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
                     setFormData({ ...formData, quality: e.target.value })
                   }
                 >
-                  <option value="150">Gambar Besar / HD (Maks. ~150 KB)</option>
-                  <option value="50">
-                    Gambar Kecil / Standar (Maks. ~50 KB)
+                  <option value="200">Gambar Besar / Sangat HD (Maks. ~200 KB)</option>
+                  <option value="60">
+                    Gambar Kecil / HD Standar (Maks. ~60 KB)
                   </option>
                 </select>
                 <p className="text-xs text-gray-500 mt-2">
