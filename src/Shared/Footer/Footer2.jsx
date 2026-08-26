@@ -72,7 +72,7 @@ const Footer2 = () => {
                 <Link to={"/"}>
                   <button className="flex items-center gap-2 font-AlbertSans text-white transition-all duration-500 hover:text-PrimaryColor-0 hover:gap-1 mb-[18px] opacity-60 hover:!opacity-100">
                     <FaChevronRight className="text-xs opacity-60" />
-                    Our Services
+                    Layanan Kami
                   </button>
                 </Link>
               </li>

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   FiMenu,
@@ -27,6 +29,7 @@ import {
   FiPlus,
   FiBell,
   FiFileText,
+  FiCheckCircle,
 } from "react-icons/fi";
 import Beranda from "./Tabs/Beranda/Beranda";
 import BlogGrid from "./Tabs/BlogGrid/BlogGrid";
@@ -34,8 +37,13 @@ import Event from "./Tabs/Event/Event";
 import PaketWisata from "./Tabs/PaketWisata/PaketWisata";
 import Reservasi from "./Tabs/Reservasi/Reservasi";
 import BlogForm from "./Tabs/BlogForm/BlogForm";
+import EventForm from "./Tabs/EventForm/EventForm";
+import WisataForm from "./Tabs/WisataForm/WisataForm";
 import GaleriManager from "./Tabs/Galeri/GaleriManager";
 import Appointment from "./Tabs/Appointment/Appointment";
+import PendaftaranManager from "./Tabs/PendaftaranManager/PendaftaranManager";
+import LayananManager from "./Tabs/Layanan/LayananManager";
+import LayananForm from "./Tabs/Layanan/LayananForm";
 
 const AlfilahaAdmin = () => {
   const navigate = useNavigate();
@@ -111,44 +119,25 @@ const AlfilahaAdmin = () => {
   });
 
   const [events, setEvents] = useState([]);
-  const [addEventModal, setAddEventModal] = useState({
-    show: false,
-    title: "",
-    category: "Kegiatan",
-    date: "",
-    description: "",
-    image: null,
-  });
-  const [editEventModal, setEditEventModal] = useState({
-    show: false,
-    id: null,
-    title: "",
-    category: "",
-    date: "",
-    description: "",
-    image: null,
-    existingImage: "",
-  });
+  const [editingEvent, setEditingEvent] = useState(null);
+  
   const [deleteEventModal, setDeleteEventModal] = useState({
     show: false,
     id: null,
     title: "",
   });
 
-  const [wisata, setWisata] = useState([]);
-  const [editWisataModal, setEditWisataModal] = useState({
+  
+  const [layanan, setLayanan] = useState([]);
+  const [editingLayanan, setEditingLayanan] = useState(null);
+  const [deleteLayananModal, setDeleteLayananModal] = useState({
     show: false,
     id: null,
-    nama_paket: "",
-    harga: "",
-    deskripsi: "",
+    title: "",
   });
-  const [addWisataModal, setAddWisataModal] = useState({
-    show: false,
-    nama_paket: "",
-    harga: "",
-    deskripsi: "",
-  });
+const [wisata, setWisata] = useState([]);
+  
+  const [editingWisata, setEditingWisata] = useState(null);
   const [deletePaketModal, setDeletePaketModal] = useState({
     show: false,
     id: null,
@@ -217,6 +206,70 @@ const AlfilahaAdmin = () => {
     }
   };
 
+  
+  const fetchLayanan = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/layanan`,
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setLayanan(data);
+      }
+    } catch (err) {
+      console.error("Backend MySQL offline:", err);
+    }
+  };
+
+  const handleOpenLayananForm = (item = null) => {
+    setEditingLayanan(item);
+    setActiveTab("layanan-form");
+  };
+
+  const saveLayanan = async (formData, id = null) => {
+    try {
+      const url = id
+        ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/layanan/${id}`
+        : `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/layanan`;
+      const method = id ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        body: formData,
+      });
+
+      if (response.ok) {
+        showToast(`Layanan berhasil ${id ? "diperbarui" : "ditambahkan"}!`);
+        fetchLayanan();
+        setActiveTab("layanan");
+      } else {
+        showToast(`Gagal ${id ? "memperbarui" : "menambahkan"} Layanan.`);
+      }
+    } catch (err) {
+      console.error("Save Layanan Error:", err);
+      showToast("Koneksi ke server gagal.");
+    }
+  };
+
+  const confirmHapusLayanan = async (id) => {
+    setDeleteLayananModal({ show: false, id: null, title: "" });
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/layanan/${id}`,
+        { method: "DELETE" },
+      );
+      if (response.ok) {
+        fetchLayanan();
+        showToast("Layanan berhasil dihapus!");
+      } else {
+        showToast("Gagal menghapus Layanan dari server!");
+      }
+    } catch (err) {
+      console.error("Backend Error:", err);
+      showToast("Gagal terhubung ke database.");
+    }
+  };
+
   const fetchWisata = async () => {
     try {
       const response = await fetch(
@@ -231,84 +284,32 @@ const AlfilahaAdmin = () => {
     }
   };
 
-  const updateWisata = async (e) => {
-    e.preventDefault();
-    let finalHarga = editWisataModal.harga.trim();
-    if (!finalHarga.toLowerCase().startsWith("rp")) {
-      finalHarga = `Rp ${finalHarga}`;
-    }
-
+  const saveWisata = async (formData, id = null) => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/paket/${editWisataModal.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nama_paket: editWisataModal.nama_paket,
-            harga: finalHarga,
-            deskripsi: editWisataModal.deskripsi,
-          }),
-        },
-      );
+      const url = id
+        ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/paket/${id}`
+        : `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/paket`;
+      const method = id ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        body: formData,
+      });
 
       if (response.ok) {
-        showToast("Data paket wisata berhasil diperbarui!");
-        setEditWisataModal({
-          show: false,
-          id: null,
-          nama_paket: "",
-          harga: "",
-          deskripsi: "",
-        });
+        showToast(`Data paket wisata berhasil ${id ? "diperbarui" : "ditambahkan"}!`);
         fetchWisata();
+        setActiveTab("wisata");
       } else {
-        showToast("Gagal memperbarui paket.");
+        showToast(`Gagal ${id ? "memperbarui" : "menambahkan"} paket.`);
       }
     } catch (err) {
-      console.error("Update Error:", err);
+      console.error("Save Wisata Error:", err);
       showToast("Koneksi ke server gagal.");
     }
   };
 
-  const tambahWisata = async (e) => {
-    e.preventDefault();
-    let finalHarga = addWisataModal.harga.trim();
-    if (!finalHarga.toLowerCase().startsWith("rp")) {
-      finalHarga = `Rp ${finalHarga}`;
-    }
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/paket`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nama_paket: addWisataModal.nama_paket,
-            harga: finalHarga,
-            deskripsi: addWisataModal.deskripsi,
-          }),
-        },
-      );
-
-      if (response.ok) {
-        showToast("Paket wisata baru berhasil ditambahkan!");
-        setAddWisataModal({
-          show: false,
-          nama_paket: "",
-          harga: "",
-          deskripsi: "",
-        });
-        fetchWisata();
-      } else {
-        showToast("Gagal menambahkan paket.");
-      }
-    } catch (err) {
-      console.error("Add Error:", err);
-      showToast("Koneksi ke server gagal.");
-    }
-  };
+  
 
   const confirmHapusWisata = async (id) => {
     setDeletePaketModal({ show: false, id: null, nama_paket: "" });
@@ -343,81 +344,32 @@ const AlfilahaAdmin = () => {
     }
   };
 
-  const addEvent = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("title", addEventModal.title);
-    formData.append("category", addEventModal.category);
-    formData.append("date", addEventModal.date);
-    formData.append("description", addEventModal.description);
-    if (addEventModal.image) formData.append("image", addEventModal.image);
-
+  const saveEvent = async (formData, id = null) => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events`,
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
+      const url = id
+        ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events/${id}`
+        : `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events`;
+      const method = id ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        body: formData,
+      });
+
       if (response.ok) {
-        showToast("Event berhasil ditambahkan!");
-        setAddEventModal({
-          show: false,
-          title: "",
-          category: "Kegiatan",
-          date: "",
-          description: "",
-          image: null,
-        });
+        showToast(`Event berhasil ${id ? "diperbarui" : "ditambahkan"}!`);
         fetchEvents();
+        setActiveTab("event");
       } else {
-        showToast("Gagal menambahkan Event.");
+        showToast(`Gagal ${id ? "memperbarui" : "menambahkan"} Event.`);
       }
     } catch (err) {
-      console.error("Add Event Error:", err);
+      console.error("Save Event Error:", err);
       showToast("Koneksi ke server gagal.");
     }
   };
 
-  const updateEvent = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("title", editEventModal.title);
-    formData.append("category", editEventModal.category);
-    formData.append("date", editEventModal.date);
-    formData.append("description", editEventModal.description);
-    if (editEventModal.image) formData.append("image", editEventModal.image);
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events/${editEventModal.id}`,
-        {
-          method: "PUT",
-          body: formData,
-        },
-      );
-      if (response.ok) {
-        showToast("Event berhasil diperbarui!");
-        setEditEventModal({
-          show: false,
-          id: null,
-          title: "",
-          category: "",
-          date: "",
-          description: "",
-          image: null,
-          existingImage: "",
-        });
-        fetchEvents();
-      } else {
-        showToast("Gagal memperbarui Event.");
-      }
-    } catch (err) {
-      console.error("Update Event Error:", err);
-      showToast("Koneksi ke server gagal.");
-    }
-  };
+  
 
   const confirmHapusEvent = async (id) => {
     setDeleteEventModal({ show: false, id: null, title: "" });
@@ -510,6 +462,7 @@ const AlfilahaAdmin = () => {
       fetchBlogs();
       fetchAppointments();
       fetchGaleri();
+      fetchLayanan();
       // Auto refresh tiap 2 detik untuk update otomatis dari form
       const interval = setInterval(() => {
         fetchReservasi();
@@ -884,6 +837,25 @@ const AlfilahaAdmin = () => {
           </button>
 
           <button
+            onClick={() => handleTabChange("layanan")}
+            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
+              activeTab === "layanan"
+                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+            }`}
+          >
+            <div
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "layanan" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+            >
+              <FiCheckCircle size={20} />
+            </div>
+            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
+              Layanan Kami
+            </span>
+          </button>
+
+
+          <button
             onClick={() => handleTabChange("reservasi")}
             className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === "reservasi"
@@ -962,6 +934,24 @@ const AlfilahaAdmin = () => {
             </div>
             <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
               Event
+            </span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange("pendaftaran")}
+            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
+              activeTab === "pendaftaran"
+                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+            }`}
+          >
+            <div
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "pendaftaran" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+            >
+              <FiUsers size={20} />
+            </div>
+            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
+              Pendaftaran
             </span>
           </button>
 
@@ -1057,11 +1047,13 @@ const AlfilahaAdmin = () => {
               <h2 className="text-lg sm:text-xl md:text-2xl font-black text-gray-800 tracking-tight truncate max-w-[160px] sm:max-w-none">
                 {activeTab === "beranda" && "Dashboard Overview"}
                 {activeTab === "wisata" && "Manajemen Eduwisata"}
+                {(activeTab === "layanan" || activeTab === "layanan-form") && "Manajemen Layanan"}
                 {activeTab === "reservasi" && "Daftar Reservasi"}
                 {activeTab === "appointment" && "Pesan & Pertanyaan"}
                 {(activeTab === "blog-grid" || activeTab === "blog-form") &&
                   "Manajemen Artikel"}
                 {activeTab === "event" && "Manajemen Event"}
+                {activeTab === "pendaftaran" && "Pendaftaran Santri"}
                 {activeTab.startsWith("galeri-") && "Galeri Alfilaha"}
               </h2>
               <p className="text-xs font-semibold text-gray-500 mt-0.5 hidden sm:block">
@@ -1134,14 +1126,14 @@ const AlfilahaAdmin = () => {
             {activeTab === "event" && (
               <Event
                 events={events}
-                onAdd={() => setAddEventModal({ ...addEventModal, show: true })}
-                onEdit={(event) =>
-                  setEditEventModal({
-                    show: true,
-                    ...event,
-                    existingImage: event.image,
-                  })
-                }
+                onAdd={() => {
+                  setEditingEvent(null);
+                  setActiveTab("event-form");
+                }}
+                onEdit={(event) => {
+                  setEditingEvent(event);
+                  setActiveTab("event-form");
+                }}
                 onDelete={(event) =>
                   setDeleteEventModal({
                     show: true,
@@ -1150,6 +1142,16 @@ const AlfilahaAdmin = () => {
                   })
                 }
               />
+            )}
+            {activeTab === "event-form" && (
+              <EventForm
+                initialData={editingEvent}
+                onSave={saveEvent}
+                onCancel={() => setActiveTab("event")}
+              />
+            )}
+            {activeTab === "pendaftaran" && (
+              <PendaftaranManager />
             )}
 
             {activeTab.startsWith("galeri-") && (
@@ -1170,12 +1172,41 @@ const AlfilahaAdmin = () => {
                 fetchGaleri={fetchGaleri}
               />
             )}
+            
+            {activeTab === "layanan" && (
+              <LayananManager
+                layanan={layanan}
+                onAdd={() => handleOpenLayananForm()}
+                onEdit={handleOpenLayananForm}
+                setDeleteLayananModal={setDeleteLayananModal}
+              />
+            )}
+            {activeTab === "layanan-form" && (
+              <LayananForm
+                initialData={editingLayanan}
+                onSave={saveLayanan}
+                onCancel={() => setActiveTab("layanan")}
+              />
+            )}
             {activeTab === "wisata" && (
               <PaketWisata
                 wisata={wisata}
-                setAddWisataModal={setAddWisataModal}
-                setEditWisataModal={setEditWisataModal}
+                onAdd={() => {
+                  setEditingWisata(null);
+                  setActiveTab("wisata-form");
+                }}
+                onEdit={(paket) => {
+                  setEditingWisata(paket);
+                  setActiveTab("wisata-form");
+                }}
                 setDeletePaketModal={setDeletePaketModal}
+              />
+            )}
+            {activeTab === "wisata-form" && (
+              <WisataForm
+                initialData={editingWisata}
+                onSave={saveWisata}
+                onCancel={() => setActiveTab("wisata")}
               />
             )}
             {activeTab === "reservasi" && (
@@ -1236,6 +1267,45 @@ const AlfilahaAdmin = () => {
                 className="flex-1 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition"
               >
                 Ya, Tolak
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE LAYANAN MODAL */}
+      {deleteLayananModal.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
+            onClick={() => setDeleteLayananModal({ show: false, id: null, title: "" })}
+          ></div>
+          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
+            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100">
+              <FiTrash2 className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-extrabold text-gray-800 text-center mb-2">
+              Hapus Layanan?
+            </h3>
+            <p className="text-gray-500 text-center text-sm font-medium mb-8">
+              Data layanan{" "}
+              <span className="font-bold text-gray-800">
+                "{deleteLayananModal.title}"
+              </span>{" "}
+              akan dihapus permanen.
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setDeleteLayananModal({ show: false, id: null, title: "" })}
+                className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => confirmHapusLayanan(deleteLayananModal.id)}
+                className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition"
+              >
+                Ya, Hapus
               </button>
             </div>
           </div>
@@ -1324,206 +1394,6 @@ const AlfilahaAdmin = () => {
         </div>
       )}
 
-      {/* EDIT WISATA MODAL */}
-      {editWisataModal.show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
-            onClick={() =>
-              setEditWisataModal({
-                show: false,
-                id: null,
-                nama_paket: "",
-                harga: "",
-                deskripsi: "",
-              })
-            }
-          ></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-lg w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
-            <h3 className="text-2xl font-extrabold text-gray-800 mb-6">
-              Ubah Paket Wisata
-            </h3>
-            <form onSubmit={updateWisata} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
-                  Nama Paket
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editWisataModal.nama_paket}
-                  onChange={(e) =>
-                    setEditWisataModal({
-                      ...editWisataModal,
-                      nama_paket: e.target.value,
-                    })
-                  }
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
-                  Harga & Satuan
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editWisataModal.harga}
-                  onChange={(e) =>
-                    setEditWisataModal({
-                      ...editWisataModal,
-                      harga: formatRupiah(e.target.value),
-                    })
-                  }
-                  placeholder="Contoh: Rp 50.000"
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
-                  Fasilitas / Deskripsi
-                </label>
-                <textarea
-                  required
-                  value={editWisataModal.deskripsi}
-                  onChange={(e) =>
-                    setEditWisataModal({
-                      ...editWisataModal,
-                      deskripsi: e.target.value,
-                    })
-                  }
-                  rows="3"
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none resize-none"
-                ></textarea>
-              </div>
-              <div className="flex space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setEditWisataModal({
-                      show: false,
-                      id: null,
-                      nama_paket: "",
-                      harga: "",
-                      deskripsi: "",
-                    })
-                  }
-                  className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition"
-                >
-                  Simpan Perubahan
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* TAMBAH WISATA MODAL */}
-      {addWisataModal.show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
-            onClick={() =>
-              setAddWisataModal({
-                show: false,
-                nama_paket: "",
-                harga: "",
-                deskripsi: "",
-              })
-            }
-          ></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-lg w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
-            <h3 className="text-2xl font-extrabold text-gray-800 mb-6">
-              Tambah Paket Wisata
-            </h3>
-            <form onSubmit={tambahWisata} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
-                  Nama Paket
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={addWisataModal.nama_paket}
-                  onChange={(e) =>
-                    setAddWisataModal({
-                      ...addWisataModal,
-                      nama_paket: e.target.value,
-                    })
-                  }
-                  placeholder="Contoh: Paket Wisata Lebaran"
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
-                  Harga & Satuan
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={addWisataModal.harga}
-                  onChange={(e) =>
-                    setAddWisataModal({
-                      ...addWisataModal,
-                      harga: formatRupiah(e.target.value),
-                    })
-                  }
-                  placeholder="Contoh: Rp 50.000"
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">
-                  Fasilitas / Deskripsi
-                </label>
-                <textarea
-                  required
-                  value={addWisataModal.deskripsi}
-                  onChange={(e) =>
-                    setAddWisataModal({
-                      ...addWisataModal,
-                      deskripsi: e.target.value,
-                    })
-                  }
-                  rows="3"
-                  placeholder="Contoh: Free souvenir, lunch, dsb..."
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none resize-none"
-                ></textarea>
-              </div>
-              <div className="flex space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setAddWisataModal({
-                      show: false,
-                      nama_paket: "",
-                      harga: "",
-                      deskripsi: "",
-                    })
-                  }
-                  className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition"
-                >
-                  Tambahkan Paket
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* DELETE PAKET WISATA MODAL */}
       {deletePaketModal.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1563,285 +1433,6 @@ const AlfilahaAdmin = () => {
                 Ya, Hapus
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ADD EVENT MODAL */}
-      {addEventModal.show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
-            onClick={() => setAddEventModal({ ...addEventModal, show: false })}
-          ></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-lg w-full relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto animate-fade-in-up">
-            <h3 className="text-2xl font-extrabold text-gray-800 mb-6 flex items-center">
-              <span className="bg-green-100 text-green-600 p-2 rounded-xl mr-3">
-                <FiActivity />
-              </span>
-              Tambah Event Baru
-            </h3>
-            <form onSubmit={addEvent} className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Judul Event
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={addEventModal.title}
-                  onChange={(e) =>
-                    setAddEventModal({
-                      ...addEventModal,
-                      title: e.target.value,
-                    })
-                  }
-                  className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
-                  placeholder="Contoh: Panen Raya Berkebun"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Kategori
-                  </label>
-                  <select
-                    value={addEventModal.category}
-                    onChange={(e) =>
-                      setAddEventModal({
-                        ...addEventModal,
-                        category: e.target.value,
-                      })
-                    }
-                    className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 text-gray-800 font-medium cursor-pointer"
-                  >
-                    <option value="Kegiatan">Kegiatan</option>
-                    <option value="Event">Event Spesial</option>
-                    <option value="Pelatihan">Pelatihan</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Tanggal
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={addEventModal.date}
-                    onChange={(e) =>
-                      setAddEventModal({
-                        ...addEventModal,
-                        date: e.target.value,
-                      })
-                    }
-                    className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Upload Gambar / Poster
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    setAddEventModal({
-                      ...addEventModal,
-                      image: e.target.files[0],
-                    })
-                  }
-                  className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
-                />
-                {addEventModal.image && (
-                  <div className="mt-4 relative h-32 rounded-xl overflow-hidden border border-gray-200 shadow-inner">
-                    <img
-                      loading="lazy"
-                      src={URL.createObjectURL(addEventModal.image)}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Deskripsi Singkat
-                </label>
-                <textarea
-                  required
-                  rows="3"
-                  value={addEventModal.description}
-                  onChange={(e) =>
-                    setAddEventModal({
-                      ...addEventModal,
-                      description: e.target.value,
-                    })
-                  }
-                  className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
-                  placeholder="Tuliskan detail acara di sini..."
-                ></textarea>
-              </div>
-              <div className="flex space-x-3 pt-4 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setAddEventModal({ ...addEventModal, show: false })
-                  }
-                  className="flex-1 px-4 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5"
-                >
-                  Simpan Event
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* EDIT EVENT MODAL */}
-      {editEventModal.show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
-            onClick={() =>
-              setEditEventModal({ ...editEventModal, show: false })
-            }
-          ></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-lg w-full relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto animate-fade-in-up">
-            <h3 className="text-2xl font-extrabold text-gray-800 mb-6 flex items-center">
-              <span className="bg-green-100 text-green-600 p-2 rounded-xl mr-3">
-                <FiEdit />
-              </span>
-              Edit Event
-            </h3>
-            <form onSubmit={updateEvent} className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Judul Event
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editEventModal.title}
-                  onChange={(e) =>
-                    setEditEventModal({
-                      ...editEventModal,
-                      title: e.target.value,
-                    })
-                  }
-                  className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Kategori
-                  </label>
-                  <select
-                    value={editEventModal.category}
-                    onChange={(e) =>
-                      setEditEventModal({
-                        ...editEventModal,
-                        category: e.target.value,
-                      })
-                    }
-                    className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 text-gray-800 font-medium cursor-pointer"
-                  >
-                    <option value="Kegiatan">Kegiatan</option>
-                    <option value="Event">Event Spesial</option>
-                    <option value="Pelatihan">Pelatihan</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Tanggal
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={editEventModal.date}
-                    onChange={(e) =>
-                      setEditEventModal({
-                        ...editEventModal,
-                        date: e.target.value,
-                      })
-                    }
-                    className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Ganti Gambar (Opsional)
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    setEditEventModal({
-                      ...editEventModal,
-                      image: e.target.files[0],
-                    })
-                  }
-                  className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
-                />
-                {editEventModal.image && (
-                  <div className="mt-4 relative h-32 rounded-xl overflow-hidden border border-gray-200 shadow-inner">
-                    <img
-                      loading="lazy"
-                      src={URL.createObjectURL(editEventModal.image)}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                {editEventModal.existingImage && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    Gambar saat ini: {editEventModal.existingImage}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Deskripsi Singkat
-                </label>
-                <textarea
-                  required
-                  rows="3"
-                  value={editEventModal.description}
-                  onChange={(e) =>
-                    setEditEventModal({
-                      ...editEventModal,
-                      description: e.target.value,
-                    })
-                  }
-                  className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
-                ></textarea>
-              </div>
-              <div className="flex space-x-3 pt-4 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setEditEventModal({ ...editEventModal, show: false })
-                  }
-                  className="flex-1 px-4 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5"
-                >
-                  Simpan Perubahan
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

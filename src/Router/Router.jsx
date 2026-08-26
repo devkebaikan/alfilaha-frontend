@@ -12,6 +12,7 @@ import Home5 from "../Pages/Home5/Home5";
 import AboutInner from "../Pages/InnerPage/AboutInner/AboutInner";
 import ServiceInner from "../Pages/InnerPage/ServiceInner/ServiceInner";
 import ServiceDetails from "../Pages/InnerPage/ServiceDetails/ServiceDetails";
+import DynamicServiceDetails from "../Pages/InnerPage/ServiceDetails/DynamicServiceDetails";
 import ContactInner from "../Pages/InnerPage/ContactInner/ContactInner";
 import BlogList from "../Pages/InnerPage/BlogList/BlogList";
 import BlogDetails from "../Pages/InnerPage/BlogDetails/BlogDetails";
@@ -31,6 +32,7 @@ import FaqInner from "../Pages/InnerPage/Faq/Accordion/FaqInner";
 import Main5 from "../Main/Main5";
 import TestimonialInner from "../Pages/InnerPage/TestimonialInner/TestimonialInner";
 import EventInner from "../Pages/InnerPage/EventInner/EventInner";
+import EventDetails from "../Pages/InnerPage/EventDetails/EventDetails";
 import PesanTempat from "../Pages/InnerPage/PesanTempat/PesanTempatBaru";
 import CekTanaman from "../Pages/InnerPage/CekTanaman/CekTanaman";
 import KubusAlfilaha from "../Pages/InnerPage/KubusAlfilaha/KubusAlfilaha";
@@ -38,6 +40,9 @@ import PaketWisata from "../Pages/InnerPage/PaketWisata/PaketWisata";
 import GaleriFull from "../Pages/InnerPage/GaleriFull/GaleriFull";
 import AlfilahaAdmin from "../Pages/AlfilahaAdmin/AlfilahaAdmin";
 import Search from "../Pages/InnerPage/Search/Search";
+import Pendaftaran from "../Pages/InnerPage/Pendaftaran/Pendaftaran";
+import StatusPendaftaran from "../Pages/InnerPage/Pendaftaran/StatusPendaftaran";
+import LoginSantri from "../Pages/InnerPage/Pendaftaran/LoginSantri";
 
 const router = createBrowserRouter([
   {
@@ -60,6 +65,10 @@ const router = createBrowserRouter([
       {
         path: "/service",
         element: <ServiceInner />,
+      },
+      {
+        path: "/service/:id",
+        element: <DynamicServiceDetails />,
       },
       {
         path: "/service_details",
@@ -138,6 +147,10 @@ const router = createBrowserRouter([
         element: <EventInner />,
       },
       {
+        path: "/event_details/:id",
+        element: <EventDetails />,
+      },
+      {
         path: "/pesan-tempat",
         element: <PesanTempat />,
       },
@@ -160,6 +173,18 @@ const router = createBrowserRouter([
       {
         path: "/search",
         element: <Search />,
+      },
+      {
+        path: "/pendaftaran",
+        element: <Pendaftaran />,
+      },
+      {
+        path: "/status-pendaftaran",
+        element: <StatusPendaftaran />,
+      },
+      {
+        path: "/login-santri",
+        element: <LoginSantri />,
       },
     ],
   },

@@ -30,7 +30,7 @@ const ServiceCard = ({
             {serviceTitle}
           </button>
         </Link>
-        <p className="font-AlbertSans text-TextColor-0 pt-6 pb-6">
+        <p className="font-AlbertSans text-TextColor-0 pt-6 pb-6 line-clamp-3">
           {serviceDesc}
         </p>
         <div className="flex justify-between items-center border-t border-BorderColor2-0 py-4">

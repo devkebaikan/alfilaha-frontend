@@ -16,10 +16,10 @@ export default defineConfig({
   plugins: [
     react(),
     ViteImageOptimizer({
-      jpg: { quality: 50 },
-      jpeg: { quality: 50 },
-      png: { quality: 60, compressionLevel: 8 },
-      webp: { quality: 50, lossless: false },
+      jpg: { quality: 80 },
+      jpeg: { quality: 80 },
+      png: { quality: 80, compressionLevel: 8 },
+      webp: { quality: 80, lossless: false },
     }),
   ],
 })

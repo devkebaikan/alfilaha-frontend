@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import React, { useState, useEffect } from "react";
 import { FaArrowRightLong, FaCheck } from "react-icons/fa6";
 import serviceImg from "/images/services-plant-1.jpg";
 import serviceImg2 from "/images/services-plant-2.jpg";
@@ -25,81 +26,111 @@ const serviceData = [
     serviceIcon: serviceIcon,
     serviceUrl: "/service_details",
     serviceButton: <GoArrowUpRight />,
-    serviceButton2: "Discover More",
-    serviceTitle: "Ocean Clean",
+    serviceButton2: "Selengkapnya",
+    serviceTitle: "Pembersihan Laut",
     serviceDesc:
-      "Alternative innovation to ethical network environmental whiteboard",
+      "Inovasi alternatif untuk kebersihan lingkungan dan kelestarian ekosistem perairan.",
     serviceShape: serviceShape,
   },
   {
     id: 2,
     serviceImg: serviceImg2,
     serviceIcon: serviceIcon2,
-    serviceUrl: "/service_details",
+    serviceUrl: "/service_details2",
     serviceButton: <GoArrowUpRight />,
-    serviceButton2: "Discover More",
-    serviceTitle: "Dust Recycling",
+    serviceButton2: "Selengkapnya",
+    serviceTitle: "Daur Ulang Sampah",
     serviceDesc:
-      "Alternative innovation to ethical network environmental whiteboard",
+      "Pengelolaan limbah menjadi barang bernilai guna untuk mengurangi dampak lingkungan.",
     serviceShape: serviceShape,
   },
   {
     id: 3,
     serviceImg: serviceImg3,
     serviceIcon: serviceIcon4,
-    serviceUrl: "/service_details",
+    serviceUrl: "/service_details3",
     serviceButton: <GoArrowUpRight />,
-    serviceButton2: "Discover More",
-    serviceTitle: "Corbon Emissions",
+    serviceButton2: "Selengkapnya",
+    serviceTitle: "Pengurangan Emisi",
     serviceDesc:
-      "Alternative innovation to ethical network environmental whiteboard",
+      "Langkah nyata untuk meminimalisir emisi karbon demi udara yang lebih bersih.",
     serviceShape: serviceShape,
   },
   {
     id: 4,
     serviceImg: serviceImg4,
     serviceIcon: serviceIcon3,
-    serviceUrl: "/service_details",
+    serviceUrl: "/service_details4",
     serviceButton: <GoArrowUpRight />,
-    serviceButton2: "Discover More",
-    serviceTitle: "Tree Plantation",
+    serviceButton2: "Selengkapnya",
+    serviceTitle: "Penanaman Pohon",
     serviceDesc:
-      "Alternative innovation to ethical network environmental whiteboard",
+      "Menghijaukan kembali bumi kita melalui program penanaman pohon berkelanjutan.",
     serviceShape: serviceShape,
   },
   {
     id: 5,
     serviceImg: serviceImg5,
     serviceIcon: serviceIcon5,
-    serviceUrl: "/service_details",
+    serviceUrl: "/service_details5",
     serviceButton: <GoArrowUpRight />,
-    serviceButton2: "Discover More",
-    serviceTitle: "Sustainble Energy",
+    serviceButton2: "Selengkapnya",
+    serviceTitle: "Energi Berkelanjutan",
     serviceDesc:
-      "Alternative innovation to ethical network environmental whiteboard",
+      "Mendorong penggunaan energi ramah lingkungan untuk masa depan yang lebih baik.",
     serviceShape: serviceShape,
   },
   {
     id: 6,
     serviceImg: serviceImg6,
     serviceIcon: serviceIcon6,
-    serviceUrl: "/service_details",
+    serviceUrl: "/service_details6",
     serviceButton: <GoArrowUpRight />,
-    serviceButton2: "Discover More",
-    serviceTitle: "Plantary Warming",
+    serviceButton2: "Selengkapnya",
+    serviceTitle: "Pencegahan Pemanasan",
     serviceDesc:
-      "Alternative innovation to ethical network environmental whiteboard",
+      "Berbagai inisiatif dan edukasi untuk menahan laju pemanasan global bersama.",
     serviceShape: serviceShape,
   },
 ];
 
 const ServiceInner = () => {
+  const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/layanan`);
+        if (response.ok) {
+          const data = await response.json();
+          setServices(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch layanan:", error);
+      }
+    };
+    fetchServices();
+  }, []);
+
+  // Use dynamic data if available, otherwise fallback to static data
+  const displayData = services.length > 0 ? services.map(item => ({
+    id: item.id,
+    serviceImg: item.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${item.image}` : serviceImg,
+    serviceIcon: serviceIcon, // Default icon
+    serviceUrl: `/service/${item.id}`,
+    serviceButton: <GoArrowUpRight />,
+    serviceButton2: "Selengkapnya",
+    serviceTitle: item.title || "",
+    serviceDesc: item.description ? String(item.description).replace(/<[^>]+>/g, '') : "",
+    serviceShape: serviceShape,
+  })) : serviceData;
+
   return (
     <>
       <BreadCrumb
-        breadCrumbTitle={"Our Services"}
+        breadCrumbTitle={"Layanan Kami"}
         breadCrumbIcon={<FaArrowRightLong />}
-        breadCrumbLink={"Our Services"}
+        breadCrumbLink={"Layanan Kami"}
         bgImage={"/images/service-banner.jpg"}
       />
       <section className="pt-28 pb-[120px] p relative z-10 bg-[#f3f3f7]">
@@ -107,16 +138,16 @@ const ServiceInner = () => {
           <div className="text-center">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center justify-center gap-2">
               <img loading="lazy" src={subTitleShape} draggable="false" />
-              OUR SERVICES
+              LAYANAN KAMI
             </h5>
             <h1 className="font-AlbertSans font-bold text-xl leading-6 sm:text-[38px] sm:leading-[48px] md:text-[40px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5">
-              Echofy Provide Environment <br />
-              Best Leading Services
+              Alfilaha Menyediakan Layanan <br />
+              Lingkungan Terbaik Untuk Anda
             </h1>
           </div>
           <div className="mt-[60px]">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-              {serviceData.map(
+              {displayData.map(
                 ({
                   id,
                   serviceImg,
@@ -129,22 +160,20 @@ const ServiceInner = () => {
                   serviceShape,
                 }) => {
                   return (
-                    <>
-                      <div key={id}>
-                        <ServiceCard
-                          serviceImg={serviceImg}
-                          serviceIcon={serviceIcon}
-                          serviceUrl={serviceUrl}
-                          serviceButton={serviceButton}
-                          serviceButton2={serviceButton2}
-                          serviceTitle={serviceTitle}
-                          serviceDesc={serviceDesc}
-                          serviceShape={serviceShape}
-                        />
-                      </div>
-                    </>
+                    <div key={id}>
+                      <ServiceCard
+                        serviceImg={serviceImg}
+                        serviceIcon={serviceIcon}
+                        serviceUrl={serviceUrl}
+                        serviceButton={serviceButton}
+                        serviceButton2={serviceButton2}
+                        serviceTitle={serviceTitle}
+                        serviceDesc={serviceDesc}
+                        serviceShape={serviceShape}
+                      />
+                    </div>
                   );
-                },
+                }
               )}
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   FiCheck,
   FiClock,
@@ -12,6 +12,8 @@ import {
   FiPieChart,
   FiZap,
   FiArrowLeft,
+  FiUsers,
+  FiBookOpen,
 } from "react-icons/fi";
 import {
   AreaChart,
@@ -40,6 +42,28 @@ const Beranda = ({
   handleTabChange,
 }) => {
   const [period, setPeriod] = useState("30 Hari");
+  const [pendaftar, setPendaftar] = useState([]);
+  const [programs, setPrograms] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [resPendaftar, resPrograms] = await Promise.all([
+          fetch(
+            `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/pendaftar_santri`,
+          ),
+          fetch(
+            `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/programs`,
+          ),
+        ]);
+        if (resPendaftar.ok) setPendaftar(await resPendaftar.json());
+        if (resPrograms.ok) setPrograms(await resPrograms.json());
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   // KPI Calculations
   const totalReservasi = reservasi.length;
@@ -47,6 +71,8 @@ const Beranda = ({
     (r) => r.status === "Pending",
   ).length;
   const totalPesan = appointments.length;
+  const totalPendaftar = pendaftar.length;
+  const totalProgramAktif = programs.filter((p) => p.status === "aktif").length;
 
   // Format Tanggal Hari Ini
   const today = new Date().toLocaleDateString("id-ID", {
@@ -56,13 +82,24 @@ const Beranda = ({
     day: "numeric",
   });
 
-  // DATA: Trend Reservasi
+  // DATA: Trend Pendaftar vs Reservasi
   const trendData = useMemo(() => {
     const counts = {};
     reservasi.forEach((r) => {
       if (r.tanggal) {
         const datePart = r.tanggal.split(" ")[0]; // YYYY-MM-DD
-        counts[datePart] = (counts[datePart] || 0) + 1;
+        if (!counts[datePart])
+          counts[datePart] = { Reservasi: 0, Pendaftar: 0 };
+        counts[datePart].Reservasi += 1;
+      }
+    });
+
+    pendaftar.forEach((p) => {
+      if (p.created_at) {
+        const datePart = p.created_at.split("T")[0]; // YYYY-MM-DD
+        if (!counts[datePart])
+          counts[datePart] = { Reservasi: 0, Pendaftar: 0 };
+        counts[datePart].Pendaftar += 1;
       }
     });
 
@@ -77,10 +114,11 @@ const Beranda = ({
       return {
         date,
         name: dayName,
-        Reservasi: counts[date],
+        Reservasi: counts[date].Reservasi,
+        Pendaftar: counts[date].Pendaftar,
       };
     });
-  }, [reservasi]);
+  }, [reservasi, pendaftar]);
 
   // DATA: Status Reservasi
   const statusData = useMemo(() => {
@@ -94,30 +132,6 @@ const Beranda = ({
     ].filter((item) => item.value > 0);
   }, [reservasi]);
 
-  // DATA: Aktivitas Terbaru
-  const recentActivities = useMemo(() => {
-    let activities = [];
-    reservasi.slice(0, 3).forEach((r) => {
-      activities.push({
-        id: `res-${r.id}`,
-        title: `Reservasi ${r.status === "Pending" ? "baru" : "diperbarui"} dari ${r.nama}`,
-        time: r.tanggal || "Baru saja",
-        type: "reservasi",
-      });
-    });
-    appointments.slice(0, 2).forEach((a) => {
-      activities.push({
-        id: `app-${a.id}`,
-        title: `Pesan baru dari ${a.name}`,
-        time: a.created_at
-          ? new Date(a.created_at).toLocaleDateString("id-ID")
-          : "Baru saja",
-        type: "pesan",
-      });
-    });
-    return activities.slice(0, 5);
-  }, [reservasi, appointments]);
-
   // DATA: Agenda Terdekat
   const upcomingEvents = useMemo(() => {
     return [...events].slice(0, 3);
@@ -126,27 +140,28 @@ const Beranda = ({
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in-up pb-12 px-2 sm:px-0">
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 bg-white/60 backdrop-blur-md p-6 rounded-[2rem] border border-white shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 bg-white/70 backdrop-blur-xl p-6 sm:p-8 rounded-3xl sm:rounded-[2.5rem] border border-white/50 shadow-[0_8px_30px_rgba(0,0,0,0.04)] relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-green-100/40 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+        <div className="relative z-10">
+          <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">
             Dashboard Overview
           </h1>
-          <p className="text-gray-500 mt-2 font-medium flex items-center gap-2">
-            Ringkasan aktivitas dan performa Alfilaha.
-            <span className="bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full text-xs font-bold">
+          <p className="text-gray-500 mt-3 font-medium flex items-center gap-3">
+            Ringkasan aktivitas dan performa pendaftaran Alfilaha.
+            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-black tracking-wide">
               {today}
             </span>
           </p>
         </div>
-        <div className="flex bg-gray-100/80 backdrop-blur-sm rounded-xl p-1.5 border border-gray-200/50 shadow-inner">
+        <div className="relative z-10 flex bg-gray-100/80 backdrop-blur-md rounded-2xl p-1.5 border border-white shadow-inner">
           {["7 Hari", "30 Hari", "3 Bulan"].map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
-              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${
+              className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all duration-300 ${
                 period === p
-                  ? "bg-white text-green-700 shadow-[0_2px_10px_rgba(0,0,0,0.05)] ring-1 ring-gray-900/5"
-                  : "text-gray-500 hover:text-gray-800 hover:bg-white/50"
+                  ? "bg-white text-[#16804B] shadow-[0_4px_12px_rgba(0,0,0,0.06)] ring-1 ring-black/5"
+                  : "text-gray-500 hover:text-gray-900 hover:bg-white/40"
               }`}
             >
               {p}
@@ -157,46 +172,56 @@ const Beranda = ({
 
       {/* KPI CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-        {/* Primary Dark Card */}
-        <div className="bg-gradient-to-br from-green-900 via-emerald-800 to-green-700 rounded-[2rem] p-7 shadow-[0_15px_35px_rgba(16,185,129,0.2)] relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-          <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-green-400/20 rounded-full blur-3xl"></div>
+        {/* Primary Dark Card (Pendaftar Santri) */}
+        <div className="bg-gradient-to-br from-[#14532D] via-[#16804B] to-[#10b981] rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-8 shadow-[0_20px_40px_rgba(22,128,75,0.25)] relative overflow-hidden group hover:-translate-y-1.5 transition-all duration-300">
+          <div className="absolute -right-10 -top-6 sm:p-10 w-48 h-48 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-black/20 rounded-full blur-3xl"></div>
           <div className="relative z-10 flex justify-between items-start mb-6">
             <div>
-              <p className="text-sm font-bold text-green-100/80 uppercase tracking-wider">
-                Total Reservasi
+              <p className="text-xs font-black text-white/70 uppercase tracking-widest">
+                Total Santri Terdaftar
               </p>
-              <h3 className="text-4xl font-black text-white mt-2 drop-shadow-md">
-                {totalReservasi}
+              <h3 className="text-5xl font-black text-white mt-2 drop-shadow-lg">
+                {totalPendaftar}
               </h3>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center shrink-0 shadow-inner border border-white/10">
-              <FiCheck className="text-2xl" />
+            <div className="w-16 h-16 rounded-[1.25rem] bg-white/20 backdrop-blur-md text-white flex items-center justify-center shrink-0 shadow-inner border border-white/20 group-hover:scale-110 transition-transform duration-500">
+              <FiUsers className="text-3xl drop-shadow-sm" />
             </div>
           </div>
-          <div className="relative z-10 flex items-center text-sm font-bold text-green-50 bg-black/10 w-max px-3 py-1.5 rounded-full backdrop-blur-md">
-            <FiTrendingUp className="mr-1.5" /> <span>Performa Stabil</span>
+          <div className="relative z-10 mt-2 flex justify-between items-center w-full">
+            <div className="flex items-center text-xs font-black text-green-50 bg-black/20 px-4 py-2 rounded-full backdrop-blur-md border border-white/10 shadow-inner">
+              <FiTrendingUp className="mr-2" size={14} /> Pendaftaran Aktif
+            </div>
+            <button
+              onClick={() => handleTabChange("pendaftaran")}
+              className="text-white hover:text-green-200 p-2 rounded-full hover:bg-white/10 transition-colors"
+            >
+              <FiArrowLeft className="rotate-180 w-5 h-5" />
+            </button>
           </div>
         </div>
 
         {/* Glass Cards */}
         {[
           {
-            title: "Menunggu Konfirmasi",
-            value: pendingReservasi,
+            title: "Program Aktif",
+            value: totalProgramAktif,
+            icon: <FiBookOpen />,
+            color: "purple",
+            action: () => handleTabChange("pendaftaran"),
+            desc: "Pendaftaran & Event",
+          },
+          {
+            title: "Total Reservasi",
+            value: totalReservasi,
             icon: <FiClock />,
             color: "orange",
             action: () => handleTabChange("reservasi"),
             desc:
-              pendingReservasi > 0 ? "Perlu tindakan →" : "Semua terselesaikan",
-          },
-          {
-            title: "Event Aktif",
-            value: events.length,
-            icon: <FiCalendar />,
-            color: "purple",
-            action: () => handleTabChange("event"),
-            desc: "Lihat semua event →",
+              pendingReservasi > 0
+                ? `${pendingReservasi} Menunggu konfirmasi`
+                : "Semua terselesaikan",
           },
           {
             title: "Pesan Masuk",
@@ -204,17 +229,20 @@ const Beranda = ({
             icon: <FiMessageSquare />,
             color: "blue",
             action: () => handleTabChange("appointment"),
-            desc: "Cek kotak masuk →",
+            desc: "Inbox belum dibaca",
           },
         ].map((item, idx) => (
           <div
             key={idx}
             onClick={item.action}
-            className={`bg-white/80 backdrop-blur-xl rounded-[2rem] p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white relative overflow-hidden group hover:-translate-y-1 hover:shadow-[0_15px_35px_rgb(0,0,0,0.08)] transition-all duration-300 cursor-pointer`}
+            className={`bg-white/80 backdrop-blur-2xl rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-white/60 relative overflow-hidden group hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] transition-all duration-300 cursor-pointer`}
           >
+            <div
+              className={`absolute top-0 right-0 w-32 h-32 bg-${item.color}-100/50 rounded-bl-[100px] -z-10 group-hover:scale-125 transition-transform duration-500 blur-xl`}
+            ></div>
             <div className="flex justify-between items-start mb-6">
               <div>
-                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
                   {item.title}
                 </p>
                 <h3 className="text-4xl font-black text-gray-900 mt-2">
@@ -222,16 +250,16 @@ const Beranda = ({
                 </h3>
               </div>
               <div
-                className={`w-14 h-14 rounded-2xl bg-${item.color}-50 text-${item.color}-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 group-hover:bg-${item.color}-100`}
+                className={`w-14 h-14 rounded-[1.25rem] bg-${item.color}-50 text-${item.color}-600 flex items-center justify-center shrink-0 shadow-inner border border-${item.color}-100/50 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300`}
               >
                 {React.cloneElement(item.icon, { className: "text-2xl" })}
               </div>
             </div>
             <div
-              className={`flex items-center text-sm font-bold text-${item.color}-600 bg-${item.color}-50/50 w-max px-3 py-1.5 rounded-full`}
+              className={`flex items-center text-xs font-black text-${item.color}-700 bg-${item.color}-50/60 w-max px-4 py-2 rounded-full border border-${item.color}-100`}
             >
-              {item.title === "Menunggu Konfirmasi" && (
-                <FiAlertCircle className="mr-1.5" />
+              {item.title === "Total Reservasi" && pendingReservasi > 0 && (
+                <FiAlertCircle className="mr-2" size={14} />
               )}
               <span>{item.desc}</span>
             </div>
@@ -239,22 +267,28 @@ const Beranda = ({
         ))}
       </div>
 
-      {/* TREN RESERVASI (FULL WIDTH) */}
-      <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-7 lg:p-9 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white flex flex-col">
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* TREN GRAFIK (FULL WIDTH) */}
+      <div className="bg-white/80 backdrop-blur-2xl rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-8 lg:p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-white/60 flex flex-col relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-transparent to-green-50/30 -z-10 pointer-events-none"></div>
+        <div className="mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-extrabold text-gray-900">
-              Tren Reservasi
+            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+              Tren Aktivitas Keseluruhan
             </h2>
-            <p className="text-sm text-gray-500 font-medium mt-1">
-              Perkembangan jumlah reservasi berdasarkan periode.
+            <p className="text-sm text-gray-500 font-medium mt-2">
+              Perkembangan jumlah pendaftar santri dan reservasi berdasarkan
+              periode.
             </p>
           </div>
-          <div className="bg-green-50 text-green-700 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 border border-green-100">
-            <FiActivity /> Live Data
+          <div className="bg-green-50/80 text-[#16804B] px-5 py-2.5 rounded-2xl text-sm font-black flex items-center gap-2 border border-green-100 shadow-sm backdrop-blur-md">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-[#16804B]"></span>
+            </span>
+            Live Data
           </div>
         </div>
-        <div className="w-full h-[320px] pb-4">
+        <div className="w-full h-[360px] pb-4">
           {trendData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
@@ -266,9 +300,13 @@ const Beranda = ({
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.6} />
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
+                  <linearGradient id="colorPen" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.6} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
                 </defs>
                 <CartesianGrid
-                  strokeDasharray="3 3"
+                  strokeDasharray="4 4"
                   vertical={false}
                   stroke="#f1f5f9"
                 />
@@ -277,7 +315,7 @@ const Beranda = ({
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 13, fill: "#64748b", fontWeight: "bold" }}
-                  dy={10}
+                  dy={15}
                 />
                 <YAxis
                   axisLine={false}
@@ -287,113 +325,129 @@ const Beranda = ({
                 />
                 <Tooltip
                   contentStyle={{
-                    borderRadius: "16px",
-                    border: "1px solid #f1f5f9",
-                    boxShadow:
-                      "0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
-                    padding: "12px",
+                    borderRadius: "20px",
+                    border: "1px solid rgba(255,255,255,0.8)",
+                    boxShadow: "0 20px 40px -10px rgb(0 0 0 / 0.15)",
+                    padding: "16px",
+                    backgroundColor: "rgba(255,255,255,0.9)",
+                    backdropFilter: "blur(10px)",
                   }}
                   labelStyle={{
                     fontWeight: "900",
-                    color: "#1e293b",
-                    marginBottom: "8px",
-                    fontSize: "15px",
+                    color: "#0f172a",
+                    marginBottom: "12px",
+                    fontSize: "16px",
                   }}
-                  itemStyle={{ fontWeight: "bold", color: "#10b981" }}
+                  itemStyle={{
+                    fontWeight: "800",
+                    fontSize: "14px",
+                    padding: "4px 0",
+                  }}
                 />
                 <Area
                   type="monotone"
+                  name="Pendaftar Santri"
+                  dataKey="Pendaftar"
+                  stroke="#3b82f6"
+                  strokeWidth={5}
+                  fillOpacity={1}
+                  fill="url(#colorPen)"
+                  animationDuration={1500}
+                />
+                <Area
+                  type="monotone"
+                  name="Reservasi Wisata"
                   dataKey="Reservasi"
                   stroke="#10b981"
-                  strokeWidth={4}
+                  strokeWidth={5}
                   fillOpacity={1}
                   fill="url(#colorRes)"
-                  animationDuration={1000}
+                  animationDuration={1500}
                 />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-200">
-              <FiActivity size={36} className="mb-4 opacity-40 text-gray-400" />
-              <p className="font-extrabold text-gray-500">
+              <FiActivity size={48} className="mb-4 opacity-30 text-gray-400" />
+              <p className="font-extrabold text-gray-500 text-lg">
                 Belum Ada Data Tren
               </p>
-              <p className="text-sm mt-1 text-center font-medium max-w-xs">
-                Data chart akan muncul otomatis setelah ada reservasi yang
-                masuk.
+              <p className="text-sm mt-2 text-center font-medium max-w-sm">
+                Data chart akan muncul otomatis setelah ada pendaftar santri
+                atau reservasi yang masuk.
               </p>
             </div>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-6 sm:p-8">
         {/* INSIGHT CERDAS */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-7 lg:p-9 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl">
-              <FiZap className="text-orange-600 text-xl" />
+        <div className="bg-white/80 backdrop-blur-2xl rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-8 lg:p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-white/60">
+          <div className="flex items-center gap-4 mb-3">
+            <div className="p-3 bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl shadow-inner border border-white">
+              <FiZap className="text-orange-600 text-2xl" />
             </div>
-            <h2 className="text-2xl font-extrabold text-gray-900">
+            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
               Insight Cerdas
             </h2>
           </div>
-          <p className="text-sm text-gray-500 font-medium mb-8 pl-14">
-            Ringkasan otomatis dari data terkini sistem.
+          <p className="text-sm text-gray-500 font-medium mb-8 pl-[4.5rem]">
+            Ringkasan analisis otomatis dari data sistem terkini.
           </p>
 
-          <div className="space-y-4">
-            <div className="p-5 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100/50 shadow-sm relative overflow-hidden group">
-              <div className="absolute right-0 top-0 w-24 h-24 bg-green-200/40 rounded-full blur-2xl transform translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform"></div>
-              <h4 className="font-extrabold text-gray-800 text-base mb-1.5 relative z-10">
-                Tinjauan Reservasi
-              </h4>
-              <p className="text-sm font-medium text-gray-600 relative z-10 leading-relaxed">
-                {totalReservasi > 0
-                  ? `Terdapat total ${totalReservasi} reservasi tercatat di sistem saat ini. Performa stabil dan berjalan baik.`
-                  : "Sistem sedang menunggu reservasi pertama. Tetap pantau!"}
+          <div className="space-y-5">
+            {/* Pendaftaran Insight */}
+            <div className="p-6 rounded-[1.5rem] bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/50 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+              <div className="absolute right-0 top-0 w-32 h-32 bg-blue-200/30 rounded-full blur-3xl transform translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform duration-700"></div>
+              <div className="flex items-center gap-3 mb-2 relative z-10">
+                <FiUsers className="text-blue-600 w-5 h-5" />
+                <h4 className="font-extrabold text-gray-900 text-lg">
+                  Gelombang Pendaftaran
+                </h4>
+              </div>
+              <p className="text-[15px] font-medium text-gray-700 relative z-10 leading-relaxed pl-8">
+                {totalPendaftar > 0
+                  ? `Sistem mencatat ada ${totalPendaftar} calon santri yang telah mendaftar. Terus pantau dan lakukan verifikasi data secara berkala.`
+                  : "Belum ada calon santri yang mendaftar. Pastikan program pendaftaran publik sudah aktif."}
               </p>
             </div>
+
+            {/* Reservasi Insight */}
             <div
-              className={`p-5 rounded-2xl border shadow-sm relative overflow-hidden group ${pendingReservasi > 0 ? "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-100/50" : "bg-gray-50 border-gray-100"}`}
+              className={`p-6 rounded-[1.5rem] border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow ${pendingReservasi > 0 ? "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-100/50" : "bg-gradient-to-br from-green-50 to-emerald-50 border-green-100/50"}`}
             >
-              <div className="absolute right-0 top-0 w-24 h-24 bg-orange-200/40 rounded-full blur-2xl transform translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform"></div>
-              <h4 className="font-extrabold text-gray-800 text-base mb-1.5 relative z-10">
-                Status Prioritas
-              </h4>
-              <p className="text-sm font-medium text-gray-600 relative z-10 leading-relaxed">
+              <div className="absolute right-0 top-0 w-32 h-32 bg-current opacity-5 rounded-full blur-3xl transform translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform duration-700"></div>
+              <div className="flex items-center gap-3 mb-2 relative z-10">
+                <FiClock
+                  className={`${pendingReservasi > 0 ? "text-orange-600" : "text-green-600"} w-5 h-5`}
+                />
+                <h4 className="font-extrabold text-gray-900 text-lg">
+                  Tindakan Reservasi
+                </h4>
+              </div>
+              <p className="text-[15px] font-medium text-gray-700 relative z-10 leading-relaxed pl-8">
                 {pendingReservasi > 0
-                  ? `Ada ${pendingReservasi} reservasi yang masih berstatus menunggu konfirmasi. Segera tindaklanjuti untuk pengalaman pengguna yang baik.`
-                  : "Tidak ada reservasi pending. Semua antrian sudah ditangani dengan cepat."}
-              </p>
-            </div>
-            <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/50 shadow-sm relative overflow-hidden group">
-              <div className="absolute right-0 top-0 w-24 h-24 bg-blue-200/40 rounded-full blur-2xl transform translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform"></div>
-              <h4 className="font-extrabold text-gray-800 text-base mb-1.5 relative z-10">
-                Interaksi Publik
-              </h4>
-              <p className="text-sm font-medium text-gray-600 relative z-10 leading-relaxed">
-                {totalPesan > 0
-                  ? `Telah masuk ${totalPesan} pesan pertanyaan/kontak melalui website. Pastikan untuk merespon pertanyaan klien tepat waktu.`
-                  : "Belum ada pesan kontak masuk dari form website."}
+                  ? `Perhatian: Ada ${pendingReservasi} reservasi wisata yang masih menunggu konfirmasi Anda. Segera proses agar pelanggan tidak menunggu lama.`
+                  : `Total ${totalReservasi} reservasi telah diproses. Tidak ada reservasi pending, semua antrian terkendali dengan baik.`}
               </p>
             </div>
           </div>
         </div>
 
         {/* STATUS RESERVASI */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-7 lg:p-9 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white flex flex-col">
-          <div className="mb-4">
-            <h2 className="text-2xl font-extrabold text-gray-900">
-              Distribusi Status
+        <div className="bg-white/80 backdrop-blur-2xl rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-8 lg:p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-white/60 flex flex-col">
+          <div className="mb-6">
+            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+              Distribusi Status Reservasi
             </h2>
-            <p className="text-sm text-gray-500 font-medium mt-1">
-              Rasio konfirmasi tiket masuk.
+            <p className="text-sm text-gray-500 font-medium mt-2">
+              Analisa visual penerimaan reservasi wisata & fasilitas.
             </p>
           </div>
 
-          <div className="flex-1 flex flex-col sm:flex-row items-center justify-center gap-6 my-4">
-            <div className="w-[180px] h-[180px] shrink-0 relative">
+          <div className="flex-1 flex flex-col sm:flex-row items-center justify-center gap-6 sm:p-10 my-4">
+            <div className="w-[200px] h-[200px] shrink-0 relative">
               {statusData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -401,11 +455,12 @@ const Beranda = ({
                       data={statusData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={55}
-                      outerRadius={85}
-                      paddingAngle={4}
+                      innerRadius={65}
+                      outerRadius={95}
+                      paddingAngle={5}
                       dataKey="value"
                       stroke="none"
+                      cornerRadius={6}
                     >
                       {statusData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -413,17 +468,19 @@ const Beranda = ({
                     </Pie>
                     <Tooltip
                       contentStyle={{
-                        borderRadius: "12px",
+                        borderRadius: "16px",
                         border: "none",
-                        boxShadow: "0 10px 25px -5px rgb(0 0 0 / 0.1)",
-                        fontWeight: "bold",
+                        boxShadow: "0 10px 25px -5px rgb(0 0 0 / 0.15)",
+                        fontWeight: "800",
+                        padding: "10px 16px",
                       }}
+                      itemStyle={{ fontWeight: "900" }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50/50 rounded-full border-2 border-dashed border-gray-200">
-                  <FiPieChart size={28} className="text-gray-300 mb-1" />
+                  <FiPieChart size={32} className="text-gray-300 mb-2" />
                 </div>
               )}
             </div>
@@ -433,25 +490,25 @@ const Beranda = ({
                 statusData.map((s) => (
                   <div
                     key={s.name}
-                    className="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100/50"
+                    className="flex items-center justify-between bg-gray-50/80 p-4 rounded-2xl border border-gray-100 shadow-sm"
                   >
                     <div className="flex items-center">
                       <span
-                        className="w-3.5 h-3.5 rounded-full mr-3 shadow-inner"
+                        className="w-4 h-4 rounded-full mr-4 shadow-inner"
                         style={{ backgroundColor: s.color }}
                       ></span>
-                      <span className="font-bold text-gray-600 text-sm">
+                      <span className="font-extrabold text-gray-700 text-sm">
                         {s.name}
                       </span>
                     </div>
-                    <span className="font-black text-gray-900 bg-white px-3 py-1 rounded-lg shadow-sm">
+                    <span className="font-black text-gray-900 bg-white px-4 py-1.5 rounded-xl shadow-sm border border-gray-100/50">
                       {s.value}
                     </span>
                   </div>
                 ))
               ) : (
                 <p className="text-center text-sm text-gray-400 font-medium">
-                  Grafik kosong.
+                  Grafik kosong. Belum ada data.
                 </p>
               )}
             </div>
@@ -459,29 +516,30 @@ const Beranda = ({
 
           <button
             onClick={() => handleTabChange("reservasi")}
-            className="mt-4 w-full py-3.5 rounded-xl bg-gray-900 hover:bg-green-700 text-white font-bold text-sm transition-colors shadow-lg shadow-gray-900/20 hover:shadow-green-700/30 flex items-center justify-center gap-2"
+            className="mt-6 w-full py-4 rounded-[1.25rem] bg-[#1a1a1a] hover:bg-[#16804B] text-white font-black text-sm transition-all duration-300 shadow-xl shadow-gray-900/20 hover:shadow-[#16804B]/30 flex items-center justify-center gap-3 group"
           >
-            Kelola Reservasi Sekarang <FiArrowLeft className="rotate-180" />
+            Kelola Reservasi Sekarang
+            <FiArrowLeft className="rotate-180 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
       </div>
 
       {/* AGENDA & AKSI CEPAT */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-6 sm:p-8">
         {/* Agenda Terdekat */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-7 lg:p-9 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white flex flex-col">
+        <div className="bg-white/80 backdrop-blur-2xl rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-8 lg:p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-white/60 flex flex-col">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h2 className="text-2xl font-extrabold text-gray-900">
+              <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
                 Agenda Terdekat
               </h2>
-              <p className="text-sm text-gray-500 font-medium mt-1">
-                Jadwal event yang akan datang.
+              <p className="text-sm text-gray-500 font-medium mt-2">
+                Jadwal event yang akan datang bulan ini.
               </p>
             </div>
             <button
               onClick={() => handleTabChange("event")}
-              className="text-green-600 hover:text-white hover:bg-green-600 text-sm font-bold bg-green-50 px-4 py-2 rounded-xl transition-all shadow-sm"
+              className="text-[#16804B] hover:text-white hover:bg-[#16804B] text-sm font-black bg-green-50 px-5 py-2.5 rounded-xl transition-all shadow-sm border border-green-100"
             >
               Lihat Semua
             </button>
@@ -492,11 +550,11 @@ const Beranda = ({
               upcomingEvents.map((ev) => (
                 <div
                   key={ev.id}
-                  className="flex items-center p-5 rounded-[1.5rem] border border-gray-100 hover:border-green-200 hover:shadow-[0_8px_20px_rgba(16,185,129,0.08)] transition-all bg-white group cursor-pointer relative overflow-hidden"
+                  className="flex items-center p-5 rounded-[1.5rem] border border-gray-100 hover:border-green-200 hover:shadow-[0_12px_24px_rgba(22,128,75,0.08)] transition-all bg-white group cursor-pointer relative overflow-hidden"
                   onClick={() => handleTabChange("event")}
                 >
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-green-50 to-emerald-100 text-green-700 flex flex-col items-center justify-center shrink-0 border border-green-200/50 group-hover:from-green-600 group-hover:to-emerald-700 group-hover:text-white transition-all duration-300 shadow-sm">
+                  <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#16804B] opacity-0 group-hover:opacity-100 transition-opacity rounded-l-full"></div>
+                  <div className="w-16 h-16 rounded-[1.25rem] bg-gradient-to-b from-green-50 to-emerald-100 text-[#16804B] flex flex-col items-center justify-center shrink-0 border border-green-200/50 group-hover:from-[#16804B] group-hover:to-emerald-700 group-hover:text-white transition-all duration-300 shadow-sm">
                     {(() => {
                       let monthStr =
                         ev.date.split(" ")[1] || ev.date.substring(0, 3);
@@ -541,27 +599,30 @@ const Beranda = ({
                     })()}
                   </div>
                   <div className="ml-5 flex-1 overflow-hidden">
-                    <h4 className="font-extrabold text-gray-900 text-base lg:text-lg truncate group-hover:text-green-700 transition-colors">
+                    <h4 className="font-extrabold text-gray-900 text-lg truncate group-hover:text-[#16804B] transition-colors">
                       {ev.title}
                     </h4>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider">
-                        {ev.category || "Event"}
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border border-gray-200/50">
+                        {ev.category || "Event Publik"}
                       </span>
                     </div>
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-green-50 group-hover:text-green-600 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-green-50 group-hover:text-[#16804B] transition-colors shrink-0">
                     <FiArrowLeft className="rotate-180" />
                   </div>
                 </div>
               ))
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-gray-50/50 rounded-[1.5rem] border-2 border-dashed border-gray-100">
-                <div className="bg-white p-4 rounded-full shadow-sm mb-3">
-                  <FiCalendar className="text-gray-300 w-8 h-8" />
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-6 sm:p-10 bg-gray-50/50 rounded-2xl sm:rounded-[2rem] border-2 border-dashed border-gray-200">
+                <div className="bg-white p-5 rounded-full shadow-sm mb-4">
+                  <FiCalendar className="text-gray-300 w-10 h-10" />
                 </div>
-                <p className="text-gray-500 font-bold text-sm">
-                  Belum ada agenda mendatang terdaftar.
+                <p className="text-gray-500 font-extrabold text-base">
+                  Tidak ada event terdaftar.
+                </p>
+                <p className="text-sm text-gray-400 font-medium mt-1">
+                  Tambahkan event baru agar muncul di sini.
                 </p>
               </div>
             )}
@@ -569,31 +630,31 @@ const Beranda = ({
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-7 lg:p-9 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white">
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-1">
-            ⚡ Aksi Cepat
+        <div className="bg-white/80 backdrop-blur-2xl rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-8 lg:p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-white/60">
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-2 tracking-tight">
+            Aksi Cepat
           </h2>
-          <p className="text-sm text-gray-500 font-medium mb-8">
-            Pintasan ke fitur utama sistem manajemen.
+          <p className="text-sm text-gray-500 font-medium mb-10">
+            Jalan pintas ke fitur-fitur yang paling sering Anda gunakan.
           </p>
 
-          <div className="grid grid-cols-2 gap-4 lg:gap-5">
+          <div className="grid grid-cols-2 gap-5 lg:gap-6">
             {[
               {
-                title: "Tulis Artikel",
-                icon: <FiFileText />,
-                tab: "blog-form",
+                title: "Kelola Pendaftaran",
+                icon: <FiUsers />,
+                tab: "pendaftaran",
                 color:
-                  "bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white",
-                border: "border-emerald-100",
+                  "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white",
+                border: "border-blue-100/60 shadow-blue-500/10",
               },
               {
                 title: "Kelola Galeri",
                 icon: <FiImage />,
                 tab: "galeri-semua",
                 color:
-                  "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white",
-                border: "border-blue-100",
+                  "bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white",
+                border: "border-emerald-100/60 shadow-emerald-500/10",
               },
               {
                 title: "Tambah Event",
@@ -601,28 +662,28 @@ const Beranda = ({
                 tab: "event",
                 color:
                   "bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white",
-                border: "border-purple-100",
+                border: "border-purple-100/60 shadow-purple-500/10",
               },
               {
-                title: "Lihat Pesan",
+                title: "Kotak Pesan Masuk",
                 icon: <FiMessageSquare />,
                 tab: "appointment",
                 color:
                   "bg-orange-50 text-orange-600 hover:bg-orange-600 hover:text-white",
-                border: "border-orange-100",
+                border: "border-orange-100/60 shadow-orange-500/10",
               },
             ].map((action, idx) => (
               <button
                 key={idx}
                 onClick={() => handleTabChange(action.tab)}
-                className={`flex flex-col items-center justify-center p-6 lg:p-8 rounded-[1.5rem] transition-all duration-300 border shadow-sm hover:shadow-xl group ${action.color} ${action.border}`}
+                className={`flex flex-col items-center justify-center p-6 sm:p-8 rounded-2xl sm:rounded-[2rem] transition-all duration-300 border shadow-md hover:shadow-2xl group ${action.color} ${action.border}`}
               >
-                <div className="transform group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300">
+                <div className="transform group-hover:scale-125 group-hover:-translate-y-2 transition-all duration-300 drop-shadow-sm">
                   {React.cloneElement(action.icon, {
                     className: "w-10 h-10 mb-4",
                   })}
                 </div>
-                <span className="text-sm lg:text-base font-extrabold">
+                <span className="text-[15px] font-black tracking-tight text-center">
                   {action.title}
                 </span>
               </button>

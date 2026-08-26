@@ -14,16 +14,7 @@ const PesanTempat = () => {
     waktu: "",
     message: "",
   });
-  const [paketList, setPaketList] = useState([
-    { id: 1, nama_paket: "Edukasi Basic", harga: "Rp 20.000 / orang" },
-    { id: 2, nama_paket: "Edukasi Premium", harga: "Rp 100.000 / orang" },
-    {
-      id: 3,
-      nama_paket: "Paket Wisata Keluarga",
-      harga: "Rp 150.000 / keluarga",
-    },
-    { id: 4, nama_paket: "Panen buah & Sayuran", harga: "Rp 30.000 / Orang" },
-  ]);
+  const [paketList, setPaketList] = useState([]);
   const [fetchError, setFetchError] = useState("");
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,7 +40,7 @@ const PesanTempat = () => {
 
         if (response && response.ok) {
           const data = await response.json();
-          if (data && data.length > 0) {
+          if (data) {
             setPaketList(data);
           }
         }

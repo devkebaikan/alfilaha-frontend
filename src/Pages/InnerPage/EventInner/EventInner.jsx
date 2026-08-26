@@ -79,7 +79,7 @@ const EventInner = () => {
                     eventCategory={event.category}
                     eventTitle={event.title}
                     eventDesc={event.description}
-                    eventUrl={"/blog_details"}
+                    eventUrl={`/event_details/${event.id}`}
                     btnIcon={<FaArrowRightLong />}
                   />
                 </div>

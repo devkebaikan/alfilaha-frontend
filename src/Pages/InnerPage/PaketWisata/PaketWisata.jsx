@@ -38,6 +38,11 @@ const PaketWisata = () => {
         </div>
       )}
       <div className="p-8">
+        {paket.gambar && (
+          <div className="mb-6 rounded-xl overflow-hidden h-48 w-full">
+            <img src={`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${paket.gambar}`} alt={paket.nama_paket} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+          </div>
+        )}
         <h3 className="font-AlbertSans font-bold text-2xl text-HeadingColor-0 mb-4">
           {paket.nama_paket}
         </h3>
@@ -47,17 +52,10 @@ const PaketWisata = () => {
           </span>
         </div>
         <div className="mb-6">
-          <ul className="space-y-3">
-            {paket.deskripsi &&
-              paket.deskripsi.split("\n").map((feature, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <FaCheck className="text-PrimaryColor-0 mt-1 flex-shrink-0" />
-                  <span className="font-AlbertSans text-TextColor-0">
-                    {feature.trim()}
-                  </span>
-                </li>
-              ))}
-          </ul>
+          <div 
+            className="prose prose-sm text-TextColor-0 font-AlbertSans max-w-none" 
+            dangerouslySetInnerHTML={{ __html: paket.deskripsi }} 
+          />
         </div>
         <Link to="/pesan-tempat">
           <button

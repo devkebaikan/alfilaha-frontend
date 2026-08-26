@@ -155,29 +155,7 @@ const ProjectDetails = () => {
                   </h5>
                 </div>
               </div>
-              <div className="rounded-lg px-9 overflow-hidden bg-[url('/images/sidebar-bg.jpg')] bg-cover bg-no-repeat bg-center py-[50px]">
-                <img loading="lazy" src={wedgetIcon} draggable="false" />
-                <h6 className="font-AlbertSans font-medium text-lg text-white mt-5 mb-2">
-                  Call Us Anytime
-                </h6>
-                <Link to={"/"}>
-                  <button className="font-AlbertSans font-semibold text-2xl text-white">
-                    +123 (4567) 890
-                  </button>
-                </Link>
-                <Link to={"/"}>
-                  <button className="font-AlbertSans text-white flex gap-2 items-center mt-4 mb-[52px]">
-                    <MdEmail className="text-xl text-PrimaryColor-0" />
-                    example@gmail.com
-                  </button>
-                </Link>
-                <Link to={"/contact"}>
-                  <button className="font-AlbertSans text-white flex gap-2 items-center bg-PrimaryColor-0 w-full h-[58px] rounded-md justify-center z-10 relative before:absolute before:top-0 before:right-0 before:scale-0 before:-z-10 before:w-full before:h-full before:bg-SecondaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:scale-100 hover:text-white">
-                    Contact Us
-                    <FaArrowRight />
-                  </button>
-                </Link>
-              </div>
+
             </div>
           </div>
         </div>

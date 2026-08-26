@@ -34,7 +34,7 @@ const ServiceCard = ({
         <h5 className="font-AlbertSans font-bold text-HeadingColor-0 text-xl sm:text-[22px] lg:text-lg xl:text-[22px] transition-all duration-500 group-hover:text-white pt-7 pb-3">
           {serviceTitle}
         </h5>
-        <p className="font-AlbertSans text-TextColor-0 mb-8">{serviceDesc}</p>
+        <p className="font-AlbertSans text-TextColor-0 mb-8 line-clamp-3">{serviceDesc}</p>
         <Link
           to={serviceUrl}
           className="absolute -bottom-[25px] left-1/2 -translate-x-1/2"

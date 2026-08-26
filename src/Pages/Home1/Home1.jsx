@@ -564,7 +564,7 @@ const Home1 = () => {
                         {paket.nama_paket}
                       </h4>
                       <p className="text-TextColor-0 mb-8 flex-1 line-clamp-3 text-[16px] leading-relaxed">
-                        {paket.deskripsi}
+                        {paket.deskripsi ? (typeof paket.deskripsi === 'string' ? paket.deskripsi.replace(/<[^>]+>/g, '') : paket.deskripsi) : ''}
                       </p>
                       <Link
                         to="/pesan-tempat"
@@ -661,7 +661,7 @@ const Home1 = () => {
                       <Link to={`/blog_details/${blog.id}`}>{blog.title}</Link>
                     </h4>
                     <p className="text-TextColor-0 text-[16px] line-clamp-3 mb-8 flex-1 leading-relaxed">
-                      {blog.excerpt}
+                      {blog.excerpt ? (typeof blog.excerpt === 'string' ? blog.excerpt.replace(/<[^>]+>/g, '') : blog.excerpt) : ''}
                     </p>
                     <div className="pt-6 border-t border-BorderColor2-0">
                       <Link

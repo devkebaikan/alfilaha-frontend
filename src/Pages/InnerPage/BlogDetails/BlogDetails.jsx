@@ -7,10 +7,7 @@ import blog_detailsImg2 from "/images/services-details-benifis-thumb-2.png";
 import itemthumb from "/images/post-1.png";
 import itemthumb2 from "/images/post-2.png";
 import itemthumb3 from "/images/post-3.png";
-import author1 from "/images/author-1.png";
-import author2 from "/images/author-2.png";
 import { IoSearch } from "react-icons/io5";
-import { IoIosSend } from "react-icons/io";
 import { FaUserCircle } from "react-icons/fa";
 import {
   FaAnglesLeft,
@@ -25,11 +22,12 @@ import {
   FaRegFolderOpen,
   FaXTwitter,
 } from "react-icons/fa6";
-import { BiSolidQuoteAltRight, BiSolidShare } from "react-icons/bi";
+import { BiSolidQuoteAltRight } from "react-icons/bi";
 
 const BlogDetails = () => {
   const { id } = useParams();
   const [blog, setBlog] = useState(null);
+  const [allBlogs, setAllBlogs] = useState([]);
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -39,6 +37,7 @@ const BlogDetails = () => {
         );
         if (response.ok) {
           const data = await response.json();
+          setAllBlogs(data);
           const currentBlog = data.find((b) => b.id === parseInt(id));
           setBlog(currentBlog);
         }
@@ -57,10 +56,23 @@ const BlogDetails = () => {
     );
   }
 
-  const dateDisplay =
-    blog.date && blog.date.includes("-") && blog.date.split("-")[0].length === 4
-      ? `${new Date(blog.date).getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][new Date(blog.date).getMonth()]} ${new Date(blog.date).getFullYear()}`
-      : blog.date;
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    if (dateStr.includes("-") && dateStr.split("-")[0].length === 4) {
+      return `${new Date(dateStr).getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][new Date(dateStr).getMonth()]} ${new Date(dateStr).getFullYear()}`;
+    }
+    return dateStr;
+  };
+
+  const dateDisplay = formatDate(blog.date);
+
+  const currentIndex = allBlogs.findIndex((b) => b.id === parseInt(id));
+  const previousBlog = currentIndex > 0 ? allBlogs[currentIndex - 1] : null;
+  const nextBlog = currentIndex !== -1 && currentIndex < allBlogs.length - 1 ? allBlogs[currentIndex + 1] : null;
+  
+  const recentBlogs = allBlogs
+    .filter((b) => b.id !== parseInt(id))
+    .slice(0, 3);
 
   return (
     <>
@@ -171,147 +183,71 @@ const BlogDetails = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-[60px]">
                 <div className="rounded-md bg-[#f3f4f8] pt-8 pb-10 px-9">
-                  <button className="font-AlbertSans font-medium text-lg text-HeadingColor-0 flex items-center gap-2">
-                    <FaAnglesLeft size={"14"} />
-                    Previous Post
-                  </button>
-                  <button
-                    to={"/"}
-                    className="flex flex-col sm:flex-row lg:flex-col xl:flex-row xl:items-center gap-5 sm:items-center lg:items-start mt-5"
-                  >
-                    <div>
-                      <img loading="lazy" draggable="false" src={itemthumb} />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-AlbertSans font-medium sm:text-lg md:text-base 2xl:text-lg text-HoverColor-0 sm:leading-[26px]">
-                        Probably Syndicate Vista Seamless...
-                      </h4>
-                      <p className="font-AlbertSans text-sm text-SecondaryColor-0 mt-1">
-                        01 Jan, 2024
-                      </p>
-                    </div>
-                  </button>
+                  {previousBlog ? (
+                    <>
+                      <button className="font-AlbertSans font-medium text-lg text-HeadingColor-0 flex items-center gap-2">
+                        <FaAnglesLeft size={"14"} />
+                        Previous Post
+                      </button>
+                      <Link
+                        to={`/blog_details/${previousBlog.id}`}
+                        className="flex flex-col sm:flex-row lg:flex-col xl:flex-row xl:items-center gap-5 sm:items-center lg:items-start mt-5"
+                      >
+                        <div>
+                          <img 
+                            loading="lazy" 
+                            draggable="false" 
+                            src={previousBlog.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${previousBlog.image}` : itemthumb} 
+                            className="w-[81px] h-[80px] object-cover rounded"
+                          />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <h4 className="font-AlbertSans font-medium sm:text-lg md:text-base 2xl:text-lg text-HoverColor-0 sm:leading-[26px] line-clamp-2">
+                            {previousBlog.title}
+                          </h4>
+                          <p className="font-AlbertSans text-sm text-SecondaryColor-0 mt-1">
+                            {formatDate(previousBlog.date)}
+                          </p>
+                        </div>
+                      </Link>
+                    </>
+                  ) : (
+                    <div className="h-full flex items-center text-gray-400">Tidak ada artikel sebelumnya</div>
+                  )}
                 </div>
                 <div className="rounded-md bg-[#f3f4f8] pt-8 pb-10 px-9 flex flex-col items-end">
-                  <button className="font-AlbertSans font-medium text-lg text-HeadingColor-0 flex items-center gap-2">
-                    Next Post
-                    <FaAnglesRight size={"14"} />
-                  </button>
-                  <button
-                    to={"/"}
-                    className="flex flex-col sm:flex-row lg:flex-col xl:flex-row xl:items-center gap-5 sm:items-center lg:items-start mt-5 text-right"
-                  >
-                    <div className="flex-1">
-                      <h4 className="font-AlbertSans font-medium sm:text-lg md:text-base 2xl:text-lg text-HoverColor-0 sm:leading-[26px]">
-                        Forest Cleaning Using Full Safty...
-                      </h4>
-                      <p className="font-AlbertSans text-sm text-SecondaryColor-0 mt-1">
-                        09 Jan, 2024
-                      </p>
-                    </div>
-                    <div>
-                      <img loading="lazy" draggable="false" src={itemthumb3} />
-                    </div>
-                  </button>
-                </div>
-              </div>
-              <div className="bg-[#f3f4f8] px-4 sm:px-[62px] py-14 rounded-md mt-[60px]">
-                <h3 className="font-AlbertSans font-semibold text-HeadingColor-0 text-2xl mb-10">
-                  Comments 02
-                </h3>
-                <div className="flex flex-col sm:flex-row gap-6 border-b border-BorderColor1-0 pb-8">
-                  <div>
-                    <img loading="lazy" draggable="false" src={author1} />
-                  </div>
-                  <div className="flex-1 relative">
-                    <h5 className="font-AlbertSans font-medium text-HeadingColor-0 text-lg">
-                      David Alexon
-                    </h5>
-                    <p className="font-AlbertSans font-light text-TextColor-0 mt-3">
-                      Dramatically reinvent adaptive bandwidth vis reliable
-                      infrastructures to the progressively iterate distributed
-                      interfaces nice day with our fundraising donation
-                    </p>
-                    <Link to={"/"}>
-                      <button className="text-HeadingColor-0 text-sm rounded-full flex items-center gap-2 font-AlbertSans absolute top-2 right-0">
-                        <BiSolidShare
-                          size={"18"}
-                          className="text-SecondaryColor-0"
-                        />
-                        Reply
+                  {nextBlog ? (
+                    <>
+                      <button className="font-AlbertSans font-medium text-lg text-HeadingColor-0 flex items-center gap-2">
+                        Next Post
+                        <FaAnglesRight size={"14"} />
                       </button>
-                    </Link>
-                  </div>
+                      <Link
+                        to={`/blog_details/${nextBlog.id}`}
+                        className="flex flex-col sm:flex-row lg:flex-col xl:flex-row xl:items-center gap-5 sm:items-center lg:items-start mt-5 text-right"
+                      >
+                        <div className="flex-1">
+                          <h4 className="font-AlbertSans font-medium sm:text-lg md:text-base 2xl:text-lg text-HoverColor-0 sm:leading-[26px] line-clamp-2">
+                            {nextBlog.title}
+                          </h4>
+                          <p className="font-AlbertSans text-sm text-SecondaryColor-0 mt-1">
+                            {formatDate(nextBlog.date)}
+                          </p>
+                        </div>
+                        <div>
+                          <img 
+                            loading="lazy" 
+                            draggable="false" 
+                            src={nextBlog.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${nextBlog.image}` : itemthumb3} 
+                            className="w-[81px] h-[80px] object-cover rounded"
+                          />
+                        </div>
+                      </Link>
+                    </>
+                  ) : (
+                    <div className="h-full flex items-center text-gray-400">Tidak ada artikel selanjutnya</div>
+                  )}
                 </div>
-                <div className="flex flex-col sm:flex-row gap-6 mt-10 md:pl-[90px]">
-                  <div>
-                    <img loading="lazy" draggable="false" src={author2} />
-                  </div>
-                  <div className="flex-1 relative">
-                    <h5 className="font-AlbertSans font-medium text-HeadingColor-0 text-lg">
-                      Michel Hemilton
-                    </h5>
-                    <p className="font-AlbertSans font-light text-TextColor-0 mt-3">
-                      Dramatically reinvent adaptive bandwidth vis reliable
-                      infrastructures to the progressively iterate distributed
-                      interfaces nice day with our fundraising donation
-                    </p>
-                    <Link to={"/"}>
-                      <button className="text-HeadingColor-0 text-sm rounded-full flex items-center gap-2 font-AlbertSans absolute top-2 right-0">
-                        <BiSolidShare
-                          size={"18"}
-                          className="text-SecondaryColor-0"
-                        />
-                        Reply
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-                <h3 className="font-AlbertSans font-semibold text-HeadingColor-0 text-xl sm:text-2xl mt-20 mb-10">
-                  Post A Comments
-                </h3>
-                <form action="#" method="post">
-                  <div className="grid sm:grid-cols-2 gap-4 sm:gap-7 mb-5">
-                    <input
-                      type="text"
-                      name="name"
-                      id="name"
-                      placeholder="Enter Your Name*"
-                      required
-                      className="outline-none rounded-md font-AlbertSans text-sm placeholder:text-TextColor-0 bg-white w-full px-6 py-2 h-[56px]"
-                    />
-                    <input
-                      type="email"
-                      name="email"
-                      id="eamil"
-                      placeholder="Enter Your E-Mail*"
-                      required
-                      className="outline-none rounded-md font-AlbertSans text-sm placeholder:text-TextColor-0 bg-white w-full px-6 py-2 h-[56px]"
-                    />
-                  </div>
-                  <textarea
-                    name="comment"
-                    id="comment"
-                    placeholder="Write A Comment..."
-                    required
-                    className="outline-none resize-none rounded-md font-AlbertSans placeholder:text-TextColor-0 text-sm bg-white w-full px-6 py-3 h-[160px]"
-                  ></textarea>
-                  <div className="flex items-center gap-2 my-7">
-                    <input
-                      type="checkbox"
-                      name="terms"
-                      id="terms"
-                      className="text-SecondaryColor-0 cursor-pointer"
-                    />
-                    <p className="font-AlbertSans font-light text-TextColor-0">
-                      I agree with the handling of your data by this data*
-                    </p>
-                  </div>
-                  <button type="submit" className="primary-btn">
-                    Submit Comment
-                    <IoIosSend />
-                  </button>
-                </form>
               </div>
             </div>
             <div className="col-span-2 lg:col-span-1">
@@ -406,102 +342,34 @@ const BlogDetails = () => {
               </div>
               <div className="px-4 sm:px-8 lg:px-6 xl:px-8 bg-[#f3f4f8] rounded-md pt-7 pb-4 mb-7">
                 <h4 className="font-AlbertSans font-semibold text-2xl text-HeadingColor-0 pb-3 mb-8 relative before:absolute before:bottom-0 before:left-0 before:w-7 before:h-[2px] before:bg-PrimaryColor-0">
-                  Popular Post
+                  Artikel Terbaru
                 </h4>
-                <Link to={"/blog-details"}>
-                  <button className="group flex gap-4 mb-6">
-                    <div>
-                      <img loading="lazy" draggable="false" src={itemthumb} />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <h6 className="font-AlbertSans font-medium text-lg lg:text-base 2xl:text-lg leading-6 text-HeadingColor-0 transition-all duration-500 group-hover:text-PrimaryColor-0">
-                        Dramatically Architect new model before...
-                      </h6>
-                      <p className="font-AlbertSans text-PrimaryColor-0 text-sm mt-1">
-                        01 Jan, 2024
-                      </p>
-                    </div>
-                  </button>
-                </Link>
-                <Link to={"/blog_details"}>
-                  <button className="group flex gap-4 my-6">
-                    <div>
-                      <img loading="lazy" draggable="false" src={itemthumb2} />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <h6 className="font-AlbertSans font-medium text-lg lg:text-base 2xl:text-lg leading-6 text-HeadingColor-0 transition-all duration-500 group-hover:text-PrimaryColor-0">
-                        Progressively Syndicate Vista Seamless...
-                      </h6>
-                      <p className="font-AlbertSans text-PrimaryColor-0 text-sm mt-1">
-                        16 Jan, 2024
-                      </p>
-                    </div>
-                  </button>
-                </Link>
-                <Link to={"/blog_details"}>
-                  <button className="group flex gap-4 my-6">
-                    <div>
-                      <img loading="lazy" draggable="false" src={itemthumb3} />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <h6 className="font-AlbertSans font-medium text-lg lg:text-base 2xl:text-lg leading-6 text-HeadingColor-0 transition-all duration-500 group-hover:text-PrimaryColor-0">
-                        Completely Leverage Existing Customer...
-                      </h6>
-                      <p className="font-AlbertSans text-PrimaryColor-0 text-sm mt-1">
-                        27 Jan, 2024
-                      </p>
-                    </div>
-                  </button>
-                </Link>
-              </div>
-              <div className="bg-[#f3f4f8] rounded-md px-4 sm:px-8 lg:px-6 xl:px-8 pt-7 pb-10 mb-7">
-                <h4 className="font-AlbertSans font-semibold text-2xl text-HeadingColor-0 pb-3 mb-8 relative before:absolute before:bottom-0 before:left-0 before:w-7 before:h-[2px] before:bg-PrimaryColor-0">
-                  Tags
-                </h4>
-                <ul className="inline-block">
-                  <li className="inline-block mr-[10px] mb-[10px]">
-                    <Link to={"/"}>
-                      <button className="bg-white rounded flex items-center justify-center text-HeadingColor-0 transition-all duration-500 font-medium px-5 py-2 font-AlbertSans text-sm relative z-[1] before:absolute before:top-0 before:left-0 before:rounded before:w-full before:h-full before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 before:-z-[1] hover:before:scale-100 hover:text-white">
-                        Environment
+                {recentBlogs.length > 0 ? (
+                  recentBlogs.map((rb, idx) => (
+                    <Link to={`/blog_details/${rb.id}`} key={rb.id} className="block w-full">
+                      <button className={`w-full group flex gap-4 ${idx === 0 ? 'mb-6' : 'my-6'}`}>
+                        <div>
+                          <img 
+                            loading="lazy" 
+                            draggable="false" 
+                            src={rb.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${rb.image}` : itemthumb} 
+                            className="w-[81px] h-[80px] object-cover rounded"
+                          />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <h6 className="font-AlbertSans font-medium text-lg lg:text-base 2xl:text-lg leading-6 text-HeadingColor-0 transition-all duration-500 group-hover:text-PrimaryColor-0 line-clamp-2">
+                            {rb.title}
+                          </h6>
+                          <p className="font-AlbertSans text-PrimaryColor-0 text-sm mt-1">
+                            {formatDate(rb.date)}
+                          </p>
+                        </div>
                       </button>
                     </Link>
-                  </li>
-                  <li className="inline-block mr-[10px] mb-[10px]">
-                    <Link to={"/"}>
-                      <button className="bg-white rounded flex items-center justify-center text-HeadingColor-0 transition-all duration-500 font-medium px-5 py-2 font-AlbertSans text-sm relative z-[1] before:absolute before:top-0 before:left-0 before:rounded before:w-full before:h-full before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 before:-z-[1] hover:before:scale-100 hover:text-white">
-                        Echology
-                      </button>
-                    </Link>
-                  </li>
-                  <li className="inline-block mr-[10px] mb-[10px]">
-                    <Link to={"/"}>
-                      <button className="bg-white rounded flex items-center justify-center text-HeadingColor-0 transition-all duration-500 font-medium px-5 py-2 font-AlbertSans text-sm relative z-[1] before:absolute before:top-0 before:left-0 before:rounded before:w-full before:h-full before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 before:-z-[1] hover:before:scale-100 hover:text-white">
-                        Seedlings
-                      </button>
-                    </Link>
-                  </li>
-                  <li className="inline-block mr-[10px] mb-[10px]">
-                    <Link to={"/"}>
-                      <button className="bg-white rounded flex items-center justify-center text-HeadingColor-0 transition-all duration-500 font-medium px-5 py-2 font-AlbertSans text-sm relative z-[1] before:absolute before:top-0 before:left-0 before:rounded before:w-full before:h-full before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 before:-z-[1] hover:before:scale-100 hover:text-white">
-                        Tree Plantation
-                      </button>
-                    </Link>
-                  </li>
-                  <li className="inline-block mr-[10px] mb-[10px]">
-                    <Link to={"/"}>
-                      <button className="bg-white rounded flex items-center justify-center text-HeadingColor-0 transition-all duration-500 font-medium px-5 py-2 font-AlbertSans text-sm relative z-[1] before:absolute before:top-0 before:left-0 before:rounded before:w-full before:h-full before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 before:-z-[1] hover:before:scale-100 hover:text-white">
-                        Recycling
-                      </button>
-                    </Link>
-                  </li>
-                  <li className="inline-block mr-[10px] mb-[10px]">
-                    <Link to={"/"}>
-                      <button className="bg-white rounded flex items-center justify-center text-HeadingColor-0 transition-all duration-500 font-medium px-5 py-2 font-AlbertSans text-sm relative z-[1] before:absolute before:top-0 before:left-0 before:rounded before:w-full before:h-full before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 before:-z-[1] hover:before:scale-100 hover:text-white">
-                        Cleaning
-                      </button>
-                    </Link>
-                  </li>
-                </ul>
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-sm pb-4">Belum ada artikel lain.</p>
+                )}
               </div>
             </div>
           </div>

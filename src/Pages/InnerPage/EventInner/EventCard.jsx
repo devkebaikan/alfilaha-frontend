@@ -85,15 +85,17 @@ const EventCard = ({
           </h3>
         </Link>
         <p className="font-AlbertSans text-TextColor-0 mb-6 leading-relaxed line-clamp-3 flex-grow">
-          {eventDesc}
+          {eventDesc ? (typeof eventDesc === 'string' ? eventDesc.replace(/<[^>]+>/g, '') : eventDesc) : ''}
         </p>
-        <Link
-          to={eventUrl}
-          className="inline-flex items-center gap-2 font-AlbertSans font-semibold text-PrimaryColor-0 transition-all duration-300 hover:text-HeadingColor-0 mt-auto"
-        >
-          Selengkapnya
-          {btnIcon}
-        </Link>
+        <div className="pt-6 mt-auto border-t border-BorderColor2-0">
+          <Link
+            to={eventUrl}
+            className="inline-flex items-center gap-2 font-AlbertSans text-PrimaryColor-0 font-bold hover:gap-3 transition-all text-[15px] uppercase tracking-wide"
+          >
+            Selengkapnya
+            {btnIcon}
+          </Link>
+        </div>
       </div>
     </div>
   );

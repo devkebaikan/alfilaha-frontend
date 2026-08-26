@@ -3,7 +3,7 @@ import path from 'path';
 import sharp from 'sharp';
 
 const dir = './public/images';
-const maxDimension = 1080;
+const maxDimension = 1920; // Full HD dimension for high quality
 
 async function processImages() {
   const files = fs.readdirSync(dir);
@@ -12,19 +12,26 @@ async function processImages() {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
     
-    // Process files larger than 100KB
-    if (stat.size > 100 * 1024) {
+    // Process files larger than 150KB
+    if (stat.size > 150 * 1024) {
       console.log(`Compressing ${file} (${(stat.size / 1024).toFixed(2)} KB)...`);
       const tempPath = filePath + '.tmp';
       try {
-        await sharp(filePath)
-          .resize({ width: maxDimension, withoutEnlargement: true })
-          .jpeg({ quality: 60, progressive: true })
-          .toFile(tempPath);
+        const isPng = file.toLowerCase().endsWith('.png');
+        
+        let sharpInstance = sharp(filePath).resize({ width: maxDimension, withoutEnlargement: true });
+        
+        if (isPng) {
+          sharpInstance = sharpInstance.png({ quality: 80, compressionLevel: 8 });
+        } else {
+          sharpInstance = sharpInstance.jpeg({ quality: 85, mozjpeg: true });
+        }
+        
+        await sharpInstance.toFile(tempPath);
         
         fs.renameSync(tempPath, filePath);
         const newStat = fs.statSync(filePath);
-        console.log(`-> Reduced to ${(newStat.size / 1024 / 1024).toFixed(2)} MB`);
+        console.log(`-> Reduced to ${(newStat.size / 1024).toFixed(2)} KB`);
       } catch (err) {
         console.error(`Failed to compress ${file}:`, err);
       }

@@ -35,7 +35,7 @@ const ServiceCard = ({
           {serviceTitle}
         </button>
       </Link>
-      <p className="font-AlbertSans text-TextColor-0 pt-6 pb-[10px">
+      <p className="font-AlbertSans text-TextColor-0 pt-6 pb-[10px] line-clamp-3">
         {serviceDesc}
       </p>
       <img

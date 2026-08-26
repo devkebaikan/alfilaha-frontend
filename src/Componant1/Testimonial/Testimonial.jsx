@@ -22,10 +22,10 @@ const testiData = [
     testiRatingIcon: <MdOutlineStarPurple500 />,
     testiName: "Anjelina Watson",
     testiDesignation: "Web Developer",
-    testiDesc: `Appropriately administrate proactive value with to
-                niche markets. Dramatically target market position
-                idea after high quality best practice. Dramatically 
-                synergize open source service`,
+    testiDesc: `Tempat yang sangat luar biasa untuk wisata edukasi keluarga. 
+                Anak-anak belajar banyak tentang alam dan pertanian, 
+                sementara kami menikmati udara yang sejuk dan asri. 
+                Pengalaman yang sangat berharga!`,
     testiShape: testiShape,
   },
   {
@@ -34,10 +34,10 @@ const testiData = [
     testiRatingIcon: <MdOutlineStarPurple500 />,
     testiName: "Jhon D. Alexon",
     testiDesignation: "UI/UX Designer",
-    testiDesc: `Appropriately administrate proactive value with to
-                niche markets. Dramatically target market position
-                idea after high quality best practice. Dramatically 
-                synergize open source service`,
+    testiDesc: `Program pelatihannya sangat interaktif. Saya bisa belajar
+                langsung mempraktikkan cara bercocok tanam yang baik.
+                Alfilaha Eco Pesantren benar-benar menginspirasi untuk
+                kembali mencintai lingkungan.`,
     testiShape: testiShape2,
   },
   {
@@ -46,10 +46,10 @@ const testiData = [
     testiRatingIcon: <MdOutlineStarPurple500 />,
     testiName: "Anjelina Watson",
     testiDesignation: "Web Developer",
-    testiDesc: `Appropriately administrate proactive value with to
-                niche markets. Dramatically target market position
-                idea after high quality best practice. Dramatically 
-                synergize open source service`,
+    testiDesc: `Fasilitasnya lengkap dan bersih, suasananya tenang banget.
+                Sangat direkomendasikan buat siapa saja yang butuh
+                healing sejenak dari hiruk-pikuk kota sambil 
+                menikmati kegiatan agrowisata yang seru.`,
     testiShape: testiShape,
   },
 ];
@@ -111,12 +111,12 @@ const Testimonial = () => {
         <div className="text-center">
           <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2 justify-center">
             <img loading="lazy" src={subTitleShape} draggable="false" />
-            TESTIMONIALS
+            TESTIMONI
           </h5>
           <h1 className="font-AlbertSans font-bold text-xl leading-7 sm:text-[36px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
-            Clients Best Feedback About
+            Ulasan Terbaik Pengunjung Tentang
             <br />
-            Echofy Provission
+            Alfilaha Eco Pesantren
           </h1>
         </div>
         <div className="mt-[46px]">

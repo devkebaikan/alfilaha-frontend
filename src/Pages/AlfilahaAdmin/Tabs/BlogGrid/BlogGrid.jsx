@@ -50,8 +50,9 @@ const BlogGrid = ({ blogs, onAddClick, onEditClick, setDeleteBlogModal }) => {
                   {item.title}
                 </h3>
                 <p className="text-gray-500 text-sm mb-6 line-clamp-3 flex-1">
-                  {item.excerpt ||
-                    "Tidak ada kutipan yang tersedia untuk artikel ini."}
+                  {item.excerpt
+                    ? (typeof item.excerpt === 'string' ? item.excerpt.replace(/<[^>]+>/g, '') : item.excerpt)
+                    : "Tidak ada kutipan yang tersedia untuk artikel ini."}
                 </p>
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
                   <button

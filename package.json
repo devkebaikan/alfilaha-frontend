@@ -13,6 +13,7 @@
     "browser-image-compression": "^2.0.2",
     "framer-motion": "^13.1.0",
     "fslightbox-react": "^1.7.6",
+    "mysql2": "^3.23.3",
     "react": "^18.2.0",
     "react-animated-progress-bar": "^1.1.2",
     "react-countup": "^6.5.3",

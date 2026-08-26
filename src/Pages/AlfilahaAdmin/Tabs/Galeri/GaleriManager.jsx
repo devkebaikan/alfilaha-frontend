@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { FiPlus, FiTrash2, FiEdit, FiX } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
+import { FiPlus, FiTrash2, FiEdit, FiX, FiArrowLeft, FiUploadCloud, FiSave } from "react-icons/fi";
 import imageCompression from "browser-image-compression";
 
 const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
@@ -12,6 +12,11 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
   const [imageFile, setImageFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState(null);
+
+  // Tutup form setiap kali pindah tab kategori
+  useEffect(() => {
+    setIsModalOpen(false);
+  }, [activeCategory]);
 
   // Filter gambar hanya untuk kategori yang sedang diklik di sidebar
   const filteredGaleri = galeriList.filter(
@@ -66,12 +71,12 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
 
     if (imageFile) {
       try {
-        const maxSizeMB = formData.quality === "200" ? 0.20 : 0.06;
+        const maxSizeMB = formData.quality === "200" ? 0.40 : 0.15;
         const options = {
           maxSizeMB: maxSizeMB,
-          maxWidthOrHeight: formData.quality === "200" ? 2560 : 1280,
+          maxWidthOrHeight: formData.quality === "200" ? 1920 : 1080,
           useWebWorker: true,
-          initialQuality: 0.85,
+          initialQuality: 0.9,
         };
         const compressedFile = await imageCompression(imageFile, options);
         form.append("image", compressedFile, compressedFile.name);
@@ -105,8 +110,10 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
   };
 
   return (
-    <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="animate-fade-in">
+      {!isModalOpen && (
+        <div className="bg-white rounded-2xl sm:rounded-[2rem] shadow-sm border border-gray-100 p-6 sm:p-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h2 className="text-2xl font-bold text-gray-800 capitalize">
             Galeri: {activeCategory}
@@ -117,13 +124,13 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
         </div>
         <button
           onClick={openAddModal}
-          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-colors"
+          className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-5 py-3 sm:py-2.5 rounded-xl font-bold flex justify-center items-center gap-2 transition-colors"
         >
           <FiPlus /> Tambah Foto Baru
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {filteredGaleri.map((foto) => (
           <div
             key={foto.id}
@@ -169,29 +176,33 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
         )}
       </div>
 
-      {/* Modal Upload / Edit */}
+        </div>
+      )}
+
+      {/* Inline Form Upload / Edit */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in-up">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg text-gray-800">
-                {editingId ? "Edit Foto" : "Upload Foto Baru"}
-              </h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <FiX size={24} />
+        <div className="bg-white rounded-2xl sm:rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden animate-fade-in-up">
+            <div className="p-6 sm:p-8 border-b border-gray-50 flex items-center gap-4 bg-white">
+              <button onClick={() => setIsModalOpen(false)} className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-xl transition">
+                <FiArrowLeft className="w-5 h-5" />
               </button>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {editingId ? "Edit Foto" : "Upload Foto Baru"}
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Gunakan form di bawah ini untuk mengelola foto galeri.
+                </p>
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="mb-4">
+            <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6 max-w-4xl">
+              <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
                   Kategori
                 </label>
                 <select
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
+                  className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 text-gray-800 font-medium cursor-pointer"
                   value={formData.category}
                   onChange={(e) =>
                     setFormData({ ...formData, category: e.target.value })
@@ -208,36 +219,36 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
                 </select>
               </div>
 
-              <div className="mb-4">
+              <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
                   Judul Foto
                 </label>
                 <input
                   type="text"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
-                  placeholder="Contoh: Panen Raya 2024"
+                  required
                   value={formData.title}
                   onChange={(e) =>
                     setFormData({ ...formData, title: e.target.value })
                   }
-                  required
+                  className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
+                  placeholder="Contoh: Panen Raya 2024"
                 />
               </div>
 
-              <div className="mb-4">
+              <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
                   Kualitas Gambar
                 </label>
                 <select
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
+                  className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 text-gray-800 font-medium cursor-pointer"
                   value={formData.quality}
                   onChange={(e) =>
                     setFormData({ ...formData, quality: e.target.value })
                   }
                 >
-                  <option value="200">Gambar Besar / Sangat HD (Maks. ~200 KB)</option>
+                  <option value="200">Gambar Besar / Sangat HD (Maks. ~400 KB)</option>
                   <option value="60">
-                    Gambar Kecil / HD Standar (Maks. ~60 KB)
+                    Gambar Standar / Cepat Loading (Maks. ~150 KB)
                   </option>
                 </select>
                 <p className="text-xs text-gray-500 mt-2">
@@ -245,42 +256,40 @@ const GaleriManager = ({ galeriList, activeCategory, fetchGaleri }) => {
                 </p>
               </div>
 
-              <div className="mb-6">
+              <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  File Gambar (JPG/PNG)
+                  {editingId ? "Ganti Gambar (Opsional)" : "Upload Gambar"}
                 </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl focus:outline-none focus:border-green-500 cursor-pointer"
-                  onChange={(e) => setImageFile(e.target.files[0])}
-                  required={!editingId}
-                />
-                {editingId && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    *Kosongkan jika tidak ingin mengubah gambar.
+                <label className="flex-1 border-2 border-dashed border-gray-300 rounded-[24px] flex flex-col items-center justify-center text-center bg-gray-50 hover:bg-[#F5FAF7] hover:border-[#16804B] transition-colors cursor-pointer group min-h-[160px] relative overflow-hidden">
+                  <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-[#16804B] shadow-sm mb-3 group-hover:scale-110 transition-transform">
+                    <FiUploadCloud size={24} />
+                  </div>
+                  <p className="text-gray-700 font-bold mb-1 text-sm">
+                    {imageFile ? imageFile.name : (editingId ? "Pilih Gambar Baru" : "Pilih Gambar")}
                   </p>
-                )}
+                  <p className="text-gray-400 text-xs">Maks. ~400 KB (Otomatis dikompres)</p>
+                  <input type="file" className="hidden" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} required={!editingId} />
+                </label>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+              <div className="flex items-center gap-4 pt-10 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-6 py-2.5 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                  className="px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-2.5 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 flex items-center gap-2 transition-colors shadow-md hover:shadow-lg"
+                  className="px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-50"
                 >
-                  {isSubmitting ? "Menyimpan..." : "Simpan"}
+                  <FiSave className="w-5 h-5" />
+                  {isSubmitting ? "Menyimpan..." : (editingId ? "Simpan Perubahan" : "Simpan Foto")}
                 </button>
               </div>
             </form>
-          </div>
         </div>
       )}
     </div>

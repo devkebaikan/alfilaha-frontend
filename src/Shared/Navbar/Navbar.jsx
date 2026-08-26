@@ -259,6 +259,12 @@ const Navbar = () => {
                 >
                   Pesan Tempat
                 </Link>
+                <Link
+                  to={"/pendaftaran"}
+                  className="px-5 py-2.5 xl:px-6 xl:py-3 bg-PrimaryColor-0 hover:bg-[#0a6658] text-white rounded-full text-sm xl:text-base font-bold transition-all shadow-lg hover:-translate-y-1"
+                >
+                  Pendaftaran
+                </Link>
               </div>
             </div>
 
@@ -373,12 +379,18 @@ const Navbar = () => {
             ))}
           </ul>
 
-          <div className="mt-8 pt-6 border-t border-white/10">
+          <div className="mt-8 pt-6 border-t border-white/10 flex flex-col gap-3">
             <Link
               to={"/pesan-tempat"}
-              className="flex justify-center w-full py-3.5 bg-PrimaryColor-0 text-white rounded-full font-bold transition-colors hover:bg-[#0a6658]"
+              className="flex justify-center w-full py-3.5 bg-PrimaryColor-0 text-white rounded-full font-bold transition-colors hover:bg-[#0a6658] shadow-lg"
             >
               Pesan Tempat
+            </Link>
+            <Link
+              to={"/pendaftaran"}
+              className="flex justify-center w-full py-3.5 bg-PrimaryColor-0 text-white rounded-full font-bold transition-colors hover:bg-[#0a6658] shadow-lg"
+            >
+              Pendaftaran
             </Link>
           </div>
         </div>

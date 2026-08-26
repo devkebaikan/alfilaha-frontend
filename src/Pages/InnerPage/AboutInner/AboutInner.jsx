@@ -12,9 +12,9 @@ const AboutInner = () => {
   return (
     <>
       <BreadCrumb
-        breadCrumbTitle={"About Us"}
+        breadCrumbTitle={"Tentang Kami"}
         breadCrumbIcon={<FaArrowRightLong />}
-        breadCrumbLink={"About Us"}
+        breadCrumbLink={"Tentang Kami"}
         bgImage={"/images/about-banner.jpg"}
       />
       <About />

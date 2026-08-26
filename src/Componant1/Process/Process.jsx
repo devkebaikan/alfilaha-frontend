@@ -12,25 +12,25 @@ const processData = [
     id: 1,
     processIcon: processIcon,
     boxShape: boxShape,
-    processTitle: "Collection Dust",
+    processTitle: "Pengumpulan Limbah",
     processDesc:
-      "Proactively drive maintainable value next mission-critical infrastructures eggplant new environmental nature",
+      "Tahap awal untuk memilah dan mengumpulkan material limbah agar siap dikelola secara bertanggung jawab.",
   },
 
   {
     id: 2,
     processIcon: processIcon2,
     boxShape: boxShape2,
-    processTitle: "Dust Recycling",
+    processTitle: "Daur Ulang Edukatif",
     processDesc:
-      "Proactively drive maintainable value next mission-critical infrastructures eggplant new environmental nature",
+      "Mengolah limbah yang terkumpul menjadi barang atau material baru yang memiliki nilai guna dan edukasi.",
   },
   {
     id: 3,
     processIcon: processIcon3,
-    processTitle: "Cleaning Environment",
+    processTitle: "Lingkungan Bersih",
     processDesc:
-      "Proactively drive maintainable value next mission-critical infrastructures eggplant new environmental nature",
+      "Menikmati hasil dari proses pengelolaan yang baik, menciptakan ekosistem hijau yang sehat dan asri.",
   },
 ];
 
@@ -42,10 +42,10 @@ const Process = () => {
         <div className="text-center">
           <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2 justify-center">
             <img loading="lazy" src={subTitleShape} draggable="false" />
-            WORKING PROCESS
+            PROSES KERJA
           </h5>
           <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
-            Process To Safe Environment
+            Langkah Nyata Melestarikan Alam
           </h1>
         </div>
         <div className="pb-16 mt-[60px]">
