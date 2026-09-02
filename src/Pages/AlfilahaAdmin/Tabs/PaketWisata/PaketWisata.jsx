@@ -26,66 +26,73 @@ const PaketWisata = ({
           + Tambah Paket
         </button>
       </div>
-      <div className="p-0 overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-white border-b border-gray-100 text-slate-500 text-sm">
-              <th className="px-8 py-5 font-bold uppercase tracking-wider">
-                Nama Paket
-              </th>
-              <th className="px-8 py-5 font-bold uppercase tracking-wider">
-                Harga & Info
-              </th>
-              <th className="px-8 py-5 font-bold uppercase tracking-wider text-right">
-                Tindakan
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {wisata.map((item) => (
-              <tr
-                key={item.id}
+      <div className="p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {wisata.length > 0 ? (
+            wisata.map((item) => (
+              <div
+                key={`grid-${item.id}`}
                 onClick={() => setSelectedWisata(item)}
-                className="odd:bg-white even:bg-slate-50 hover:!bg-green-50 hover:shadow-md transition-all duration-300 group border-l-4 border-transparent hover:!border-green-500 cursor-pointer"
+                className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full cursor-pointer"
               >
-                <td className="px-8 py-6 text-gray-800 font-bold text-lg">
-                  {item.nama_paket}
-                </td>
-                <td className="px-8 py-6">
-                  <div className="text-green-600 font-extrabold">
+                <div className="relative h-48 overflow-hidden bg-gray-100">
+                  <img
+                    loading="lazy"
+                    src={
+                      item.gambar
+                        ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${item.gambar}`
+                        : "/images/service-placeholder.jpg"
+                    }
+                    alt={item.nama_paket}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    onError={(e) => { e.target.onerror = null; e.target.src = "/images/about-thumb.jpg"; }}
+                  />
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-green-700 text-xs font-extrabold px-3 py-1.5 rounded-lg shadow-sm">
                     {item.harga}
                   </div>
-                  <div className="text-xs text-gray-500 mt-2 line-clamp-2 max-w-sm">
-                    {item.deskripsi ? String(item.deskripsi).replace(/<[^>]+>/g, '') : ''}
+                  <div className="absolute top-4 right-4 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-widest">
+                    EDUWISATA
                   </div>
-                </td>
-                <td className="px-8 py-6 text-right space-x-3" onClick={e => e.stopPropagation()}>
-                  <button
-                    onClick={() => onEdit(item)}
-                    className="text-green-600 hover:text-white hover:bg-green-600 bg-green-50 p-3 rounded-xl transition shadow-sm border border-green-50 hover:border-green-600 transform hover:-translate-y-0.5"
-                    title="Edit Paket"
-                  >
-                    <FiEdit className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() =>
-                      setDeletePaketModal({
-                        show: true,
-                        id: item.id,
-                        nama_paket: item.nama_paket,
-                      })
-                    }
-                    className="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 p-3 rounded-xl transition shadow-sm border border-red-50 hover:border-red-500 transform hover:-translate-y-0.5"
-                    title="Hapus Paket"
-                  >
-                    <FiTrash2 className="w-5 h-5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-          </div>
+                </div>
+                <div className="p-6 flex flex-col flex-1">
+                  <h3 className="font-bold text-xl text-gray-800 mb-3 group-hover:text-green-600 transition-colors line-clamp-2">
+                    {item.nama_paket}
+                  </h3>
+                  <p className="text-gray-500 text-sm mb-6 line-clamp-3 flex-1">
+                    {item.deskripsi
+                      ? (typeof item.deskripsi === 'string' ? item.deskripsi.replace(/<[^>]+>/g, '') : item.deskripsi)
+                      : "Tidak ada deskripsi yang tersedia untuk paket ini."}
+                  </p>
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => onEdit(item)}
+                      className="text-green-600 hover:text-white hover:bg-green-600 bg-green-50 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1"
+                    >
+                      <FiEdit className="w-4 h-4" /> Edit
+                    </button>
+                    <button
+                      onClick={() =>
+                        setDeletePaketModal({
+                          show: true,
+                          id: item.id,
+                          nama_paket: item.nama_paket,
+                        })
+                      }
+                      className="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1"
+                    >
+                      <FiTrash2 className="w-4 h-4" /> Hapus
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-10 text-gray-500 font-bold">
+              Belum ada paket wisata yang ditambahkan.
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* DETAIL MODAL */}
       {selectedWisata && (

@@ -245,7 +245,7 @@ const Navbar = () => {
               </div>
 
               {/* Desktop Right Actions */}
-              <div className="hidden lg:flex items-center gap-4 xl:gap-6">
+              <div className="hidden lg:flex items-center gap-2 xl:gap-6">
                 <button
                   aria-label="Search"
                   onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -256,13 +256,13 @@ const Navbar = () => {
 
                 <Link
                   to={"/pesan-tempat"}
-                  className="px-5 py-2.5 xl:px-6 xl:py-3 bg-PrimaryColor-0 hover:bg-[#0a6658] text-white rounded-full text-sm xl:text-base font-bold transition-all shadow-lg hover:-translate-y-1"
+                  className="whitespace-nowrap px-4 py-2 xl:px-6 xl:py-3 bg-PrimaryColor-0 hover:bg-[#0a6658] text-white rounded-full text-[13px] xl:text-base font-bold transition-all shadow-lg hover:-translate-y-1"
                 >
                   Pesan Tempat
                 </Link>
                 <Link
                   to={"/pendaftaran"}
-                  className="px-5 py-2.5 xl:px-6 xl:py-3 bg-PrimaryColor-0 hover:bg-[#0a6658] text-white rounded-full text-sm xl:text-base font-bold transition-all shadow-lg hover:-translate-y-1"
+                  className="whitespace-nowrap px-4 py-2 xl:px-6 xl:py-3 bg-PrimaryColor-0 hover:bg-[#0a6658] text-white rounded-full text-[13px] xl:text-base font-bold transition-all shadow-lg hover:-translate-y-1"
                 >
                   Pendaftaran
                 </Link>

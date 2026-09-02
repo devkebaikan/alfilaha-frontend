@@ -27,66 +27,72 @@ const Event = ({
           + Tambah Event
         </button>
       </div>
-      <div className="p-0 overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-gray-100 text-slate-500 text-sm">
-              <th className="px-8 py-5 font-bold uppercase tracking-wider">
-                Judul Event
-              </th>
-              <th className="px-8 py-5 font-bold uppercase tracking-wider">
-                Kategori
-              </th>
-              <th className="px-8 py-5 font-bold uppercase tracking-wider">
-                Tanggal
-              </th>
-              <th className="px-8 py-5 font-bold uppercase tracking-wider text-right">
-                Tindakan
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {events.map((item) => (
-              <tr
-                key={item.id}
+      <div className="p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {events.length > 0 ? (
+            events.map((item) => (
+              <div
+                key={`grid-${item.id}`}
                 onClick={() => setSelectedEvent(item)}
-                className="odd:bg-white even:bg-slate-50 hover:!bg-green-50 hover:shadow-md transition-all duration-300 group border-l-4 border-transparent hover:!border-green-500 cursor-pointer"
+                className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full cursor-pointer"
               >
-                <td className="px-8 py-6 text-gray-800 font-bold text-lg">
-                  {item.title}
-                </td>
-                <td className="px-8 py-6 text-gray-500 font-medium">
-                  <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider">
+                <div className="relative h-48 overflow-hidden bg-gray-100">
+                  <img
+                    loading="lazy"
+                    src={
+                      item.image
+                        ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${item.image}`
+                        : "/images/blog-new-1.jpg"
+                    }
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    onError={(e) => { e.target.onerror = null; e.target.src = "/images/about-thumb.jpg"; }}
+                  />
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-green-700 text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm uppercase tracking-wider">
                     {item.category}
-                  </span>
-                </td>
-                <td className="px-8 py-6 text-gray-500 font-medium">
-                  {item.date &&
-                  item.date.includes("-") &&
-                  item.date.split("-")[0].length === 4
-                    ? `${new Date(item.date).getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][new Date(item.date).getMonth()]} ${new Date(item.date).getFullYear()}`
-                    : item.date}
-                </td>
-                <td className="px-8 py-6 text-right space-x-3" onClick={e => e.stopPropagation()}>
-                  <button
-                    onClick={() => onEdit(item)}
-                    className="text-green-600 hover:text-white hover:bg-green-600 bg-green-50 p-3 rounded-xl transition shadow-sm"
-                    title="Edit Event"
-                  >
-                    <FiEdit className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => onDelete(item)}
-                    className="text-red-600 hover:text-white hover:bg-red-600 bg-red-50 p-3 rounded-xl transition shadow-sm"
-                    title="Hapus Event"
-                  >
-                    <FiTrash2 className="w-5 h-5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </div>
+                  <div className="absolute top-4 right-4 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-widest">
+                    EVENT
+                  </div>
+                  <div className="absolute bottom-4 right-4 bg-gray-900/80 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1.5">
+                    <FiCalendar className="w-3.5 h-3.5" />
+                    {item.date && item.date.includes("-") && item.date.split("-")[0].length === 4
+                      ? `${new Date(item.date).getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][new Date(item.date).getMonth()]} ${new Date(item.date).getFullYear()}`
+                      : item.date}
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col flex-1">
+                  <h3 className="font-bold text-xl text-gray-800 mb-3 group-hover:text-green-600 transition-colors line-clamp-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-500 text-sm mb-6 line-clamp-3 flex-1">
+                    {item.description
+                      ? (typeof item.description === 'string' ? item.description.replace(/<[^>]+>/g, '') : item.description)
+                      : "Tidak ada deskripsi yang tersedia untuk event ini."}
+                  </p>
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => onEdit(item)}
+                      className="text-green-600 hover:text-white hover:bg-green-600 bg-green-50 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1"
+                    >
+                      <FiEdit className="w-4 h-4" /> Edit
+                    </button>
+                    <button
+                      onClick={() => onDelete(item)}
+                      className="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1"
+                    >
+                      <FiTrash2 className="w-4 h-4" /> Hapus
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-10 text-gray-500 font-bold">
+              Belum ada event yang ditambahkan.
+            </div>
+          )}
+        </div>
       </div>
 
       {/* MODAL DETAIL EVENT */}

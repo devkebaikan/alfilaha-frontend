@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { FaLeaf, FaUsers, FaBalanceScale } from "react-icons/fa";
 import BreadCrumb from "../../../Shared/BreadCrumb/BreadCrumb";
@@ -146,14 +147,10 @@ const KubusAlfilaha = () => {
               keadilan. Bersama kita ciptakan masa depan yang berkelanjutan.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="primary-btn2 !bg-white !text-HeadingColor-0 hover:!bg-gray-100">
+              <Link to="/contact" className="primary-btn2 !bg-white !text-HeadingColor-0 hover:!bg-gray-100">
                 Hubungi Kami
                 <FaArrowRightLong />
-              </button>
-              <button className="primary-btn2 !border-white !border">
-                Pelajari Lebih Lanjut
-                <FaArrowRightLong />
-              </button>
+              </Link>
             </div>
           </div>
         </div>

@@ -44,6 +44,9 @@ const BlogGrid = ({ blogs, onAddClick, onEditClick, setDeleteBlogModal }) => {
                     ? `${new Date(item.date).getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][new Date(item.date).getMonth()]} ${new Date(item.date).getFullYear()}`
                     : item.date}
                 </div>
+                <div className="absolute top-4 right-4 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-widest">
+                  ARTIKEL
+                </div>
               </div>
               <div className="p-6 flex flex-col flex-1">
                 <h3 className="font-bold text-xl text-gray-800 mb-3 group-hover:text-green-600 transition-colors line-clamp-2">

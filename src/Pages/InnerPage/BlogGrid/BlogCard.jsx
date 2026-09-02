@@ -11,8 +11,8 @@ const BlogCard = ({
   btnIcon,
 }) => {
   return (
-    <div className="bg-[#f3f4f8] group transition-all duration-500 hover:bg-white hover:shadow-cases rounded-md">
-      <div className="relative overflow-hidden rounded-md">
+    <div className="bg-[#f3f4f8] group transition-all duration-500 hover:bg-white hover:shadow-cases rounded-md flex flex-col h-full">
+      <div className="relative overflow-hidden rounded-md shrink-0">
         <img
           loading="lazy"
           src={blogThumb}
@@ -24,21 +24,23 @@ const BlogCard = ({
           </h6>
         </div>
       </div>
-      <div className="px-5 sm:px-7 pb-7">
-        <Link to={blogUrl}>
-          <button className="font-AlbertSans text-left font-semibold text-xl sm:text-[22px] lg:text-xl xl:text-[22px] text-HeadingColor-0 mt-7 mb-3">
+      <div className="px-5 sm:px-7 pb-7 flex flex-col flex-1">
+        <Link to={blogUrl} className="block mt-7 mb-3">
+          <h3 className="font-AlbertSans text-left font-semibold text-xl sm:text-[22px] lg:text-xl xl:text-[22px] text-HeadingColor-0 line-clamp-2">
             {blogTitle}
-          </button>
+          </h3>
         </Link>
-        <p className="font-AlbertSans font-light text-TextColor-0 pb-8">
+        <p className="font-AlbertSans font-light text-TextColor-0 mb-8 line-clamp-3">
           {blogDesc}
         </p>
-        <Link to={blogUrl}>
-          <button className="primary-btn2 !rounded !px-7 !py-3">
-            {btnContent}
-            {btnIcon}
-          </button>
-        </Link>
+        <div className="mt-auto">
+          <Link to={blogUrl} className="inline-block">
+            <button className="primary-btn2 !rounded !px-7 !py-3">
+              {btnContent}
+              {btnIcon}
+            </button>
+          </Link>
+        </div>
       </div>
     </div>
   );

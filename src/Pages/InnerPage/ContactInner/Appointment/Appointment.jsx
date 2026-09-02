@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
+import { FiCheckCircle, FiAlertCircle } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
 import subTitleShape from "/images/sub-title-shape.png";
 
 const Appointment = () => {
@@ -10,6 +12,7 @@ const Appointment = () => {
     address: "",
     message: "",
   });
+  const [toast, setToast] = useState({ show: false, type: "", message: "" });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,7 +33,7 @@ const Appointment = () => {
       );
 
       if (response.ok) {
-        alert("Pesan berhasil dikirim!");
+        setToast({ show: true, type: "success", message: "Pesan berhasil dikirim!" });
         setFormData({
           name: "",
           number: "",
@@ -39,17 +42,70 @@ const Appointment = () => {
           message: "",
         });
       } else {
-        alert("Gagal mengirim pesan.");
+        setToast({ show: true, type: "error", message: "Gagal mengirim pesan." });
       }
     } catch (error) {
       console.error("Error submitting message:", error);
-      alert("Terjadi kesalahan sistem.");
+      setToast({ show: true, type: "error", message: "Terjadi kesalahan sistem." });
     }
+    
+    setTimeout(() => {
+      setToast({ show: false, type: "", message: "" });
+    }, 4500);
   };
 
   return (
-    <section className="py-[102px] pl-7 lg:pl-0">
-      <div className="Container">
+    <>
+      <AnimatePresence>
+        {toast.show && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm"
+              onClick={() => setToast({ show: false, type: "", message: "" })}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: -20 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              className="relative bg-white rounded-3xl p-8 flex flex-col items-center text-center shadow-2xl max-w-sm w-full mx-auto z-10"
+            >
+              {toast.type === "success" ? (
+                <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mb-5 relative">
+                  <div className="absolute inset-0 bg-green-100 rounded-full animate-ping opacity-50"></div>
+                  <FiCheckCircle className="w-10 h-10 text-green-600 relative z-10" />
+                </div>
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mb-5 relative">
+                  <div className="absolute inset-0 bg-red-100 rounded-full animate-ping opacity-50"></div>
+                  <FiAlertCircle className="w-10 h-10 text-red-600 relative z-10" />
+                </div>
+              )}
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                {toast.type === "success" ? "Berhasil!" : "Gagal!"}
+              </h3>
+              <p className="text-gray-500 font-medium mb-6">
+                {toast.message}
+              </p>
+              <button
+                onClick={() => setToast({ show: false, type: "", message: "" })}
+                className={`w-full py-3 rounded-xl font-bold text-white transition-all transform hover:-translate-y-1 shadow-lg ${
+                  toast.type === "success"
+                    ? "bg-green-600 hover:bg-green-700 hover:shadow-green-200"
+                    : "bg-red-600 hover:bg-red-700 hover:shadow-red-200"
+                }`}
+              >
+                Tutup
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      <section className="py-[102px] pl-7 lg:pl-0">
+        <div className="Container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           <div className="relative">
             <iframe
@@ -136,6 +192,7 @@ const Appointment = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 
