@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { FaArrowRightLong } from "react-icons/fa6";
 import BreadCrumb from "../../../Shared/BreadCrumb/BreadCrumb";
 
 const PesanTempat = () => {
+  const location = useLocation();
+  const selectedPaket = location.state?.selectedPaket || "";
+
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     email: "",
     instansi: "",
-    paket: "",
+    paket: selectedPaket,
     peserta: "",
     tanggal: "",
     waktu: "",

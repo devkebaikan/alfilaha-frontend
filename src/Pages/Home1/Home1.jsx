@@ -35,6 +35,7 @@ const staggerContainer = {
 const Home1 = () => {
   const [wisata, setWisata] = useState([]);
   const [blogs, setBlogs] = useState([]);
+  const [selectedDetail, setSelectedDetail] = useState(null);
 
   useEffect(() => {
     const fetchApi = async () => {
@@ -521,7 +522,7 @@ const Home1 = () => {
                 khusus untuk keluarga, sekolah, dan komunitas.
               </p>
             </div>
-            <Link to="/pesan-tempat" className="primary-btn3 shrink-0">
+            <Link to="/paket-wisata" className="primary-btn3 shrink-0">
               Lihat Semua Paket
             </Link>
           </div>
@@ -545,29 +546,37 @@ const Home1 = () => {
                     key={paket.id || idx}
                     className="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-BorderColor2-0 flex flex-col group hover:shadow-shadow transition-all duration-300"
                   >
-                    <div className="h-[240px] overflow-hidden relative">
-                      <img
-                        src={
-                          paket.image
-                            ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${paket.image}`
-                            : "/images/services-plant-4.jpg"
-                        }
-                        alt={paket.nama_paket}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                      <div className="absolute top-5 right-5 bg-white px-5 py-2 rounded-full text-PrimaryColor-0 font-bold shadow-lg flex items-center gap-2">
-                        <FaStore className="text-sm" /> {paket.harga}
+                    <div className="cursor-pointer" onClick={() => setSelectedDetail(paket)}>
+                      <div className="h-[240px] overflow-hidden relative">
+                        <img
+                          src={
+                            paket.gambar
+                              ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${paket.gambar}`
+                              : "/images/services-plant-4.jpg"
+                          }
+                          alt={paket.nama_paket}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute top-5 right-5 bg-white px-5 py-2 rounded-full text-PrimaryColor-0 font-bold shadow-lg flex items-center gap-2">
+                          <FaStore className="text-sm" /> {paket.harga}
+                        </div>
+                      </div>
+                      <div className="px-8 pt-8 pb-2 flex flex-col flex-1">
+                        <h4 className="font-bold text-[24px] text-HeadingColor-0 mb-4 group-hover:text-PrimaryColor-0 transition-colors">
+                          {paket.nama_paket}
+                        </h4>
+                        <p className="text-TextColor-0 mb-4 flex-1 line-clamp-3 text-[16px] leading-relaxed">
+                          {paket.deskripsi ? (typeof paket.deskripsi === 'string' ? paket.deskripsi.replace(/<[^>]+>/g, '') : paket.deskripsi) : ''}
+                        </p>
+                        <span className="text-PrimaryColor-0 font-semibold text-sm hover:underline text-left w-max block">
+                          Klik untuk melihat detail lengkap
+                        </span>
                       </div>
                     </div>
-                    <div className="p-8 flex flex-col flex-1">
-                      <h4 className="font-bold text-[24px] text-HeadingColor-0 mb-4 group-hover:text-PrimaryColor-0 transition-colors">
-                        {paket.nama_paket}
-                      </h4>
-                      <p className="text-TextColor-0 mb-8 flex-1 line-clamp-3 text-[16px] leading-relaxed">
-                        {paket.deskripsi ? (typeof paket.deskripsi === 'string' ? paket.deskripsi.replace(/<[^>]+>/g, '') : paket.deskripsi) : ''}
-                      </p>
+                    <div className="px-8 pb-8 pt-2">
                       <Link
                         to="/pesan-tempat"
+                        state={{ selectedPaket: paket.nama_paket }}
                         className="w-full py-4 text-center bg-[#f8fcfb] text-HeadingColor-0 font-semibold rounded-xl hover:bg-PrimaryColor-0 hover:text-white transition-colors duration-300 flex justify-center items-center gap-2"
                       >
                         Pesan Sekarang <FaArrowRightLong />
@@ -792,6 +801,67 @@ const Home1 = () => {
           </div>
         </div>
       </section>
+
+      {/* Modal Detail Paket */}
+      {selectedDetail && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedDetail(null)}
+              className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-600 hover:text-red-600 hover:bg-red-50 shadow-md z-10 transition-colors text-xl font-bold"
+            >
+              ✕
+            </button>
+
+            {/* Modal Image */}
+            <div className="w-full h-64 md:h-80 relative">
+              <img
+                src={
+                  selectedDetail.gambar
+                    ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${selectedDetail.gambar}`
+                    : "/images/services-plant-4.jpg"
+                }
+                alt={selectedDetail.nama_paket}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/80 to-transparent">
+                <h2 className="text-3xl font-bold text-white mb-2">{selectedDetail.nama_paket}</h2>
+                <div className="inline-block bg-PrimaryColor-0 text-white px-5 py-1.5 rounded-full font-bold text-lg shadow-lg">
+                  {selectedDetail.harga}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-8">
+              <h3 className="text-xl font-bold text-HeadingColor-0 mb-4 border-b pb-2">Detail Fasilitas & Kegiatan</h3>
+              <div
+                className="prose prose-md text-TextColor-0 font-AlbertSans max-w-none mb-8"
+                dangerouslySetInnerHTML={{ __html: selectedDetail.deskripsi }}
+              />
+              
+              <div className="flex gap-4 pt-4 border-t border-BorderColor2-0">
+                <button
+                  onClick={() => setSelectedDetail(null)}
+                  className="flex-1 py-3 px-6 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Tutup
+                </button>
+                <Link
+                  to="/pesan-tempat"
+                  state={{ selectedPaket: selectedDetail.nama_paket }}
+                  className="flex-1"
+                >
+                  <button className="w-full py-3 px-6 rounded-xl bg-PrimaryColor-0 text-white font-semibold hover:bg-opacity-90 flex items-center justify-center gap-2 transition-colors">
+                    Pesan Sekarang <FaArrowRightLong />
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

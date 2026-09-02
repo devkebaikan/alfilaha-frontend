@@ -125,7 +125,7 @@ const AdminLogin = () => {
 
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-400 font-medium">
-            &copy; 2024 Alfilaha Agrikultur. All rights reserved.
+            &copy; {new Date().getFullYear()} Alfilaha Agrikultur. All rights reserved.
           </p>
         </div>
       </div>

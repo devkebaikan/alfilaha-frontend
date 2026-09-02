@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import Main from "../Main/Main";
 import Main2 from "../Main/Main2";
 import Main3 from "../Main/Main3";
@@ -43,10 +43,12 @@ import Search from "../Pages/InnerPage/Search/Search";
 import Pendaftaran from "../Pages/InnerPage/Pendaftaran/Pendaftaran";
 import StatusPendaftaran from "../Pages/InnerPage/Pendaftaran/StatusPendaftaran";
 import LoginSantri from "../Pages/InnerPage/Pendaftaran/LoginSantri";
+import TanamanDetail from "../Pages/InnerPage/Tanaman/TanamanDetail";
+import KoleksiTanaman from "../Pages/InnerPage/Tanaman/KoleksiTanaman";
 
 const router = createBrowserRouter([
   {
-    path: "/",
+   path: "/",
     errorElement: <ErrorPage />,
     element: <Main />,
     children: [
@@ -185,6 +187,22 @@ const router = createBrowserRouter([
       {
         path: "/login-santri",
         element: <LoginSantri />,
+      },
+      {
+        path: "/tanaman/:id",
+        element: <TanamanDetail />,
+      },
+      {
+        path: "/koleksi-tanaman",
+        element: <KoleksiTanaman />,
+      },
+      {
+        path: "/register-petani",
+        element: <Navigate to="/koleksi-tanaman" replace />
+      },
+      {
+        path: "/login-perawatan",
+        element: <Navigate to="/koleksi-tanaman" replace />
       },
     ],
   },

@@ -42,10 +42,11 @@ const PendaftaranManager = () => {
       const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/programs`);
       if (response.ok) {
         const data = await response.json();
-        setPrograms(data);
+        setPrograms(Array.isArray(data) ? data : []);
       }
     } catch (error) {
       console.error("Gagal mengambil data program:", error);
+      setPrograms([]);
     }
   };
 
@@ -55,10 +56,11 @@ const PendaftaranManager = () => {
       const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/pendaftar_santri`);
       if (response.ok) {
         const data = await response.json();
-        setPendaftar(data);
+        setPendaftar(Array.isArray(data) ? data : []);
       }
     } catch (error) {
       console.error("Gagal mengambil data pendaftar:", error);
+      setPendaftar([]);
     } finally {
       setLoadingPendaftar(false);
     }
@@ -188,13 +190,13 @@ const PendaftaranManager = () => {
 
   // Filter pendaftar based on search
   const filteredPendaftar = pendaftar.filter(p => 
-    p.nama.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    p.no_wa.includes(searchQuery)
+    (p?.nama || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (p?.no_wa || "").includes(searchQuery)
   );
 
   // Stats
-  const totalMenunggu = pendaftar.filter(p => p.status_pendaftaran === "Menunggu Verifikasi").length;
-  const totalDiterima = pendaftar.filter(p => p.status_pendaftaran === "Diterima").length;
+  const totalMenunggu = pendaftar.filter(p => p?.status_pendaftaran === "Menunggu Verifikasi").length;
+  const totalDiterima = pendaftar.filter(p => p?.status_pendaftaran === "Diterima").length;
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -313,26 +315,26 @@ const PendaftaranManager = () => {
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#DCFCE7] to-green-100 text-[#14532D] flex items-center justify-center font-bold text-lg shadow-sm border border-white">
-                              {p.nama.charAt(0).toUpperCase()}
+                              {(p?.nama || "U").charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <div className="font-bold text-[#263238] text-base">{p.nama}</div>
+                              <div className="font-bold text-[#263238] text-base">{p?.nama || "Tanpa Nama"}</div>
                               <div className="text-xs font-medium text-gray-500 flex items-center gap-1 mt-0.5">
-                                {p.jenis_kelamin === 'L' ? <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span> : <span className="w-2 h-2 rounded-full bg-pink-500 inline-block"></span>}
-                                {p.jenis_kelamin === 'L' ? 'Laki-Laki' : 'Perempuan'}
+                                {p?.jenis_kelamin === 'L' ? <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span> : <span className="w-2 h-2 rounded-full bg-pink-500 inline-block"></span>}
+                                {p?.jenis_kelamin === 'L' ? 'Laki-Laki' : p?.jenis_kelamin === 'P' ? 'Perempuan' : 'Tidak Disebutkan'}
                               </div>
                             </div>
                           </div>
                         </td>
                         <td className="py-4 px-6">
-                          <div className="font-bold text-gray-700 text-sm">{p.no_wa}</div>
+                          <div className="font-bold text-gray-700 text-sm">{p?.no_wa || "-"}</div>
                           <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                            <FiMapPin className="shrink-0" /> <span className="truncate max-w-[150px]">{p.tempat_lahir}</span>
+                            <FiMapPin className="shrink-0" /> <span className="truncate max-w-[150px]">{p?.tempat_lahir || "-"}</span>
                           </div>
                         </td>
                         <td className="py-4 px-6">
                           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg text-xs font-bold text-gray-600">
-                            <FiCalendar /> {new Date(p.created_at).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'})}
+                            <FiCalendar /> {p?.created_at ? new Date(p.created_at).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}) : "-"}
                           </div>
                           {p.program_judul && (
                             <div className="mt-2 text-[10px] font-bold text-[#16804B] bg-[#DCFCE7] px-2 py-1 rounded w-max truncate max-w-[150px]" title={p.program_judul}>
@@ -416,12 +418,12 @@ const PendaftaranManager = () => {
                 </div>
                 
                 <div className="p-6">
-                  <p className="text-sm font-bold text-gray-500 mb-4">{prog.nama}</p>
+                  <p className="text-sm font-bold text-gray-500 mb-4">{prog?.nama}</p>
                   
                   <div className="flex items-center gap-2 text-sm text-gray-600 mb-6 bg-gray-50 p-3 rounded-xl border border-gray-100">
                     <FiCalendar className="text-[#16804B]" /> 
                     <span className="font-medium">Batas Akhir:</span> 
-                    <span className="font-bold text-gray-800">{new Date(prog.batas_akhir).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</span>
+                    <span className="font-bold text-gray-800">{prog?.batas_akhir ? new Date(prog.batas_akhir).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : "-"}</span>
                   </div>
 
                   <div className="flex items-center justify-between pt-4 border-t border-gray-100">
@@ -605,16 +607,16 @@ const PendaftaranManager = () => {
             <div className="overflow-y-auto p-8 custom-scrollbar">
               <div className="flex items-center gap-6 mb-8">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#16804B] to-[#14532D] text-white flex items-center justify-center font-bold text-3xl shadow-lg border-4 border-white ring-2 ring-gray-50">
-                  {selectedSantri.nama.charAt(0).toUpperCase()}
+                  {(selectedSantri?.nama || "U").charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h4 className="text-2xl font-bold text-[#263238]">{selectedSantri.nama}</h4>
+                  <h4 className="text-2xl font-bold text-[#263238]">{selectedSantri?.nama || "Tanpa Nama"}</h4>
                   <div className="flex items-center gap-3 mt-1 text-sm font-bold">
-                    <span className={`px-3 py-1 rounded-full ${selectedSantri.status_pendaftaran === 'Diterima' ? 'bg-[#DCFCE7] text-[#14532D]' : selectedSantri.status_pendaftaran === 'Ditolak' ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'}`}>
-                      {selectedSantri.status_pendaftaran}
+                    <span className={`px-3 py-1 rounded-full ${selectedSantri?.status_pendaftaran === 'Diterima' ? 'bg-[#DCFCE7] text-[#14532D]' : selectedSantri?.status_pendaftaran === 'Ditolak' ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'}`}>
+                      {selectedSantri?.status_pendaftaran || "Menunggu"}
                     </span>
                     <span className="text-gray-500 flex items-center gap-1">
-                      <FiCalendar /> {new Date(selectedSantri.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}
+                      <FiCalendar /> {selectedSantri?.created_at ? new Date(selectedSantri.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : "-"}
                     </span>
                   </div>
                 </div>
@@ -636,30 +638,30 @@ const PendaftaranManager = () => {
                 <div className="space-y-6">
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Tempat, Tanggal Lahir</p>
-                    <p className="font-bold text-gray-800">{selectedSantri.tempat_lahir}, {new Date(selectedSantri.tanggal_lahir).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</p>
+                    <p className="font-bold text-gray-800">{selectedSantri?.tempat_lahir || "-"}, {selectedSantri?.tanggal_lahir ? new Date(selectedSantri.tanggal_lahir).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : "-"}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Jenis Kelamin</p>
-                    <p className="font-bold text-gray-800">{selectedSantri.jenis_kelamin === 'L' ? 'Laki-Laki' : 'Perempuan'}</p>
+                    <p className="font-bold text-gray-800">{selectedSantri?.jenis_kelamin === 'L' ? 'Laki-Laki' : selectedSantri?.jenis_kelamin === 'P' ? 'Perempuan' : '-'}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Username Akun</p>
-                    <p className="font-bold text-gray-800">{selectedSantri.username}</p>
+                    <p className="font-bold text-gray-800">{selectedSantri?.username || "-"}</p>
                   </div>
                 </div>
 
                 <div className="space-y-6">
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Nomor WhatsApp</p>
-                    <p className="font-bold text-[#16804B] flex items-center gap-2"><FiMessageCircle /> {selectedSantri.no_wa}</p>
+                    <p className="font-bold text-[#16804B] flex items-center gap-2"><FiMessageCircle /> {selectedSantri?.no_wa || "-"}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Alamat Email</p>
-                    <p className="font-bold text-gray-800">{selectedSantri.email || '-'}</p>
+                    <p className="font-bold text-gray-800">{selectedSantri?.email || '-'}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Alamat Lengkap</p>
-                    <p className="font-bold text-gray-800 leading-relaxed">{selectedSantri.alamat}</p>
+                    <p className="font-bold text-gray-800 leading-relaxed">{selectedSantri?.alamat || "-"}</p>
                   </div>
                 </div>
               </div>

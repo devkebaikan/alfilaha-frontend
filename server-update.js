@@ -55,7 +55,10 @@ db.connect((err) => {
     `CREATE TABLE IF NOT EXISTS galeri (id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(255) NOT NULL, description TEXT, category VARCHAR(100) NOT NULL, image_url VARCHAR(255) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`,
     `CREATE TABLE IF NOT EXISTS pendaftar_santri (id INT AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(255) NOT NULL, tempat_lahir VARCHAR(100) NOT NULL, tanggal_lahir DATE NOT NULL, jenis_kelamin ENUM('L', 'P') NOT NULL, alamat TEXT NOT NULL, no_wa VARCHAR(20) NOT NULL, email VARCHAR(255), username VARCHAR(100) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL, status_pendaftaran ENUM('Menunggu Verifikasi', 'Diterima', 'Ditolak') DEFAULT 'Menunggu Verifikasi', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`
   ,
-    `CREATE TABLE IF NOT EXISTS layanan (id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(255) NOT NULL, description TEXT, image VARCHAR(255), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`
+    `CREATE TABLE IF NOT EXISTS layanan (id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(255) NOT NULL, description TEXT, image VARCHAR(255), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`,
+    `CREATE TABLE IF NOT EXISTS tanaman (id INT AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(255) NOT NULL, jenis VARCHAR(100), lokasi VARCHAR(255), deskripsi TEXT, gambar VARCHAR(255), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`,
+    `CREATE TABLE IF NOT EXISTS log_perawatan (id INT AUTO_INCREMENT PRIMARY KEY, tanaman_id INT NOT NULL, santri_id INT NOT NULL, jenis_tindakan ENUM('siram', 'pupuk') NOT NULL, waktu_tindakan TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (tanaman_id) REFERENCES tanaman(id) ON DELETE CASCADE, FOREIGN KEY (santri_id) REFERENCES pendaftar_santri(id) ON DELETE CASCADE)`,
+    `CREATE TABLE IF NOT EXISTS foto_perkembangan (id INT AUTO_INCREMENT PRIMARY KEY, tanaman_id INT NOT NULL, santri_id INT NOT NULL, gambar VARCHAR(255) NOT NULL, waktu_upload TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (tanaman_id) REFERENCES tanaman(id) ON DELETE CASCADE, FOREIGN KEY (santri_id) REFERENCES pendaftar_santri(id) ON DELETE CASCADE)`
   ];
   
   tables.forEach(q => db.query(q, (err) => { if (err) console.error(err); }));
@@ -347,6 +350,99 @@ app.put('/api/appointments/:id/status', (req, res) => {
 app.delete('/api/appointments/:id', (req, res) => {
   db.query("DELETE FROM appointments WHERE id = ?", [req.params.id], () => {
     res.json({ message: "Berhasil" });
+  });
+});
+
+// TANAMAN
+app.get('/api/tanaman', (req, res) => {
+  db.query("SELECT * FROM tanaman ORDER BY id DESC", (err, results) => {
+    res.json(results);
+  });
+});
+app.get('/api/tanaman/:id', (req, res) => {
+  db.query("SELECT * FROM tanaman WHERE id = ?", [req.params.id], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length === 0) return res.status(404).json({ message: "Not found" });
+    res.json(results[0]);
+  });
+});
+app.post('/api/tanaman', upload.single('gambar'), (req, res) => {
+  const { nama, jenis, lokasi, deskripsi } = req.body;
+  const gambar = req.file ? req.file.filename : null;
+  db.query("INSERT INTO tanaman (nama, jenis, lokasi, deskripsi, gambar) VALUES (?, ?, ?, ?, ?)", [nama, jenis, lokasi, deskripsi, gambar], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: "Berhasil", id: results.insertId });
+  });
+});
+app.put('/api/tanaman/:id', upload.single('gambar'), (req, res) => {
+  const { nama, jenis, lokasi, deskripsi } = req.body;
+  if (req.file) {
+    db.query("UPDATE tanaman SET nama=?, jenis=?, lokasi=?, deskripsi=?, gambar=? WHERE id=?", [nama, jenis, lokasi, deskripsi, req.file.filename, req.params.id], (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: "Berhasil" });
+    });
+  } else {
+    db.query("UPDATE tanaman SET nama=?, jenis=?, lokasi=?, deskripsi=? WHERE id=?", [nama, jenis, lokasi, deskripsi, req.params.id], (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: "Berhasil" });
+    });
+  }
+});
+app.delete('/api/tanaman/:id', (req, res) => {
+  db.query("DELETE FROM tanaman WHERE id = ?", [req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: "Berhasil" });
+  });
+});
+
+// LOG PERAWATAN
+app.get('/api/log_perawatan', (req, res) => {
+  const query = `
+    SELECT l.id, l.tanaman_id, l.jenis_tindakan, l.waktu_tindakan, t.nama AS nama_tanaman, s.nama AS nama_santri 
+    FROM log_perawatan l 
+    JOIN tanaman t ON l.tanaman_id = t.id 
+    JOIN pendaftar_santri s ON l.santri_id = s.id 
+    ORDER BY l.waktu_tindakan DESC
+  `;
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
+app.post('/api/log_perawatan', authenticateSantriToken, (req, res) => {
+  const { tanaman_id, jenis_tindakan } = req.body;
+  const santri_id = req.user.id;
+  db.query("INSERT INTO log_perawatan (tanaman_id, santri_id, jenis_tindakan) VALUES (?, ?, ?)", [tanaman_id, santri_id, jenis_tindakan], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: "Perawatan berhasil dicatat" });
+  });
+});
+
+// FOTO PERKEMBANGAN
+app.get('/api/foto_perkembangan/:tanaman_id', (req, res) => {
+  const query = `
+    SELECT f.id, f.tanaman_id, f.gambar, f.waktu_upload, s.nama AS nama_pengunggah
+    FROM foto_perkembangan f
+    JOIN pendaftar_santri s ON f.santri_id = s.id
+    WHERE f.tanaman_id = ?
+    ORDER BY f.waktu_upload DESC
+  `;
+  db.query(query, [req.params.tanaman_id], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
+
+app.post('/api/foto_perkembangan', authenticateSantriToken, upload.single('gambar'), (req, res) => {
+  const { tanaman_id } = req.body;
+  const santri_id = req.user.id;
+  const gambar = req.file ? req.file.filename : null;
+  
+  if (!gambar) return res.status(400).json({ error: "Gambar wajib diunggah" });
+
+  db.query("INSERT INTO foto_perkembangan (tanaman_id, santri_id, gambar) VALUES (?, ?, ?)", [tanaman_id, santri_id, gambar], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: "Foto perkembangan berhasil diunggah", id: results.insertId });
   });
 });
 

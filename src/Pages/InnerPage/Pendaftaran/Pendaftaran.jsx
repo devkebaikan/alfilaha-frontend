@@ -50,13 +50,11 @@ const Pendaftaran = () => {
         const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/programs`);
         if (response.ok) {
           const data = await response.json();
-          // Filter to only active programs if you want, but user wants to see it as closed if non-aktif?
-          // Actually, if status is non_aktif, we can either not show it or show it as closed.
-          // The prompt says: "Jika status program 'Nonaktif', jangan tampilkan ke publik."
-          setPrograms(data.filter(p => p.status === 'aktif'));
+          setPrograms(Array.isArray(data) ? data.filter(p => p.status === 'aktif') : []);
         }
       } catch (err) {
         console.error(err);
+        setPrograms([]);
       } finally {
         setLoadingPrograms(false);
       }

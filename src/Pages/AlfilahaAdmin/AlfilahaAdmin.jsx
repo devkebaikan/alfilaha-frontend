@@ -44,6 +44,8 @@ import Appointment from "./Tabs/Appointment/Appointment";
 import PendaftaranManager from "./Tabs/PendaftaranManager/PendaftaranManager";
 import LayananManager from "./Tabs/Layanan/LayananManager";
 import LayananForm from "./Tabs/Layanan/LayananForm";
+import TanamanManager from "./Tabs/TanamanManager/TanamanManager";
+import LogManager from "./Tabs/LogPerawatan/LogManager";
 
 const AlfilahaAdmin = () => {
   const navigate = useNavigate();
@@ -854,6 +856,41 @@ const [wisata, setWisata] = useState([]);
             </span>
           </button>
 
+          <button
+            onClick={() => handleTabChange("tanaman")}
+            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
+              activeTab === "tanaman"
+                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+            }`}
+          >
+            <div
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "tanaman" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+            >
+              <FiMap size={20} />
+            </div>
+            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
+              Manajemen Tanaman
+            </span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange("log-perawatan")}
+            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
+              activeTab === "log-perawatan"
+                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+            }`}
+          >
+            <div
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "log-perawatan" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+            >
+              <FiActivity size={20} />
+            </div>
+            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
+              Laporan Perawatan
+            </span>
+          </button>
 
           <button
             onClick={() => handleTabChange("reservasi")}
@@ -1054,6 +1091,8 @@ const [wisata, setWisata] = useState([]);
                   "Manajemen Artikel"}
                 {activeTab === "event" && "Manajemen Event"}
                 {activeTab === "pendaftaran" && "Pendaftaran Santri"}
+                {activeTab === "tanaman" && "Manajemen Tanaman"}
+                {activeTab === "log-perawatan" && "Laporan Perawatan Tanaman"}
                 {activeTab.startsWith("galeri-") && "Galeri Alfilaha"}
               </h2>
               <p className="text-xs font-semibold text-gray-500 mt-0.5 hidden sm:block">
@@ -1087,6 +1126,8 @@ const [wisata, setWisata] = useState([]);
         {/* CONTENT AREA */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-10">
           <div className="max-w-7xl mx-auto">
+            {activeTab === "tanaman" && <TanamanManager />}
+            {activeTab === "log-perawatan" && <LogManager />}
             {activeTab === "beranda" && (
               <Beranda
                 reservasi={reservasi}

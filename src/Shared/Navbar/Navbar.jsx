@@ -141,6 +141,7 @@ const Navbar = () => {
         { title: "Paket Wisata", path: "/paket-wisata" },
         { title: "Blog", path: "/blog_grid" },
         { title: "Event & Kegiatan", path: "/event" },
+        { title: "Koleksi Tanaman", path: "/koleksi-tanaman" },
         { title: "Form Pesan Tempat", path: "/pesan-tempat" },
       ],
     },

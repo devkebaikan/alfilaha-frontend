@@ -6,6 +6,7 @@ import subTitleShape from "/images/sub-title-shape.png";
 
 const PaketWisata = () => {
   const [paketList, setPaketList] = useState([]);
+  const [selectedDetail, setSelectedDetail] = useState(null);
 
   useEffect(() => {
     const fetchPaket = async () => {
@@ -38,26 +39,31 @@ const PaketWisata = () => {
         </div>
       )}
       <div className="p-8">
-        {paket.gambar && (
-          <div className="mb-6 rounded-xl overflow-hidden h-48 w-full">
-            <img src={`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${paket.gambar}`} alt={paket.nama_paket} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+        <div className="cursor-pointer group" onClick={() => setSelectedDetail(paket)}>
+          {paket.gambar && (
+            <div className="mb-6 rounded-xl overflow-hidden h-48 w-full">
+              <img src={`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${paket.gambar}`} alt={paket.nama_paket} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            </div>
+          )}
+          <h3 className="font-AlbertSans font-bold text-2xl text-HeadingColor-0 mb-4 group-hover:text-PrimaryColor-0 transition-colors">
+            {paket.nama_paket}
+          </h3>
+          <div className="flex items-baseline gap-2 mb-6 border-b border-BorderColor2-0 pb-6">
+            <span className="font-AlbertSans font-bold text-2xl sm:text-3xl text-PrimaryColor-0">
+              {paket.harga}
+            </span>
           </div>
-        )}
-        <h3 className="font-AlbertSans font-bold text-2xl text-HeadingColor-0 mb-4">
-          {paket.nama_paket}
-        </h3>
-        <div className="flex items-baseline gap-2 mb-6 border-b border-BorderColor2-0 pb-6">
-          <span className="font-AlbertSans font-bold text-2xl sm:text-3xl text-PrimaryColor-0">
-            {paket.harga}
-          </span>
+          <div className="mb-6">
+            <div 
+              className="prose prose-sm text-TextColor-0 font-AlbertSans max-w-none line-clamp-3" 
+              dangerouslySetInnerHTML={{ __html: paket.deskripsi }} 
+            />
+            <span className="text-PrimaryColor-0 font-semibold text-sm mt-2 block group-hover:underline">
+              Klik untuk melihat detail lengkap
+            </span>
+          </div>
         </div>
-        <div className="mb-6">
-          <div 
-            className="prose prose-sm text-TextColor-0 font-AlbertSans max-w-none" 
-            dangerouslySetInnerHTML={{ __html: paket.deskripsi }} 
-          />
-        </div>
-        <Link to="/pesan-tempat">
+        <Link to="/pesan-tempat" state={{ selectedPaket: paket.nama_paket }}>
           <button
             className={`w-full flex items-center justify-center gap-2 py-3 px-6 rounded-md transition-all duration-300 font-AlbertSans font-semibold ${
               paket.isPopular
@@ -170,6 +176,67 @@ const PaketWisata = () => {
           </div>
         </div>
       </section>
+
+      {/* Modal Detail Paket */}
+      {selectedDetail && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedDetail(null)}
+              className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-600 hover:text-red-600 hover:bg-red-50 shadow-md z-10 transition-colors text-xl font-bold"
+            >
+              ✕
+            </button>
+
+            {/* Modal Image */}
+            <div className="w-full h-64 md:h-80 relative">
+              <img
+                src={
+                  selectedDetail.gambar
+                    ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${selectedDetail.gambar}`
+                    : "/images/services-plant-4.jpg"
+                }
+                alt={selectedDetail.nama_paket}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/80 to-transparent">
+                <h2 className="text-3xl font-bold text-white mb-2">{selectedDetail.nama_paket}</h2>
+                <div className="inline-block bg-PrimaryColor-0 text-white px-5 py-1.5 rounded-full font-bold text-lg shadow-lg">
+                  {selectedDetail.harga}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-8">
+              <h3 className="text-xl font-bold text-HeadingColor-0 mb-4 border-b pb-2">Detail Fasilitas & Kegiatan</h3>
+              <div
+                className="prose prose-md text-TextColor-0 font-AlbertSans max-w-none mb-8"
+                dangerouslySetInnerHTML={{ __html: selectedDetail.deskripsi }}
+              />
+              
+              <div className="flex gap-4 pt-4 border-t border-BorderColor2-0">
+                <button
+                  onClick={() => setSelectedDetail(null)}
+                  className="flex-1 py-3 px-6 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Tutup
+                </button>
+                <Link
+                  to="/pesan-tempat"
+                  state={{ selectedPaket: selectedDetail.nama_paket }}
+                  className="flex-1"
+                >
+                  <button className="w-full py-3 px-6 rounded-xl bg-PrimaryColor-0 text-white font-semibold hover:bg-opacity-90 flex items-center justify-center gap-2 transition-colors">
+                    Pesan Sekarang <FaArrowRightLong />
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -44,6 +44,7 @@ const Beranda = ({
   const [period, setPeriod] = useState("30 Hari");
   const [pendaftar, setPendaftar] = useState([]);
   const [programs, setPrograms] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,10 +57,20 @@ const Beranda = ({
             `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/programs`,
           ),
         ]);
-        if (resPendaftar.ok) setPendaftar(await resPendaftar.json());
-        if (resPrograms.ok) setPrograms(await resPrograms.json());
+        if (resPendaftar.ok) {
+          const data = await resPendaftar.json();
+          setPendaftar(Array.isArray(data) ? data : []);
+        }
+        if (resPrograms.ok) {
+          const data = await resPrograms.json();
+          setPrograms(Array.isArray(data) ? data : []);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
+        setPendaftar([]);
+        setPrograms([]);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
@@ -136,6 +147,14 @@ const Beranda = ({
   const upcomingEvents = useMemo(() => {
     return [...events].slice(0, 3);
   }, [events]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-[#16804B]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in-up pb-12 px-2 sm:px-0">
