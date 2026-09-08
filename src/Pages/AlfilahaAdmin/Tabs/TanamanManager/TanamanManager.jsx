@@ -10,7 +10,7 @@ const TanamanManager = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedTanaman, setSelectedTanaman] = useState(null);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ nama: "", jenis: "", lokasi: "", deskripsi: "", kondisi: "Sehat", usia: "", jadwal_siram: "", penanggung_jawab: "", kebutuhan_air: "Cukup", terakhir_dipupuk: "" });
+  const [formData, setFormData] = useState({ nama: "", jenis: "", lokasi: "", deskripsi: "", kondisi: "Sehat", usia: "", jadwal_siram: "", jadwal_pupuk: "", jadwal_panen: "", nama_kelompok: "", anggota_kelompok: "", kebutuhan_air: "Cukup", terakhir_dipupuk: "" });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,6 +18,17 @@ const TanamanManager = () => {
   const qrRefs = useRef({});
   const fileInputRef = useRef(null);
   const quillRef = useRef(null);
+
+  const existingGroups = useMemo(() => {
+    const groups = new Set();
+    tanaman.forEach(t => {
+      if (t.penanggung_jawab && t.penanggung_jawab.trim() !== '') {
+        const parts = t.penanggung_jawab.split(" - ");
+        if (parts[0]) groups.add(parts[0].trim());
+      }
+    });
+    return Array.from(groups);
+  }, [tanaman]);
 
   const fetchTanaman = async () => {
     try {
@@ -43,9 +54,17 @@ const TanamanManager = () => {
     data.append("kondisi", formData.kondisi);
     data.append("usia", formData.usia);
     data.append("jadwal_siram", formData.jadwal_siram);
-    data.append("penanggung_jawab", formData.penanggung_jawab);
+
+    let combinedPJ = formData.nama_kelompok.trim();
+    if (formData.anggota_kelompok.trim()) {
+      combinedPJ = combinedPJ ? `${combinedPJ} - ${formData.anggota_kelompok.trim()}` : formData.anggota_kelompok.trim();
+    }
+    data.append("penanggung_jawab", combinedPJ);
+    
     data.append("kebutuhan_air", formData.kebutuhan_air);
     data.append("terakhir_dipupuk", formData.terakhir_dipupuk);
+    data.append("jadwal_pupuk", formData.jadwal_pupuk);
+    data.append("jadwal_panen", formData.jadwal_panen);
     if (imageFile) data.append("gambar", imageFile);
 
     try {
@@ -71,7 +90,7 @@ const TanamanManager = () => {
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setEditingId(null);
-    setFormData({ nama: "", jenis: "", lokasi: "", deskripsi: "", kondisi: "Sehat", usia: "", jadwal_siram: "", penanggung_jawab: "", kebutuhan_air: "Cukup", terakhir_dipupuk: "" });
+    setFormData({ nama: "", jenis: "", lokasi: "", deskripsi: "", kondisi: "Sehat", usia: "", jadwal_siram: "", jadwal_pupuk: "", jadwal_panen: "", nama_kelompok: "", anggota_kelompok: "", kebutuhan_air: "Cukup", terakhir_dipupuk: "" });
     setImageFile(null);
     setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -79,6 +98,17 @@ const TanamanManager = () => {
 
   const handleEdit = (t) => {
     setEditingId(t.id);
+    
+    let nk = "";
+    let ak = "";
+    if (t.penanggung_jawab) {
+      const parts = t.penanggung_jawab.split(" - ");
+      nk = parts[0] || "";
+      if (parts.length > 1) {
+        ak = parts.slice(1).join(" - ");
+      }
+    }
+
     setFormData({
       nama: t.nama || "",
       jenis: t.jenis || "",
@@ -87,7 +117,10 @@ const TanamanManager = () => {
       kondisi: t.kondisi || "Sehat",
       usia: t.usia || "",
       jadwal_siram: t.jadwal_siram || "",
-      penanggung_jawab: t.penanggung_jawab || "",
+      jadwal_pupuk: t.jadwal_pupuk || "",
+      jadwal_panen: t.jadwal_panen || "",
+      nama_kelompok: nk,
+      anggota_kelompok: ak,
       kebutuhan_air: t.kebutuhan_air || "Cukup",
       terakhir_dipupuk: t.terakhir_dipupuk || ""
     });
@@ -283,16 +316,34 @@ const TanamanManager = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Perawat / Penanggung Jawab</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Jadwal Pupuk</label>
                 <select
-                  value={formData.penanggung_jawab}
-                  onChange={(e) => setFormData({ ...formData, penanggung_jawab: e.target.value })}
+                  value={formData.jadwal_pupuk}
+                  onChange={(e) => setFormData({ ...formData, jadwal_pupuk: e.target.value })}
                   className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
                 >
-                  <option value="">Pilih Penanggung Jawab...</option>
-                  <option value="Kelompok A">Kelompok A</option>
-                  <option value="Kelompok B">Kelompok B</option>
-                  <option value="Kelompok C">Kelompok C</option>
+                  <option value="">Pilih Jadwal...</option>
+                  <option value="1x Sehari">1x Sehari</option>
+                  <option value="2x Sehari">2x Sehari</option>
+                  <option value="3x Sehari">3x Sehari</option>
+                  <option value="4x Sehari">4x Sehari</option>
+                  <option value="5x Sehari">5x Sehari</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Jadwal Panen</label>
+                <select
+                  value={formData.jadwal_panen}
+                  onChange={(e) => setFormData({ ...formData, jadwal_panen: e.target.value })}
+                  className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
+                >
+                  <option value="">Pilih Jadwal...</option>
+                  <option value="1x Sehari">1x Sehari</option>
+                  <option value="2x Sehari">2x Sehari</option>
+                  <option value="3x Sehari">3x Sehari</option>
+                  <option value="4x Sehari">4x Sehari</option>
+                  <option value="5x Sehari">5x Sehari</option>
                 </select>
               </div>
 
@@ -318,6 +369,41 @@ const TanamanManager = () => {
                   className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
                   placeholder="Misal: 2 hari lalu"
                 />
+              </div>
+            </div>
+
+            <div className="bg-gray-50/80 p-6 sm:p-8 rounded-2xl border border-gray-100">
+              <h4 className="text-sm font-extrabold text-green-800 mb-6 border-b border-gray-200 pb-3 uppercase tracking-wider">
+                Informasi Perawat / Penanggung Jawab
+              </h4>
+              <div className="flex flex-col gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Nama Kelompok Perawat</label>
+                  <input
+                    type="text"
+                    list="daftar-kelompok"
+                    value={formData.nama_kelompok}
+                    onChange={(e) => setFormData({ ...formData, nama_kelompok: e.target.value })}
+                    className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-white text-gray-800 font-medium shadow-sm"
+                    placeholder="Misal: Kelompok Melati"
+                  />
+                  <datalist id="daftar-kelompok">
+                    {existingGroups.map((group, idx) => (
+                      <option key={idx} value={group} />
+                    ))}
+                  </datalist>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Nama-nama Anggota Kelompok</label>
+                  <input
+                    type="text"
+                    value={formData.anggota_kelompok}
+                    onChange={(e) => setFormData({ ...formData, anggota_kelompok: e.target.value })}
+                    className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-white text-gray-800 font-medium shadow-sm"
+                    placeholder="Misal: Ali, Budi, Citra"
+                  />
+                </div>
               </div>
             </div>
 
@@ -526,9 +612,20 @@ const TanamanManager = () => {
                   <span className="block text-xs text-gray-500 mb-1">Jadwal Siram</span>
                   <span className="font-bold text-gray-800 text-sm">{selectedTanaman.jadwal_siram || '-'}</span>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col justify-center">
                   <span className="block text-xs text-gray-500 mb-1">Perawat</span>
-                  <span className="font-bold text-gray-800 text-sm">{selectedTanaman.penanggung_jawab || '-'}</span>
+                  {(() => {
+                    const pj = selectedTanaman.penanggung_jawab || '-';
+                    const parts = pj.split(" - ");
+                    return (
+                      <div className="flex flex-col">
+                        <span className="font-bold text-gray-800 text-sm leading-tight">{parts[0]}</span>
+                        {parts.length > 1 && (
+                          <span className="text-xs font-medium text-gray-500 mt-1 leading-snug">{parts.slice(1).join(" - ")}</span>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                   <span className="block text-xs text-gray-500 mb-1">Kebutuhan Air</span>

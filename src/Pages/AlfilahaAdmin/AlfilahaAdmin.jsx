@@ -46,6 +46,7 @@ import LayananManager from "./Tabs/Layanan/LayananManager";
 import LayananForm from "./Tabs/Layanan/LayananForm";
 import TanamanManager from "./Tabs/TanamanManager/TanamanManager";
 import LogManager from "./Tabs/LogPerawatan/LogManager";
+import UserManager from "./Tabs/UserManager/UserManager";
 
 const AlfilahaAdmin = () => {
   const navigate = useNavigate();
@@ -893,6 +894,24 @@ const [wisata, setWisata] = useState([]);
           </button>
 
           <button
+            onClick={() => handleTabChange("users")}
+            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
+              activeTab === "users"
+                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+            }`}
+          >
+            <div
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "users" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+            >
+              <FiUsers size={20} />
+            </div>
+            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
+              Manajemen Akun
+            </span>
+          </button>
+
+          <button
             onClick={() => handleTabChange("reservasi")}
             className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === "reservasi"
@@ -1093,6 +1112,7 @@ const [wisata, setWisata] = useState([]);
                 {activeTab === "pendaftaran" && "Pendaftaran Santri"}
                 {activeTab === "tanaman" && "Manajemen Tanaman"}
                 {activeTab === "log-perawatan" && "Laporan Perawatan Tanaman"}
+                {activeTab === "users" && "Manajemen Akun Internal"}
                 {activeTab.startsWith("galeri-") && "Galeri Alfilaha"}
               </h2>
               <p className="text-xs font-semibold text-gray-500 mt-0.5 hidden sm:block">
@@ -1108,7 +1128,7 @@ const [wisata, setWisata] = useState([]);
           <div className="flex items-center space-x-4 md:space-x-6">
             <div className="flex items-center space-x-4 bg-white py-2 px-4 rounded-full border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
               <div className="text-right hidden md:block">
-                <p className="text-sm font-bold text-gray-800">Admin Utama</p>
+                <p className="text-sm font-bold text-gray-800">Admin</p>
                 <div className="flex items-center justify-end space-x-1.5">
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                   <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">
@@ -1128,6 +1148,7 @@ const [wisata, setWisata] = useState([]);
           <div className="max-w-7xl mx-auto">
             {activeTab === "tanaman" && <TanamanManager />}
             {activeTab === "log-perawatan" && <LogManager />}
+            {activeTab === "users" && <UserManager />}
             {activeTab === "beranda" && (
               <Beranda
                 reservasi={reservasi}

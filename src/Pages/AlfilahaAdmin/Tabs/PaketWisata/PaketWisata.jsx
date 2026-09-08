@@ -21,9 +21,9 @@ const PaketWisata = ({
         </div>
         <button
           onClick={() => onAdd()}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5 whitespace-nowrap"
         >
-          + Tambah Paket
+          Tambah Paket
         </button>
       </div>
       <div className="p-8">

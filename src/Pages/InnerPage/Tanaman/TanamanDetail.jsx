@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { FiDroplet, FiCheckCircle, FiMapPin, FiInfo, FiClock, FiCalendar, FiArrowLeft, FiActivity, FiUsers, FiImage, FiCamera, FiTrash2 } from "react-icons/fi";
+import { FiDroplet, FiCheckCircle, FiMapPin, FiInfo, FiClock, FiCalendar, FiArrowLeft, FiActivity, FiUsers, FiImage, FiCamera, FiTrash2, FiShoppingBag, FiLogOut } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 
 
@@ -15,12 +15,22 @@ const TanamanDetail = () => {
   const [filterRiwayat, setFilterRiwayat] = useState("Semua");
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [notification, setNotification] = useState({ isOpen: false, jenis: "", timestamp: null });
+  
+  const isLoggedIn = !!localStorage.getItem("authToken");
+  let userData = null;
+  try {
+    const storedUser = localStorage.getItem("userData");
+    if (storedUser) userData = JSON.parse(storedUser);
+  } catch (e) {
+    console.error("Gagal membaca data user", e);
+  }
 
   const [fotoPerkembangan, setFotoPerkembangan] = useState([]);
   const [fotoLoading, setFotoLoading] = useState(true);
   const [selectedFoto, setSelectedFoto] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const fetchTanaman = async () => {
     try {
@@ -37,10 +47,22 @@ const TanamanDetail = () => {
   const fetchHistory = async () => {
     try {
       setHistoryLoading(true);
-      const res = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/log_perawatan?tanaman_id=${id}`);
+      const token = localStorage.getItem("authToken");
+      const headers = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const res = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/tanaman/${id}/riwayat`, {
+        headers
+      });
       if (res.ok) {
         const data = await res.json();
-        setHistory(data); // Ambil semua data riwayat
+        const mappedData = data.map(item => ({
+          ...item,
+          jenis_tindakan: item.tipe_aksi || item.jenis_tindakan,
+          waktu_tindakan: item.created_at || item.waktu_tindakan
+        }));
+        setHistory(mappedData); // Ambil semua data riwayat
       }
     } catch (err) {
       console.error(err);
@@ -74,7 +96,7 @@ const TanamanDetail = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const token = localStorage.getItem("santri_token");
+    const token = localStorage.getItem("authToken");
     if (!token) {
       alert("Anda harus login sebagai petugas/santri untuk mengunggah foto.");
       navigate(`/login-perawatan?redirect=/tanaman/${id}`);
@@ -111,22 +133,40 @@ const TanamanDetail = () => {
   };
 
   const handlePerawatan = async (jenis_tindakan) => {
+    const token = localStorage.getItem("authToken");
+    const userDataRaw = localStorage.getItem("userData");
+    
+    if (!token || !userDataRaw) {
+      alert("Silakan login terlebih dahulu untuk mencatat tindakan");
+      return;
+    }
+
+    const userData = JSON.parse(userDataRaw);
+
     setActionLoading(true);
     
-    const formData = new FormData();
-    formData.append("tanaman_id", id);
-    formData.append("jenis_tindakan", jenis_tindakan);
-    formData.append("nama_perawat", "Santri");
-    formData.append("role_perawat", "Santri");
-
     try {
-      await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/log_perawatan`, {
+      const res = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/tanaman/${id}/aksi`, {
         method: "POST",
-        body: formData
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          tipe_aksi: jenis_tindakan,
+          nama_perawat: userData.nama_lengkap,
+          role_perawat: userData.role
+        })
       });
+      
+      if (!res.ok) {
+        throw new Error("Gagal mencatat tindakan");
+      }
+      
       fetchHistory(); // Refresh riwayat
     } catch (err) {
       console.error(err);
+      alert(err.message);
     } finally {
       setActionLoading(false);
       setNotification({
@@ -146,8 +186,27 @@ const TanamanDetail = () => {
     if (filterRiwayat === "Semua") return true;
     if (filterRiwayat === "Penyiraman") return log.jenis_tindakan === "siram";
     if (filterRiwayat === "Pemupukan") return log.jenis_tindakan === "pupuk";
+    if (filterRiwayat === "Panen") return log.jenis_tindakan === "panen";
     return true;
   });
+
+  const getTodayCount = (jenis) => {
+    const today = new Date().toLocaleDateString('en-CA');
+    return history.filter(log => 
+      log.jenis_tindakan === jenis && 
+      new Date(log.waktu_tindakan).toLocaleDateString('en-CA') === today
+    ).length;
+  };
+
+  const getLimit = (jadwalStr) => {
+    if (!jadwalStr) return 0; // Default 0 (disabled) if admin hasn't set
+    const match = jadwalStr.match(/(\d+)x/);
+    return match ? parseInt(match[1]) : 0;
+  };
+
+  const isSiramDisabled = actionLoading || getTodayCount('siram') >= getLimit(tanaman?.jadwal_siram);
+  const isPupukDisabled = actionLoading || getTodayCount('pupuk') >= getLimit(tanaman?.jadwal_pupuk);
+  const isPanenDisabled = actionLoading || getTodayCount('panen') >= getLimit(tanaman?.jadwal_panen);
 
   const displayedHistory = showAllHistory ? filteredHistory : filteredHistory.slice(0, 5);
 
@@ -157,9 +216,45 @@ const TanamanDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50 pt-[100px] lg:pt-[140px] pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        <Link to="/koleksi-tanaman" className="inline-flex items-center text-green-600 font-bold mb-6 hover:text-green-800 transition">
-          <FiArrowLeft className="mr-2" /> Kembali ke Daftar Tanaman
-        </Link>
+        <div className="flex flex-col mb-6 gap-4">
+          <Link to="/koleksi-tanaman" className="inline-flex items-center text-green-600 font-bold hover:text-green-800 transition w-fit">
+            <FiArrowLeft className="mr-2" /> Kembali ke Daftar Tanaman
+          </Link>
+          
+          {isLoggedIn && userData && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-gradient-to-r from-green-50 to-white p-5 rounded-2xl shadow-sm border border-green-100 flex flex-col sm:flex-row sm:items-center justify-between"
+            >
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <h2 className="text-xl font-bold text-gray-800">
+                    Selamat bertugas, <span className="text-green-700">{userData.nama_lengkap}</span> 👋
+                  </h2>
+                  <span className="text-[10px] sm:text-xs bg-green-100 text-green-800 px-3 py-1 rounded-full font-bold uppercase tracking-wider border border-green-200">
+                    {userData.role}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">
+                  Silakan catat aktivitas penyiraman, pemupukan, atau panen untuk tanaman ini.
+                </p>
+              </div>
+              
+              <button 
+                onClick={() => {
+                  localStorage.removeItem("authToken");
+                  localStorage.removeItem("userData");
+                  window.location.reload();
+                }}
+                className="mt-4 sm:mt-0 px-4 py-2 border border-gray-200 text-gray-500 bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200 rounded-lg text-sm font-bold transition-all shadow-sm flex items-center justify-center shrink-0 group"
+              >
+                <FiLogOut className="mr-2 group-hover:-translate-x-0.5 transition-transform" />
+                Logout
+              </button>
+            </motion.div>
+          )}
+        </div>
         
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 flex flex-col md:flex-row">
           <div className="md:w-3/5 flex flex-col border-b md:border-b-0 md:border-r border-gray-100">
@@ -253,8 +348,19 @@ const TanamanDetail = () => {
                     <FiUsers className="text-orange-600 w-5 h-5" />
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500 mb-0.5">Perawat</span>
-                    <span className="font-bold text-gray-800 text-sm">{tanaman.penanggung_jawab || 'Kelompok 03'}</span>
+                    <span className="block text-xs text-gray-500 mb-1">Perawat</span>
+                    {(() => {
+                      const pj = tanaman.penanggung_jawab || 'Belum ada';
+                      const parts = pj.split(" - ");
+                      return (
+                        <div className="flex flex-col">
+                          <span className="font-bold text-gray-800 text-sm leading-tight">{parts[0]}</span>
+                          {parts.length > 1 && (
+                            <span className="text-xs font-medium text-gray-500 mt-1 leading-snug">{parts.slice(1).join(" - ")}</span>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
@@ -286,9 +392,19 @@ const TanamanDetail = () => {
 
           <div className="md:w-2/5 p-6 sm:p-8 bg-gray-50 flex flex-col border-l border-gray-100">
             <div className="mb-8">
-              <h3 className="text-gray-900 font-bold mb-4 text-xl flex items-center">
-                Konfirmasi Perawatan
-              </h3>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+                <h3 className="text-gray-900 font-bold text-xl flex items-center">
+                  Konfirmasi Perawatan
+                </h3>
+                {!isLoggedIn && (
+                  <Link 
+                    to="/login-perawatan" 
+                    className="text-xs bg-green-600 text-white px-4 py-2 rounded-full font-bold shadow-md hover:bg-green-700 transition w-fit"
+                  >
+                    Login Internal
+                  </Link>
+                )}
+              </div>
               
               {successMsg && (
                 <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-center font-semibold animate-pulse shadow-sm text-sm">
@@ -296,27 +412,53 @@ const TanamanDetail = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <button 
-                  onClick={() => handlePerawatan("siram")}
-                  disabled={actionLoading}
-                  className="flex flex-col items-center justify-center p-4 bg-white hover:bg-blue-50 border-2 border-blue-100 hover:border-blue-300 rounded-2xl transition group shadow-sm disabled:opacity-50"
+                  onClick={() => setConfirmAction("siram")}
+                  disabled={isSiramDisabled}
+                  className={`flex flex-col items-center justify-center p-4 bg-white hover:bg-blue-50 border-2 border-blue-100 hover:border-blue-300 rounded-2xl hover:-translate-y-1 hover:shadow-md transition-all duration-300 group shadow-sm ${isSiramDisabled ? 'opacity-80 cursor-not-allowed bg-gray-50 border-gray-200 hover:bg-gray-50 hover:border-gray-200 hover:-translate-y-0 hover:shadow-none' : ''}`}
                 >
-                  <div className="w-12 h-12 bg-blue-100 group-hover:bg-blue-200 text-blue-600 rounded-full flex items-center justify-center mb-2 transition shadow-inner">
-                    <FiDroplet size={24} />
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition shadow-inner ${isSiramDisabled ? 'bg-gray-200 text-gray-400' : 'bg-blue-100 group-hover:bg-blue-200 text-blue-600'}`}>
+                    {isSiramDisabled && !actionLoading ? <FiCheckCircle size={24} /> : <FiDroplet size={24} />}
                   </div>
-                  <span className="font-bold text-blue-800 text-sm">Siram Air</span>
+                  <span className={`font-bold text-sm ${isSiramDisabled ? 'text-gray-500' : 'text-blue-800'}`}>
+                    {isSiramDisabled && !actionLoading ? 'Selesai Hari Ini' : 'Siram Air'}
+                  </span>
+                  {!tanaman?.jadwal_siram && <span className="text-[10px] text-gray-500 mt-1 font-bold bg-gray-200 px-2 py-0.5 rounded">Belum Diatur Admin</span>}
+                  {!isSiramDisabled && tanaman?.jadwal_siram && <span className="text-[10px] text-gray-400 mt-1">{getTodayCount('siram')}/{getLimit(tanaman.jadwal_siram)} Hari ini</span>}
+                  {isSiramDisabled && actionLoading === false && tanaman?.jadwal_siram && <span className="text-[10px] text-green-600 mt-1 font-bold bg-green-100 px-2 py-0.5 rounded mt-1">Sudah Dikerjakan</span>}
                 </button>
                 
                 <button 
-                  onClick={() => handlePerawatan("pupuk")}
-                  disabled={actionLoading}
-                  className="flex flex-col items-center justify-center p-4 bg-white hover:bg-orange-50 border-2 border-orange-100 hover:border-orange-300 rounded-2xl transition group shadow-sm disabled:opacity-50"
+                  onClick={() => setConfirmAction("pupuk")}
+                  disabled={isPupukDisabled}
+                  className={`flex flex-col items-center justify-center p-4 bg-white hover:bg-orange-50 border-2 border-orange-100 hover:border-orange-300 rounded-2xl hover:-translate-y-1 hover:shadow-md transition-all duration-300 group shadow-sm ${isPupukDisabled ? 'opacity-80 cursor-not-allowed bg-gray-50 border-gray-200 hover:bg-gray-50 hover:border-gray-200 hover:-translate-y-0 hover:shadow-none' : ''}`}
                 >
-                  <div className="w-12 h-12 bg-orange-100 group-hover:bg-orange-200 text-orange-600 rounded-full flex items-center justify-center mb-2 transition shadow-inner">
-                    <FiCheckCircle size={24} />
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition shadow-inner ${isPupukDisabled ? 'bg-gray-200 text-gray-400' : 'bg-orange-100 group-hover:bg-orange-200 text-orange-600'}`}>
+                    {isPupukDisabled && !actionLoading ? <FiCheckCircle size={24} /> : <FiCheckCircle size={24} />}
                   </div>
-                  <span className="font-bold text-orange-800 text-sm">Beri Pupuk</span>
+                  <span className={`font-bold text-sm ${isPupukDisabled ? 'text-gray-500' : 'text-orange-800'}`}>
+                    {isPupukDisabled && !actionLoading ? 'Selesai Hari Ini' : 'Beri Pupuk'}
+                  </span>
+                  {!tanaman?.jadwal_pupuk && <span className="text-[10px] text-gray-500 mt-1 font-bold bg-gray-200 px-2 py-0.5 rounded">Belum Diatur Admin</span>}
+                  {!isPupukDisabled && tanaman?.jadwal_pupuk && <span className="text-[10px] text-gray-400 mt-1">{getTodayCount('pupuk')}/{getLimit(tanaman.jadwal_pupuk)} Hari ini</span>}
+                  {isPupukDisabled && actionLoading === false && tanaman?.jadwal_pupuk && <span className="text-[10px] text-green-600 mt-1 font-bold bg-green-100 px-2 py-0.5 rounded mt-1">Sudah Dikerjakan</span>}
+                </button>
+
+                <button 
+                  onClick={() => setConfirmAction("panen")}
+                  disabled={isPanenDisabled}
+                  className={`flex flex-col items-center justify-center p-4 bg-white hover:bg-green-50 border-2 border-green-100 hover:border-green-300 rounded-2xl hover:-translate-y-1 hover:shadow-md transition-all duration-300 group shadow-sm col-span-2 sm:col-span-1 ${isPanenDisabled ? 'opacity-80 cursor-not-allowed bg-gray-50 border-gray-200 hover:bg-gray-50 hover:border-gray-200 hover:-translate-y-0 hover:shadow-none' : ''}`}
+                >
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition shadow-inner ${isPanenDisabled ? 'bg-gray-200 text-gray-400' : 'bg-green-100 group-hover:bg-green-200 text-green-600'}`}>
+                    {isPanenDisabled && !actionLoading ? <FiCheckCircle size={24} /> : <FiShoppingBag size={24} />}
+                  </div>
+                  <span className={`font-bold text-sm ${isPanenDisabled ? 'text-gray-500' : 'text-green-800'}`}>
+                    {isPanenDisabled && !actionLoading ? 'Selesai Hari Ini' : 'Panen'}
+                  </span>
+                  {!tanaman?.jadwal_panen && <span className="text-[10px] text-gray-500 mt-1 font-bold bg-gray-200 px-2 py-0.5 rounded">Belum Diatur Admin</span>}
+                  {!isPanenDisabled && tanaman?.jadwal_panen && <span className="text-[10px] text-gray-400 mt-1">{getTodayCount('panen')}/{getLimit(tanaman.jadwal_panen)} Hari ini</span>}
+                  {isPanenDisabled && actionLoading === false && tanaman?.jadwal_panen && <span className="text-[10px] text-green-600 mt-1 font-bold bg-green-100 px-2 py-0.5 rounded mt-1">Sudah Dikerjakan</span>}
                 </button>
               </div>
             </div>
@@ -329,7 +471,7 @@ const TanamanDetail = () => {
               </div>
 
               <div className="flex space-x-2 mb-4 overflow-x-auto pb-1 scrollbar-hide">
-                {['Semua', 'Penyiraman', 'Pemupukan'].map(f => (
+                {['Semua', 'Penyiraman', 'Pemupukan', 'Panen'].map(f => (
                   <button 
                     key={f}
                     onClick={() => { setFilterRiwayat(f); setShowAllHistory(false); }}
@@ -354,22 +496,22 @@ const TanamanDetail = () => {
                   {displayedHistory.map((log, index) => (
                     <div key={log.id} className="flex gap-3 group">
                       <div className="flex flex-col items-center">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${log.jenis_tindakan === 'siram' ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'}`}>
-                          {log.jenis_tindakan === 'siram' ? <FiDroplet size={14} /> : <FiCheckCircle size={14} />}
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${log.jenis_tindakan === 'siram' ? 'bg-blue-100 text-blue-600' : log.jenis_tindakan === 'panen' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
+                          {log.jenis_tindakan === 'siram' ? <FiDroplet size={14} /> : log.jenis_tindakan === 'panen' ? <FiShoppingBag size={14} /> : <FiCheckCircle size={14} />}
                         </div>
                         {index !== displayedHistory.length - 1 && <div className="w-0.5 h-full bg-gray-100 my-1 group-hover:bg-gray-200 transition"></div>}
                       </div>
                       <div className="pb-3 w-full">
                         <div className="flex justify-between items-start">
                           <p className="text-sm font-bold text-gray-800">
-                            {log.jenis_tindakan === 'siram' ? 'Disiram' : 'Diberi Pupuk'}
+                            Aktivitas {log.jenis_tindakan === 'siram' ? 'Penyiraman' : log.jenis_tindakan === 'panen' ? 'Panen' : 'Pemupukan'}
                           </p>
                           <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
                             {new Date(log.waktu_tindakan).toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' }).replace('.', ':')} WIB
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 mt-0.5">
-                          Oleh: <span className="font-medium text-gray-700">{(log.nama_santri === "Anonim / Pengunjung" || log.nama_santri === "Pengunjung") ? "Santri" : (log.nama_santri || "Santri")}</span>
+                          {log.jenis_tindakan === 'siram' ? 'Disiram' : log.jenis_tindakan === 'panen' ? 'Dipanen' : 'Dipupuk'} oleh: <span className="font-medium text-gray-700">{log.nama_lengkap || log.nama_perawat || log.nama_santri} ({log.role || log.role_perawat || "Santri"})</span>
                         </p>
                         <p className="text-[11px] text-gray-400 mt-0.5">
                           {new Date(log.waktu_tindakan).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -434,6 +576,48 @@ const TanamanDetail = () => {
       )}
 
       <AnimatePresence>
+        {confirmAction && (
+          <div className="fixed inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative"
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${confirmAction === 'siram' ? 'bg-blue-100 text-blue-500' : confirmAction === 'panen' ? 'bg-green-100 text-green-500' : 'bg-orange-100 text-orange-500'}`}>
+                  {confirmAction === 'siram' ? <FiDroplet size={32} /> : confirmAction === 'panen' ? <FiShoppingBag size={32} /> : <FiCheckCircle size={32} />}
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Konfirmasi Tindakan</h3>
+                <p className="text-gray-500 text-sm mb-6">
+                  Apakah Anda yakin ingin mencatat aktivitas <strong>{confirmAction === 'siram' ? 'Penyiraman' : confirmAction === 'panen' ? 'Panen' : 'Pemupukan'}</strong>? Data akan tersimpan di riwayat.
+                </p>
+                <div className="flex w-full gap-3">
+                  <button 
+                    onClick={() => setConfirmAction(null)}
+                    disabled={actionLoading}
+                    className="flex-1 py-3 px-4 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition"
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    onClick={async () => {
+                      await handlePerawatan(confirmAction);
+                      setConfirmAction(null);
+                    }}
+                    disabled={actionLoading}
+                    className={`flex-1 py-3 px-4 rounded-xl text-white font-bold transition shadow-md flex items-center justify-center ${confirmAction === 'siram' ? 'bg-blue-600 hover:bg-blue-700' : confirmAction === 'panen' ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'}`}
+                  >
+                    {actionLoading ? <div className="animate-spin h-5 w-5 border-2 border-white rounded-full border-t-transparent"></div> : "Ya, Catat!"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {notification.isOpen && (
           <div className="fixed top-6 left-0 right-0 z-[1000] flex justify-center pointer-events-none px-4">
             <motion.div 
@@ -471,10 +655,10 @@ const TanamanDetail = () => {
               {/* Tengah: Teks */}
               <div className="flex flex-col justify-center py-1">
                 <span className="text-sm font-bold text-gray-800 leading-tight">
-                  {notification.jenis === 'siram' ? 'Berhasil Disiram!' : 'Berhasil Dipupuk!'}
+                  {notification.jenis === 'siram' ? 'Berhasil Disiram!' : notification.jenis === 'panen' ? 'Berhasil Dipanen!' : 'Berhasil Dipupuk!'}
                 </span>
                 <span className="text-[11px] text-gray-500 mt-0.5 font-medium">
-                  {notification.jenis === 'siram' ? 'Tanaman segar kembali' : 'Nutrisi bertambah'} • {notification.timestamp ? `${notification.timestamp.getHours().toString().padStart(2, '0')}:${notification.timestamp.getMinutes().toString().padStart(2, '0')} WIB` : ''}
+                  {notification.jenis === 'siram' ? 'Tanaman segar kembali' : notification.jenis === 'panen' ? 'Hasil panen telah dicatat' : 'Nutrisi bertambah'} • {notification.timestamp ? `${notification.timestamp.getHours().toString().padStart(2, '0')}:${notification.timestamp.getMinutes().toString().padStart(2, '0')} WIB` : ''}
                 </span>
               </div>
               

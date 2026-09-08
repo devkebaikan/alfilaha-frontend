@@ -13,9 +13,9 @@ const BlogGrid = ({ blogs, onAddClick, onEditClick, setDeleteBlogModal }) => {
         </div>
         <button
           onClick={onAddClick}
-          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2"
+          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2 whitespace-nowrap"
         >
-          <FiPlus className="text-lg" /> Tambah Post
+          Tambah Post
         </button>
       </div>
 

@@ -45,6 +45,8 @@ import StatusPendaftaran from "../Pages/InnerPage/Pendaftaran/StatusPendaftaran"
 import LoginSantri from "../Pages/InnerPage/Pendaftaran/LoginSantri";
 import TanamanDetail from "../Pages/InnerPage/Tanaman/TanamanDetail";
 import KoleksiTanaman from "../Pages/InnerPage/Tanaman/KoleksiTanaman";
+import RegisterInternal from "../Pages/InnerPage/Auth/RegisterInternal";
+import LoginInternal from "../Pages/InnerPage/Auth/LoginInternal";
 
 const router = createBrowserRouter([
   {
@@ -198,11 +200,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/register-petani",
-        element: <Navigate to="/koleksi-tanaman" replace />
+        element: <RegisterInternal />,
       },
       {
         path: "/login-perawatan",
-        element: <Navigate to="/koleksi-tanaman" replace />
+        element: <LoginInternal />,
       },
     ],
   },
