@@ -9,25 +9,25 @@ const BreadCrumb = ({
   breadCrumbLink,
   breadCrumbIcon2,
   breadCrumbContent,
-  bgImage = "/images/breadcrumb-bg.jpg",
+  bgImage = "/images/breadcrumb-bg.webp",
   overlayClass = "bg-black/60",
 }) => {
   return (
     <div
-      className="relative bg-no-repeat bg-cover bg-center flex items-center h-[400px] sm:h-[530px] text-center pt-20"
+      className="relative bg-no-repeat bg-cover bg-center flex items-center h-[240px] sm:h-[400px] lg:h-[530px] text-center pt-20"
       style={{ backgroundImage: `url(${bgImage})` }}
     >
       <div className={`absolute inset-0 ${overlayClass}`}></div>
       <div className="Container relative z-10">
-        <h1 className="font-AlbertSans font-extrabold text-4xl sm:text-[46px] text-white capitalize">
+        <h1 className="font-AlbertSans font-extrabold text-[26px] sm:text-4xl lg:text-[46px] text-white capitalize leading-[1.25] max-w-3xl mx-auto px-1 sm:px-2">
           {breadCrumbTitle}
         </h1>
-        <ul className="flex flex-col md:flex-row gap-2 sm:gap-4 items-center justify-center mt-8 sm:mt-5">
+        <ul className="flex flex-col md:flex-row gap-3 sm:gap-4 items-center justify-center mt-6 sm:mt-7 leading-relaxed px-1 sm:px-2">
           <div className="flex gap-2 sm:gap-4 items-center justify-center">
             <li>
               <Link to={"/"}>
-                <button className="font-AlbertSans text-white flex items-center gap-2 transition-all duration-500 hover:text-PrimaryColor-0">
-                  <IoHome className="text-PrimaryColor-0" />
+                <button className="font-AlbertSans text-white flex items-center gap-2 transition-all duration-500 hover:text-PrimaryColor-0 dark:hover:text-[#4ADE80]">
+                  <IoHome className="text-PrimaryColor-0 dark:text-[#4ADE80]" />
                   Alfilaha
                 </button>
               </Link>

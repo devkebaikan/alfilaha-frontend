@@ -35,7 +35,7 @@ const Brand = () => {
         <Swiper {...settings}>
           <SwiperSlide>
             <div>
-              <img
+              <img decoding="async"
                 loading="lazy"
                 src={brandThumb}
                 draggable="false"
@@ -45,7 +45,7 @@ const Brand = () => {
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img
+              <img decoding="async"
                 loading="lazy"
                 src={brandThumb2}
                 draggable="false"
@@ -55,7 +55,7 @@ const Brand = () => {
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img
+              <img decoding="async"
                 loading="lazy"
                 src={brandThumb3}
                 draggable="false"
@@ -65,7 +65,7 @@ const Brand = () => {
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img
+              <img decoding="async"
                 loading="lazy"
                 src={brandThumb}
                 draggable="false"
@@ -75,7 +75,7 @@ const Brand = () => {
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img
+              <img decoding="async"
                 loading="lazy"
                 src={brandThumb5}
                 draggable="false"
@@ -85,7 +85,7 @@ const Brand = () => {
           </SwiperSlide>
           <SwiperSlide>
             <div>
-              <img
+              <img decoding="async"
                 loading="lazy"
                 src={brandThumb}
                 draggable="false"

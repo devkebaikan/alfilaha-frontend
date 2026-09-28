@@ -16,10 +16,10 @@ const DonationInnerCard = ({
   return (
     <div className="inline-block group">
       <div className="relative z-10 overflow-hidden rounded-t-md">
-        <img
+        <img decoding="async"
           loading="lazy"
           src={donateImg}
-          className="w-full transition-all duration-500 group-hover:blur-[2px]"
+          className="w-full h-[190px] sm:h-auto object-cover transition-all duration-500 group-hover:blur-[2px]"
         />
         <Link to={"/"}>
           <button className="absolute inline-block text-left top-full left-1/2 -translate-x-1/2 group-hover:top-1/2 group-hover:-translate-y-1/2 font-AlbertSans rounded-full bg-PrimaryColor-0 text-white transition-all duration-500 px-6 sm:px-[30px] lg:px-[15px] xl:px-[30px] py-[14px]">
@@ -27,7 +27,7 @@ const DonationInnerCard = ({
           </button>
         </Link>
       </div>
-      <div className="px-[30px] pb-8 pt-6 bg-white">
+      <div className="px-5 sm:px-[30px] pb-6 sm:pb-8 pt-5 sm:pt-6 bg-card">
         <Link to={"/"}>
           <button className="font-AlbertSans font-semibold text-left text-xl sm:text-2xl lg:text-xl 2xl:text-2xl pb-4 text-HeadingColor-0 transition-all duration-500 group-hover:text-PrimaryColor-0">
             {donateTitle}

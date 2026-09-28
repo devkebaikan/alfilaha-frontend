@@ -1,9 +1,12 @@
-const fs = require('fs');
-let file = fs.readFileSync('src/Pages/AlfilahaAdmin/AlfilahaAdmin.jsx', 'utf8');
+const fs = require("fs");
+let file = fs.readFileSync("src/Pages/AlfilahaAdmin/AlfilahaAdmin.jsx", "utf8");
 
-if (!file.includes('LayananManager')) {
+if (!file.includes("LayananManager")) {
   // Imports
-  file = file.replace('import PendaftaranManager from "./Tabs/PendaftaranManager/PendaftaranManager";', 'import PendaftaranManager from "./Tabs/PendaftaranManager/PendaftaranManager";\nimport LayananManager from "./Tabs/Layanan/LayananManager";\nimport LayananForm from "./Tabs/Layanan/LayananForm";');
+  file = file.replace(
+    'import PendaftaranManager from "./Tabs/PendaftaranManager/PendaftaranManager";',
+    'import PendaftaranManager from "./Tabs/PendaftaranManager/PendaftaranManager";\nimport LayananManager from "./Tabs/Layanan/LayananManager";\nimport LayananForm from "./Tabs/Layanan/LayananForm";',
+  );
 
   // States
   const states = `
@@ -15,7 +18,10 @@ if (!file.includes('LayananManager')) {
     title: "",
   });
 `;
-  file = file.replace('const [wisata, setWisata] = useState([]);', states + 'const [wisata, setWisata] = useState([]);');
+  file = file.replace(
+    "const [wisata, setWisata] = useState([]);",
+    states + "const [wisata, setWisata] = useState([]);",
+  );
 
   // API Call and methods
   const apiMethods = `
@@ -82,10 +88,16 @@ if (!file.includes('LayananManager')) {
     }
   };
 `;
-  file = file.replace('const fetchWisata = async () => {', apiMethods + '\n  const fetchWisata = async () => {');
+  file = file.replace(
+    "const fetchWisata = async () => {",
+    apiMethods + "\n  const fetchWisata = async () => {",
+  );
 
   // Effect
-  file = file.replace('fetchWisata();', 'fetchWisata();\n      fetchLayanan();');
+  file = file.replace(
+    "fetchWisata();",
+    "fetchWisata();\n      fetchLayanan();",
+  );
 
   // Sidebar Button
   const sidebarButton = `
@@ -107,7 +119,10 @@ if (!file.includes('LayananManager')) {
             </span>
           </button>
 `;
-  file = file.replace('Eduwisata\n            </span>\n          </button>', 'Eduwisata\n            </span>\n          </button>\n' + sidebarButton);
+  file = file.replace(
+    "Eduwisata\n            </span>\n          </button>",
+    "Eduwisata\n            </span>\n          </button>\n" + sidebarButton,
+  );
 
   // Render Tab
   const renderTab = `
@@ -127,7 +142,10 @@ if (!file.includes('LayananManager')) {
               />
             )}
 `;
-  file = file.replace('{activeTab === "wisata" && (', renderTab + '            {activeTab === "wisata" && (');
+  file = file.replace(
+    '{activeTab === "wisata" && (',
+    renderTab + '            {activeTab === "wisata" && (',
+  );
 
   // Delete Modal
   const deleteModal = `
@@ -161,7 +179,10 @@ if (!file.includes('LayananManager')) {
         </div>
       )}
 `;
-  file = file.replace('{/* Delete Modal */}', deleteModal + '      {/* Delete Modal */}');
+  file = file.replace(
+    "{/* Delete Modal */}",
+    deleteModal + "      {/* Delete Modal */}",
+  );
 
-  fs.writeFileSync('src/Pages/AlfilahaAdmin/AlfilahaAdmin.jsx', file, 'utf8');
+  fs.writeFileSync("src/Pages/AlfilahaAdmin/AlfilahaAdmin.jsx", file, "utf8");
 }

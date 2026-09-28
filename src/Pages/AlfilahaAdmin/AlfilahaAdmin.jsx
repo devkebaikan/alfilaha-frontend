@@ -1,36 +1,31 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import ReactQuill from "react-quill";
+import { useState, useEffect } from "react";
 import "react-quill/dist/quill.snow.css";
 import { useNavigate, useParams } from "react-router-dom";
+import { adminFetch } from "../../adminAuth";
 import {
   FiMenu,
   FiHome,
   FiSettings,
   FiLogOut,
-  FiUploadCloud,
-  FiCheck,
+  FiAlertTriangle,
   FiArrowLeft,
-  FiEdit,
   FiTrash2,
   FiMap,
   FiCalendar,
   FiMessageSquare,
-  FiStar,
   FiUsers,
-  FiTrendingUp,
   FiX,
-  FiSearch,
-  FiFilter,
   FiEye,
   FiEyeOff,
-  FiActivity,
-  FiClock,
   FiGrid,
-  FiPlus,
   FiBell,
   FiFileText,
   FiCheckCircle,
+  FiSun,
+  FiMoon,
 } from "react-icons/fi";
+import { useTheme } from "../../Context/ThemeContext.jsx";
+import { useNotifikasi } from "../../Context/NotifikasiContext.jsx";
 import Beranda from "./Tabs/Beranda/Beranda";
 import BlogGrid from "./Tabs/BlogGrid/BlogGrid";
 import Event from "./Tabs/Event/Event";
@@ -45,11 +40,47 @@ import PendaftaranManager from "./Tabs/PendaftaranManager/PendaftaranManager";
 import LayananManager from "./Tabs/Layanan/LayananManager";
 import LayananForm from "./Tabs/Layanan/LayananForm";
 import TanamanManager from "./Tabs/TanamanManager/TanamanManager";
-import LogManager from "./Tabs/LogPerawatan/LogManager";
+import PeternakanManager from "./Tabs/PeternakanManager/PeternakanManager";
+
 import UserManager from "./Tabs/UserManager/UserManager";
+import JadwalManager from "./Tabs/JadwalManager/JadwalManager";
+import LokasiManager from "./Tabs/LokasiManager/LokasiManager";
+
+const NAMA_TAB = {
+  beranda: "Dashboard",
+  wisata: "Eduwisata",
+  "wisata-form": "Eduwisata",
+  layanan: "Layanan",
+  "layanan-form": "Layanan",
+  reservasi: "Reservasi",
+  appointment: "Pesan & Pertanyaan",
+  "blog-grid": "Artikel",
+  "blog-form": "Artikel",
+  event: "Event",
+  "event-form": "Event",
+  pendaftaran: "Pendaftaran Santri",
+  tanaman: "Tanaman",
+  peternakan: "Peternakan",
+  jadwal: "Jadwal",
+  lokasi: "Lokasi",
+  users: "Akun Internal",
+};
+const namaTab = (tab) =>
+  NAMA_TAB[tab] || (tab && tab.startsWith("galeri-") ? "Galeri" : tab || "Admin");
+
+const WAKTU_PESAN = {
+  success: { ikon: FiCheckCircle, wadah: "bg-green-100 dark:bg-green-500/20", warna: "text-green-700 dark:text-green-300" },
+  error: { ikon: FiAlertTriangle, wadah: "bg-red-100 dark:bg-red-500/20", warna: "text-red-700 dark:text-red-300" },
+  warning: { ikon: FiAlertTriangle, wadah: "bg-amber-100 dark:bg-amber-500/20", warna: "text-amber-700 dark:text-amber-300" },
+  info: { ikon: FiBell, wadah: "bg-sky-100 dark:bg-sky-500/20", warna: "text-sky-700 dark:text-sky-300" },
+};
 
 const AlfilahaAdmin = () => {
   const navigate = useNavigate();
+  // Preferensi tampilan milik admin sendiri: bisa pilih mode terang / gelap
+  const { isDark, toggleTheme } = useTheme();
+  const notif = useNotifikasi();
+  const [notifOpen, setNotifOpen] = useState(false);
 
   // STATE LOGIN
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -74,6 +105,12 @@ const AlfilahaAdmin = () => {
     }
   }, [tab]);
 
+  // Beri tahu pusat notifikasi tab admin yang sedang aktif
+  useEffect(() => {
+    if (isLoggedIn) notif.setAdminTab(activeTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, isLoggedIn]);
+
   // If not logged in and accessing a specific tab, redirect to /admin
   useEffect(() => {
     if (!isLoggedIn && tab) {
@@ -85,33 +122,9 @@ const AlfilahaAdmin = () => {
     navigate(`/admin/${tabName}`);
     if (window.innerWidth < 1024) setIsSidebarOpen(false); // Close sidebar on mobile after clicking
   };
-  const [toast, setToast] = useState({ show: false, message: "" });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
-  const fileInputRef = useRef(null);
-
-  const formatRupiah = (value) => {
-    let numberString = value.toString().replace(/[^0-9]/g, "");
-    if (numberString) {
-      return "Rp " + new Intl.NumberFormat("id-ID").format(numberString);
-    }
-    return "";
-  };
-
-  // DATA DUMMY / LOCAL STORAGE
-  const defaultData = {
-    title: "Solusi Agrikultur Modern Alfilaha",
-    subtitle:
-      "Kami menyediakan teknologi terbaik untuk hasil panen yang lebih maksimal, berkah, dan berkelanjutan.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-  };
-
-  const [homeData, setHomeData] = useState(() => {
-    const saved = localStorage.getItem("alfilaha_home_data");
-    return saved ? JSON.parse(saved) : defaultData;
-  });
 
   const [blogs, setBlogs] = useState([]);
   const [editingBlog, setEditingBlog] = useState(null);
@@ -123,14 +136,13 @@ const AlfilahaAdmin = () => {
 
   const [events, setEvents] = useState([]);
   const [editingEvent, setEditingEvent] = useState(null);
-  
+
   const [deleteEventModal, setDeleteEventModal] = useState({
     show: false,
     id: null,
     title: "",
   });
 
-  
   const [layanan, setLayanan] = useState([]);
   const [editingLayanan, setEditingLayanan] = useState(null);
   const [deleteLayananModal, setDeleteLayananModal] = useState({
@@ -138,8 +150,8 @@ const AlfilahaAdmin = () => {
     id: null,
     title: "",
   });
-const [wisata, setWisata] = useState([]);
-  
+  const [wisata, setWisata] = useState([]);
+
   const [editingWisata, setEditingWisata] = useState(null);
   const [deletePaketModal, setDeletePaketModal] = useState({
     show: false,
@@ -152,15 +164,18 @@ const [wisata, setWisata] = useState([]);
 
   const fetchGaleri = async () => {
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/galeri`,
       );
-      if (response.ok) {
-        const data = await response.json();
-        setGaleri(data);
+      if (!response.ok) {
+        throw new Error(`Server merespons ${response.status}`);
       }
+      const data = await response.json();
+      setGaleri(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Gagal menarik data Galeri", err);
+      // Teruskan error agar pemanggil (mis. setelah Edit/Hapus) bisa memberi tahu pengguna
+      throw err;
     }
   };
 
@@ -185,12 +200,20 @@ const [wisata, setWisata] = useState([]);
 
   const fetchAppointments = async () => {
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/appointments`,
       );
       if (!response.ok) throw new Error("Gagal mengambil data appointments");
       const data = await response.json();
       setAppointments(data);
+      if (isLoggedIn)
+        notif.pantauPesanMasuk({
+          key: "appointment",
+          tab: "appointment",
+          nama: "Ada pesan konsultasi baru dari website.",
+          satuan: "pesan masuk",
+          total: data.length,
+        });
     } catch (error) {
       console.error("Backend MySQL offline:", error);
     }
@@ -198,21 +221,28 @@ const [wisata, setWisata] = useState([]);
 
   const fetchReservasi = async () => {
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/reservasi`,
       );
       if (!response.ok) throw new Error("Gagal mengambil data MySQL");
       const data = await response.json();
       setReservasi(data);
+      if (isLoggedIn)
+        notif.pantauPesanMasuk({
+          key: "reservasi",
+          tab: "reservasi",
+          nama: "Ada reservasi baru dari website.",
+          satuan: "reservasi",
+          total: data.length,
+        });
     } catch (error) {
       console.error("Backend MySQL offline:", error);
     }
   };
 
-  
   const fetchLayanan = async () => {
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/layanan`,
       );
       if (response.ok) {
@@ -236,7 +266,7 @@ const [wisata, setWisata] = useState([]);
         : `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/layanan`;
       const method = id ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
         body: formData,
       });
@@ -257,7 +287,7 @@ const [wisata, setWisata] = useState([]);
   const confirmHapusLayanan = async (id) => {
     setDeleteLayananModal({ show: false, id: null, title: "" });
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/layanan/${id}`,
         { method: "DELETE" },
       );
@@ -275,7 +305,7 @@ const [wisata, setWisata] = useState([]);
 
   const fetchWisata = async () => {
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/paket`,
       );
       if (response.ok) {
@@ -294,13 +324,15 @@ const [wisata, setWisata] = useState([]);
         : `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/paket`;
       const method = id ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
         body: formData,
       });
 
       if (response.ok) {
-        showToast(`Data paket wisata berhasil ${id ? "diperbarui" : "ditambahkan"}!`);
+        showToast(
+          `Data paket wisata berhasil ${id ? "diperbarui" : "ditambahkan"}!`,
+        );
         fetchWisata();
         setActiveTab("wisata");
       } else {
@@ -312,12 +344,10 @@ const [wisata, setWisata] = useState([]);
     }
   };
 
-  
-
   const confirmHapusWisata = async (id) => {
     setDeletePaketModal({ show: false, id: null, nama_paket: "" });
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/paket/${id}`,
         { method: "DELETE" },
       );
@@ -335,7 +365,7 @@ const [wisata, setWisata] = useState([]);
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events`,
       );
       if (response.ok) {
@@ -354,7 +384,7 @@ const [wisata, setWisata] = useState([]);
         : `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events`;
       const method = id ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
         body: formData,
       });
@@ -372,12 +402,10 @@ const [wisata, setWisata] = useState([]);
     }
   };
 
-  
-
   const confirmHapusEvent = async (id) => {
     setDeleteEventModal({ show: false, id: null, title: "" });
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events/${id}`,
         { method: "DELETE" },
       );
@@ -395,7 +423,7 @@ const [wisata, setWisata] = useState([]);
 
   const fetchBlogs = async () => {
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs`,
       );
       if (response.ok) {
@@ -420,7 +448,7 @@ const [wisata, setWisata] = useState([]);
 
       const method = id ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
         body: formData,
       });
@@ -441,7 +469,7 @@ const [wisata, setWisata] = useState([]);
   const confirmHapusBlog = async (id) => {
     setDeleteBlogModal({ show: false, id: null, title: "" });
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs/${id}`,
         { method: "DELETE" },
       );
@@ -464,7 +492,7 @@ const [wisata, setWisata] = useState([]);
       fetchEvents();
       fetchBlogs();
       fetchAppointments();
-      fetchGaleri();
+      fetchGaleri().catch(() => {});
       fetchLayanan();
       // Auto refresh tiap 2 detik untuk update otomatis dari form
       const interval = setInterval(() => {
@@ -477,7 +505,7 @@ const [wisata, setWisata] = useState([]);
 
   const updateStatusReservasi = async (id, status) => {
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/reservasi/${id}/status`,
         {
           method: "PUT",
@@ -490,6 +518,7 @@ const [wisata, setWisata] = useState([]);
         fetchReservasi();
         showToast(
           `Reservasi berhasil ${status === "Diterima" ? "diterima" : "ditolak"}!`,
+          true,
         );
       } else {
         showToast("Gagal memperbarui status di MySQL!");
@@ -503,7 +532,7 @@ const [wisata, setWisata] = useState([]);
   const confirmHapusReservasi = async (id) => {
     setDeleteModal({ show: false, id: null, nama: "" });
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/reservasi/${id}`,
         { method: "DELETE" },
       );
@@ -521,7 +550,7 @@ const [wisata, setWisata] = useState([]);
 
   const updateStatusAppointment = async (id, status) => {
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/appointments/${id}/status`,
         {
           method: "PUT",
@@ -534,6 +563,7 @@ const [wisata, setWisata] = useState([]);
         fetchAppointments();
         showToast(
           `Appointment berhasil ${status === "Diterima" ? "diterima" : "ditolak"}!`,
+          true,
         );
       } else {
         showToast("Gagal memperbarui status di MySQL!");
@@ -547,7 +577,7 @@ const [wisata, setWisata] = useState([]);
   const confirmHapusAppointment = async (id) => {
     setDeleteAppointmentModal({ show: false, id: null, type: "" });
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/appointments/${id}`,
         { method: "DELETE" },
       );
@@ -573,8 +603,8 @@ const [wisata, setWisata] = useState([]);
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/login`,
+      const response = await adminFetch(
+        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/admin/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -602,26 +632,10 @@ const [wisata, setWisata] = useState([]);
     setLogoutModal(true);
   };
 
-  const showToast = (msg) => {
-    setToast({ show: true, message: msg });
-    setTimeout(() => setToast({ show: false, message: "" }), 3000);
-  };
-
-  // HANDLER UPDATE HOME
-  const handleHomeChange = (e) => {
-    setHomeData({ ...homeData, [e.target.name]: e.target.value });
-  };
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setHomeData({ ...homeData, imageUrl: URL.createObjectURL(file) });
-    }
-  };
-
-  const saveHomeData = (e) => {
-    e.preventDefault();
-    showToast("Perubahan halaman utama berhasil disimpan!");
+  // `tanpaSimpan: true` → toast tetap muncul, tapi tidak masuk ke riwayat lonceng
+  const showToast = (msg, tanpaSimpan = false) => {
+    const gagal = /gagal|terputus|koneksi|error|tidak bisa/i.test(msg || "");
+    notif[gagal ? "error" : "success"](msg, { simpan: !tanpaSimpan });
   };
 
   // ==========================================
@@ -635,9 +649,9 @@ const [wisata, setWisata] = useState([]);
         <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[120px] pointer-events-none"></div>
 
         <div className="max-w-md w-full relative z-10">
-          <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden">
+          <div className="bg-white/10 dark:bg-white/[0.06] backdrop-blur-2xl border border-white/20 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden">
             <div className="p-8 sm:p-10 pb-6 text-center flex flex-col items-center">
-              <img
+              <img decoding="async"
                 loading="lazy"
                 src="/images/logo.png"
                 alt="Alfilaha Logo"
@@ -672,7 +686,7 @@ const [wisata, setWisata] = useState([]);
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="block w-full pl-11 pr-4 py-3.5 rounded-xl border border-white/10 focus:ring-2 focus:ring-white/30 focus:border-white/40 outline-none transition-all bg-white/5 focus:bg-white/10 text-white placeholder-green-100/30 font-medium"
+                      className="block w-full pl-11 pr-4 py-3.5 rounded-xl border border-white/10 focus:ring-2 focus:ring-white/30 focus:border-white/40 outline-none transition-all bg-white/5 dark:bg-white/[0.06] focus:bg-white/10 dark:bg-white/[0.06] text-white placeholder-green-100/30 font-medium"
                       placeholder="Masukkan Username"
                       required
                     />
@@ -691,7 +705,7 @@ const [wisata, setWisata] = useState([]);
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full pl-11 pr-12 py-3.5 rounded-xl border border-white/10 focus:ring-2 focus:ring-white/30 focus:border-white/40 outline-none transition-all bg-white/5 focus:bg-white/10 text-white placeholder-green-100/30 font-medium"
+                      className="block w-full pl-11 pr-12 py-3.5 rounded-xl border border-white/10 focus:ring-2 focus:ring-white/30 focus:border-white/40 outline-none transition-all bg-white/5 dark:bg-white/[0.06] focus:bg-white/10 dark:bg-white/[0.06] text-white placeholder-green-100/30 font-medium"
                       placeholder="Masukkan Password"
                       required
                     />
@@ -715,7 +729,7 @@ const [wisata, setWisata] = useState([]);
                     disabled={loginLoading}
                     className={`relative w-full overflow-hidden rounded-xl text-green-950 font-bold text-lg py-3.5 shadow-lg transition-all flex items-center justify-center space-x-2 group ${
                       loginLoading
-                        ? "bg-white/50 cursor-wait"
+                        ? "bg-white/50 dark:bg-white/[0.06] cursor-wait"
                         : "bg-white hover:bg-green-50 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(255,255,255,0.2)]"
                     }`}
                   >
@@ -778,7 +792,7 @@ const [wisata, setWisata] = useState([]);
   // RENDER DASHBOARD SCREEN
   // ==========================================
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans text-gray-800 selection:bg-green-200">
+    <div className="min-h-screen bg-surface2 flex font-sans text-ink selection:bg-green-200">
       {/* SIDEBAR & MOBILE OVERLAY */}
       {isSidebarOpen && (
         <div
@@ -791,7 +805,7 @@ const [wisata, setWisata] = useState([]);
       >
         <div className="p-8 border-b border-white/10 flex flex-col items-center justify-center text-center relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-2xl"></div>
-          <img
+          <img decoding="async"
             loading="lazy"
             src="/images/logo.png"
             alt="Alfilaha Logo"
@@ -807,12 +821,12 @@ const [wisata, setWisata] = useState([]);
             onClick={() => handleTabChange("beranda")}
             className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === "beranda"
-                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
             }`}
           >
             <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "beranda" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "beranda" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
             >
               <FiHome size={20} />
             </div>
@@ -825,12 +839,12 @@ const [wisata, setWisata] = useState([]);
             onClick={() => handleTabChange("wisata")}
             className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === "wisata"
-                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
             }`}
           >
             <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "wisata" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "wisata" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
             >
               <FiMap size={20} />
             </div>
@@ -843,12 +857,12 @@ const [wisata, setWisata] = useState([]);
             onClick={() => handleTabChange("layanan")}
             className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === "layanan"
-                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
             }`}
           >
             <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "layanan" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "layanan" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
             >
               <FiCheckCircle size={20} />
             </div>
@@ -861,12 +875,12 @@ const [wisata, setWisata] = useState([]);
             onClick={() => handleTabChange("tanaman")}
             className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === "tanaman"
-                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
             }`}
           >
             <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "tanaman" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "tanaman" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
             >
               <FiMap size={20} />
             </div>
@@ -876,20 +890,56 @@ const [wisata, setWisata] = useState([]);
           </button>
 
           <button
-            onClick={() => handleTabChange("log-perawatan")}
+            onClick={() => handleTabChange("peternakan")}
             className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "log-perawatan"
-                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+              activeTab === "peternakan"
+                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
             }`}
           >
             <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "log-perawatan" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "peternakan" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
             >
-              <FiActivity size={20} />
+              <FiCheckCircle size={20} />
             </div>
             <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Laporan Perawatan
+              Manajemen Peternakan
+            </span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange("jadwal")}
+            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
+              activeTab === "jadwal"
+                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
+            }`}
+          >
+            <div
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "jadwal" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
+            >
+              <FiCalendar size={20} />
+            </div>
+            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
+              Jadwal Aktivitas
+            </span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange("lokasi")}
+            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
+              activeTab === "lokasi"
+                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
+            }`}
+          >
+            <div
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "lokasi" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
+            >
+              <FiMap size={20} />
+            </div>
+            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
+              Lokasi & Area
             </span>
           </button>
 
@@ -897,12 +947,12 @@ const [wisata, setWisata] = useState([]);
             onClick={() => handleTabChange("users")}
             className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === "users"
-                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
             }`}
           >
             <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "users" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "users" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
             >
               <FiUsers size={20} />
             </div>
@@ -915,12 +965,12 @@ const [wisata, setWisata] = useState([]);
             onClick={() => handleTabChange("reservasi")}
             className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === "reservasi"
-                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
             }`}
           >
             <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "reservasi" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "reservasi" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
             >
               <FiBell size={20} />
             </div>
@@ -938,12 +988,12 @@ const [wisata, setWisata] = useState([]);
             onClick={() => handleTabChange("appointment")}
             className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === "appointment"
-                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
             }`}
           >
             <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "appointment" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "appointment" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
             >
               <FiMessageSquare size={20} />
             </div>
@@ -961,12 +1011,12 @@ const [wisata, setWisata] = useState([]);
             onClick={() => handleTabChange("blog-grid")}
             className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === "blog-grid" || activeTab === "blog-form"
-                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
             }`}
           >
             <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "blog-grid" || activeTab === "blog-form" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "blog-grid" || activeTab === "blog-form" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
             >
               <FiFileText size={20} />
             </div>
@@ -979,12 +1029,12 @@ const [wisata, setWisata] = useState([]);
             onClick={() => handleTabChange("event")}
             className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === "event"
-                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
             }`}
           >
             <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "event" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "event" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
             >
               <FiCalendar size={20} />
             </div>
@@ -997,12 +1047,12 @@ const [wisata, setWisata] = useState([]);
             onClick={() => handleTabChange("pendaftaran")}
             className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activeTab === "pendaftaran"
-                ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
             }`}
           >
             <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "pendaftaran" ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "pendaftaran" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
             >
               <FiUsers size={20} />
             </div>
@@ -1016,13 +1066,13 @@ const [wisata, setWisata] = useState([]);
               onClick={() => setIsGaleriOpen(!isGaleriOpen)}
               className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
                 activeTab.startsWith("galeri-")
-                  ? "bg-white/10 text-white font-bold shadow-lg ring-1 ring-white/20"
-                  : "text-green-100/70 hover:bg-white/5 hover:text-white font-medium"
+                  ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+                  : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
               }`}
             >
               <div className="flex items-center space-x-4 overflow-hidden flex-1">
                 <div
-                  className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab.startsWith("galeri-") ? "bg-green-500 text-white shadow-md" : "bg-white/5 text-green-200/70 group-hover:bg-white/10 group-hover:text-white"}`}
+                  className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab.startsWith("galeri-") ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
                 >
                   <FiGrid size={20} />
                 </div>
@@ -1058,7 +1108,7 @@ const [wisata, setWisata] = useState([]);
                       className={`block w-full text-left py-2.5 px-4 rounded-xl text-sm transition-all truncate ${
                         activeTab === slug
                           ? "bg-green-500/20 text-green-300 font-bold"
-                          : "text-green-100/60 hover:bg-white/5 hover:text-white"
+                          : "text-green-100/60 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white"
                       }`}
                     >
                       {cat}
@@ -1073,10 +1123,23 @@ const [wisata, setWisata] = useState([]);
         <div className="p-6 border-t border-white/10 space-y-3 bg-green-950/30">
           <button
             onClick={() => navigate("/")}
-            className="w-full flex items-center justify-center space-x-2 py-3.5 text-sm font-bold text-green-100/70 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-xl border border-white/10"
+            className="w-full flex items-center justify-center space-x-2 py-3.5 text-sm font-bold text-green-100/70 hover:text-white transition-colors bg-white/5 dark:bg-white/[0.06] hover:bg-white/10 dark:bg-white/[0.06] rounded-xl border border-white/10"
           >
             <FiArrowLeft />
             <span>Website Utama</span>
+          </button>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={
+              isDark ? "Aktifkan mode terang" : "Aktifkan mode gelap"
+            }
+            aria-pressed={isDark}
+            title={isDark ? "Mode terang" : "Mode gelap"}
+            className="w-full flex items-center justify-center space-x-2 py-3.5 text-sm font-bold text-green-100/70 hover:text-white transition-colors bg-white/5 dark:bg-white/[0.06] hover:bg-white/10 dark:hover:bg-white/[0.12] rounded-xl border border-white/10"
+          >
+            {isDark ? <FiSun /> : <FiMoon />}
+            <span>{isDark ? "Mode Terang" : "Mode Gelap"}</span>
           </button>
           <button
             onClick={handleLogout}
@@ -1089,21 +1152,22 @@ const [wisata, setWisata] = useState([]);
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F4F7F6]">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F4F7F6] dark:bg-[#0B1210]">
         {/* HEADER */}
-        <header className="h-20 sm:h-24 bg-white/80 backdrop-blur-md border-b border-gray-200/80 flex items-center justify-between px-4 sm:px-6 md:px-10 shadow-[0_4px_30px_rgba(0,0,0,0.03)] shrink-0 sticky top-0 z-30">
+        <header className="h-20 sm:h-24 bg-white dark:bg-[#0E1A16] border-b border-gray-200/80 dark:border-line flex items-center justify-between px-4 sm:px-6 md:px-10 shadow-[0_4px_30px_rgba(0,0,0,0.03)] shrink-0 relative z-40">
           <div className="flex items-center">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 text-gray-500 hover:bg-green-50 hover:text-green-600 rounded-xl mr-3 transition-colors"
+              className="lg:hidden p-2 text-muted hover:bg-green-50 dark:hover:bg-green-500/15 hover:text-green-600 dark:text-green-300 rounded-xl mr-3 transition-colors"
             >
               <FiMenu className="w-6 h-6" />
             </button>
             <div>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-black text-gray-800 tracking-tight truncate max-w-[160px] sm:max-w-none">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-black text-ink tracking-tight truncate max-w-[160px] sm:max-w-none">
                 {activeTab === "beranda" && "Dashboard Overview"}
                 {activeTab === "wisata" && "Manajemen Eduwisata"}
-                {(activeTab === "layanan" || activeTab === "layanan-form") && "Manajemen Layanan"}
+                {(activeTab === "layanan" || activeTab === "layanan-form") &&
+                  "Manajemen Layanan"}
                 {activeTab === "reservasi" && "Daftar Reservasi"}
                 {activeTab === "appointment" && "Pesan & Pertanyaan"}
                 {(activeTab === "blog-grid" || activeTab === "blog-form") &&
@@ -1111,11 +1175,14 @@ const [wisata, setWisata] = useState([]);
                 {activeTab === "event" && "Manajemen Event"}
                 {activeTab === "pendaftaran" && "Pendaftaran Santri"}
                 {activeTab === "tanaman" && "Manajemen Tanaman"}
-                {activeTab === "log-perawatan" && "Laporan Perawatan Tanaman"}
+                {activeTab === "peternakan" && "Manajemen Peternakan"}
+
+                {activeTab === "jadwal" && "Jadwal Aktivitas Pondok"}
+                {activeTab === "lokasi" && "Manajemen Lokasi & Area"}
                 {activeTab === "users" && "Manajemen Akun Internal"}
                 {activeTab.startsWith("galeri-") && "Galeri Alfilaha"}
               </h2>
-              <p className="text-xs font-semibold text-gray-500 mt-0.5 hidden sm:block">
+              <p className="text-xs font-semibold text-muted mt-0.5 hidden sm:block">
                 {new Date().toLocaleDateString("id-ID", {
                   weekday: "long",
                   year: "numeric",
@@ -1126,17 +1193,165 @@ const [wisata, setWisata] = useState([]);
             </div>
           </div>
           <div className="flex items-center space-x-4 md:space-x-6">
-            <div className="flex items-center space-x-4 bg-white py-2 px-4 rounded-full border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+            {/* Toggle tema — admin bebas memilih mode terang / gelap */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={
+                isDark ? "Aktifkan mode terang" : "Aktifkan mode gelap"
+              }
+              aria-pressed={isDark}
+              title={isDark ? "Mode terang" : "Mode gelap"}
+              className="group flex items-center justify-center w-11 h-11 rounded-full bg-surface2 text-ink border border-line hover:bg-green-50 dark:hover:bg-green-500/15 hover:text-green-600 dark:hover:text-green-300 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500/50 shrink-0"
+            >
+              {isDark ? (
+                <FiSun className="w-5 h-5 transition-transform duration-300 group-hover:rotate-45" />
+              ) : (
+                <FiMoon className="w-5 h-5 transition-transform duration-300 group-hover:-rotate-12" />
+              )}
+            </button>
+
+            {/* NOTIFIKASI ADMIN — ikon lonceng + panel pesan */}
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setNotifOpen((v) => !v)}
+                aria-label="Pusat notifikasi"
+                aria-expanded={notifOpen}
+                className={`relative flex items-center justify-center w-11 h-11 rounded-full bg-surface2 text-ink border border-line hover:bg-green-50 dark:hover:bg-green-500/15 hover:text-green-600 dark:hover:text-green-300 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500/50 ${notifOpen ? "text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-500/15" : ""}`}
+              >
+                <FiBell className="w-5 h-5" />
+                {notif.belumDibaca > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[19px] h-[19px] px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shadow-md ring-2 ring-card">
+                    {notif.belumDibaca > 99 ? "99+" : notif.belumDibaca}
+                  </span>
+                )}
+              </button>
+
+              {notifOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setNotifOpen(false)}
+                  />
+                  <div className="fixed left-3 right-3 top-20 sm:left-auto sm:right-4 sm:top-24 sm:w-[380px] lg:absolute lg:right-0 lg:top-auto lg:mt-2 lg:w-[380px] z-50 bg-card rounded-2xl border border-line shadow-2xl shadow-black/20 overflow-hidden overscroll-contain">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-line bg-surface2/60">
+                      <div className="flex items-center gap-2">
+                        <FiBell className="text-green-600 dark:text-green-300 w-5 h-5" />
+                        <h3 className="font-bold text-ink text-sm">
+                          Notifikasi
+                        </h3>
+                        {notif.belumDibaca > 0 && (
+                          <span className="text-[10px] font-black bg-red-500 text-white px-2 py-0.5 rounded-full">
+                            {notif.belumDibaca} baru
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {notif.belumDibaca > 0 && (
+                          <button
+                            type="button"
+                            onClick={notif.bacaSemua}
+                            className="text-[11px] font-bold text-green-600 dark:text-green-300 hover:text-green-700 px-2 py-1 rounded-lg hover:bg-green-50 dark:hover:bg-green-500/10 transition"
+                          >
+                            Tandai dibaca
+                          </button>
+                        )}
+                        {notif.adminPesan.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={notif.hapusSemuaPesan}
+                            title="Hapus semua"
+                            aria-label="Hapus semua notifikasi"
+                            className="text-muted hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition"
+                          >
+                            <FiTrash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="max-h-[min(60vh,420px)] overflow-y-auto overscroll-contain">
+                      {notif.adminPesan.length === 0 ? (
+                        <div className="px-4 py-10 text-center">
+                          <FiBell className="w-10 h-10 text-muted mx-auto mb-3" />
+                          <p className="text-sm font-bold text-ink">
+                            Belum ada notifikasi
+                          </p>
+                          <p className="text-xs text-muted mt-1">
+                            Aktivitas tambah / ubah / hapus di panel admin akan
+                            muncul di sini.
+                          </p>
+                        </div>
+                      ) : (
+                        notif.adminPesan.slice(0, 40).map((p) => {
+                          const gaya = WAKTU_PESAN[p.tipe] || WAKTU_PESAN.info;
+                          const Ikon = gaya.ikon;
+                          const waktu = p.waktu
+                            ? new Date(p.waktu).getTime()
+                            : null;
+                          const selisih = waktu
+                            ? Date.now() - waktu
+                            : Infinity;
+                          const rel = selisih < 60000
+                            ? "Baru saja"
+                            : selisih < 3600000
+                              ? `${Math.round(selisih / 60000)} mnt lalu`
+                              : selisih < 86400000
+                                ? `${Math.round(selisih / 3600000)} jam lalu`
+                                : `${Math.round(selisih / 86400000)} hari lalu`;
+                          return (
+                            <button
+                              type="button"
+                              key={p.id}
+                              onClick={() => {
+                                handleTabChange(p.tab);
+                                notif.bacaPesan(p.id);
+                                setNotifOpen(false);
+                              }}
+                              className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-surface2 transition border-b border-line/60 last:border-b-0 ${p.dibaca ? "" : "bg-green-50/50 dark:bg-green-500/[0.06]"}`}
+                            >
+                              <span
+                                className={`mt-0.5 w-9 h-9 rounded-full grid place-items-center shrink-0 ${gaya.wadah} ${gaya.warna}`}
+                              >
+                                <Ikon size={16} />
+                              </span>
+                              <span className="flex-1 min-w-0">
+                                <span className="block text-sm font-semibold text-ink leading-snug">
+                                  {p.pesan}
+                                </span>
+                                <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">
+                                    {namaTab(p.tab)}
+                                  </span>
+                                  <span className="text-[11px] text-muted font-medium">
+                                    {rel}
+                                  </span>
+                                </span>
+                              </span>
+                              {!p.dibaca && (
+                                <span className="w-2 h-2 rounded-full bg-green-500 shrink-0 mt-2"></span>
+                              )}
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="flex items-center space-x-4 bg-card py-2 px-4 rounded-full border border-line shadow-sm hover:shadow-md transition-shadow cursor-pointer">
               <div className="text-right hidden md:block">
-                <p className="text-sm font-bold text-gray-800">Admin</p>
+                <p className="text-sm font-bold text-ink">Admin</p>
                 <div className="flex items-center justify-end space-x-1.5">
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                  <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">
+                  <p className="text-[10px] text-green-600 dark:text-green-300 font-bold uppercase tracking-wider">
                     Online
                   </p>
                 </div>
               </div>
-              <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-green-600 to-emerald-400 text-white flex items-center justify-center font-bold text-lg shadow-sm border-2 border-white ring-2 ring-gray-50">
+              <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-green-600 to-emerald-400 text-white flex items-center justify-center font-bold text-lg shadow-sm border-2 border-white ring-2 ring-line">
                 A
               </div>
             </div>
@@ -1147,7 +1362,9 @@ const [wisata, setWisata] = useState([]);
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-10">
           <div className="max-w-7xl mx-auto">
             {activeTab === "tanaman" && <TanamanManager />}
-            {activeTab === "log-perawatan" && <LogManager />}
+            {activeTab === "peternakan" && <PeternakanManager />}
+            {activeTab === "jadwal" && <JadwalManager />}
+            {activeTab === "lokasi" && <LokasiManager />}
             {activeTab === "users" && <UserManager />}
             {activeTab === "beranda" && (
               <Beranda
@@ -1212,9 +1429,7 @@ const [wisata, setWisata] = useState([]);
                 onCancel={() => setActiveTab("event")}
               />
             )}
-            {activeTab === "pendaftaran" && (
-              <PendaftaranManager />
-            )}
+            {activeTab === "pendaftaran" && <PendaftaranManager />}
 
             {activeTab.startsWith("galeri-") && (
               <GaleriManager
@@ -1234,7 +1449,7 @@ const [wisata, setWisata] = useState([]);
                 fetchGaleri={fetchGaleri}
               />
             )}
-            
+
             {activeTab === "layanan" && (
               <LayananManager
                 layanan={layanan}
@@ -1294,16 +1509,16 @@ const [wisata, setWisata] = useState([]);
             className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
             onClick={() => setRejectModal({ show: false, id: null, nama: "" })}
           ></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
-            <div className="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-orange-100">
+          <div className="bg-card rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
+            <div className="w-16 h-16 bg-orange-50 dark:bg-orange-500/15 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-orange-100 dark:border-orange-500/30">
               <FiX className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-extrabold text-gray-800 text-center mb-2">
+            <h3 className="text-xl font-extrabold text-ink text-center mb-2">
               Tolak Reservasi?
             </h3>
-            <p className="text-gray-500 text-center text-sm font-medium mb-8">
+            <p className="text-muted text-center text-sm font-medium mb-8">
               Apakah Anda yakin ingin menolak permohonan reservasi atas nama{" "}
-              <span className="font-bold text-gray-800">
+              <span className="font-bold text-ink">
                 "{rejectModal.nama}"
               </span>
               ? Status pesanan akan diubah menjadi{" "}
@@ -1317,7 +1532,7 @@ const [wisata, setWisata] = useState([]);
                 onClick={() =>
                   setRejectModal({ show: false, id: null, nama: "" })
                 }
-                className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
+                className="flex-1 px-4 py-3 bg-surface2 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/[0.12] text-ink font-bold rounded-xl transition"
               >
                 Kembali
               </button>
@@ -1340,26 +1555,30 @@ const [wisata, setWisata] = useState([]);
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
-            onClick={() => setDeleteLayananModal({ show: false, id: null, title: "" })}
+            onClick={() =>
+              setDeleteLayananModal({ show: false, id: null, title: "" })
+            }
           ></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100">
+          <div className="bg-card rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-500/15 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100 dark:border-red-500/30">
               <FiTrash2 className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-extrabold text-gray-800 text-center mb-2">
+            <h3 className="text-xl font-extrabold text-ink text-center mb-2">
               Hapus Layanan?
             </h3>
-            <p className="text-gray-500 text-center text-sm font-medium mb-8">
+            <p className="text-muted text-center text-sm font-medium mb-8">
               Data layanan{" "}
-              <span className="font-bold text-gray-800">
+              <span className="font-bold text-ink">
                 "{deleteLayananModal.title}"
               </span>{" "}
               akan dihapus permanen.
             </p>
             <div className="flex space-x-3">
               <button
-                onClick={() => setDeleteLayananModal({ show: false, id: null, title: "" })}
-                className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
+                onClick={() =>
+                  setDeleteLayananModal({ show: false, id: null, title: "" })
+                }
+                className="flex-1 px-4 py-3 bg-surface2 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/[0.12] text-ink font-bold rounded-xl transition"
               >
                 Batal
               </button>
@@ -1381,16 +1600,16 @@ const [wisata, setWisata] = useState([]);
             className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
             onClick={() => setDeleteModal({ show: false, id: null, nama: "" })}
           ></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100">
+          <div className="bg-card rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-500/15 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100 dark:border-red-500/30">
               <FiTrash2 className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-extrabold text-gray-800 text-center mb-2">
+            <h3 className="text-xl font-extrabold text-ink text-center mb-2">
               Hapus Reservasi?
             </h3>
-            <p className="text-gray-500 text-center text-sm font-medium mb-8">
+            <p className="text-muted text-center text-sm font-medium mb-8">
               Data atas nama{" "}
-              <span className="font-bold text-gray-800">
+              <span className="font-bold text-ink">
                 "{deleteModal.nama}"
               </span>{" "}
               akan dihapus permanen.
@@ -1400,7 +1619,7 @@ const [wisata, setWisata] = useState([]);
                 onClick={() =>
                   setDeleteModal({ show: false, id: null, nama: "" })
                 }
-                className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
+                className="flex-1 px-4 py-3 bg-surface2 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/[0.12] text-ink font-bold rounded-xl transition"
               >
                 Batal
               </button>
@@ -1424,14 +1643,14 @@ const [wisata, setWisata] = useState([]);
               setDeleteAppointmentModal({ show: false, id: null, type: "" })
             }
           ></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100">
+          <div className="bg-card rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-500/15 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100 dark:border-red-500/30">
               <FiTrash2 className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-extrabold text-gray-800 text-center mb-2">
+            <h3 className="text-xl font-extrabold text-ink text-center mb-2">
               Hapus Appointment?
             </h3>
-            <p className="text-gray-500 text-center text-sm font-medium mb-8">
+            <p className="text-muted text-center text-sm font-medium mb-8">
               Data appointment ini akan dihapus permanen.
             </p>
             <div className="flex space-x-3">
@@ -1439,7 +1658,7 @@ const [wisata, setWisata] = useState([]);
                 onClick={() =>
                   setDeleteAppointmentModal({ show: false, id: null, type: "" })
                 }
-                className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
+                className="flex-1 px-4 py-3 bg-surface2 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/[0.12] text-ink font-bold rounded-xl transition"
               >
                 Batal
               </button>
@@ -1465,16 +1684,16 @@ const [wisata, setWisata] = useState([]);
               setDeletePaketModal({ show: false, id: null, nama_paket: "" })
             }
           ></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100">
+          <div className="bg-card rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-500/15 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100 dark:border-red-500/30">
               <FiTrash2 className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-extrabold text-gray-800 text-center mb-2">
+            <h3 className="text-xl font-extrabold text-ink text-center mb-2">
               Hapus Paket?
             </h3>
-            <p className="text-gray-500 text-center text-sm font-medium mb-8">
+            <p className="text-muted text-center text-sm font-medium mb-8">
               Paket{" "}
-              <span className="font-bold text-gray-800">
+              <span className="font-bold text-ink">
                 "{deletePaketModal.nama_paket}"
               </span>{" "}
               akan dihapus permanen.
@@ -1484,7 +1703,7 @@ const [wisata, setWisata] = useState([]);
                 onClick={() =>
                   setDeletePaketModal({ show: false, id: null, nama_paket: "" })
                 }
-                className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
+                className="flex-1 px-4 py-3 bg-surface2 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/[0.12] text-ink font-bold rounded-xl transition"
               >
                 Batal
               </button>
@@ -1508,16 +1727,16 @@ const [wisata, setWisata] = useState([]);
               setDeleteEventModal({ show: false, id: null, title: "" })
             }
           ></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100">
+          <div className="bg-card rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-500/15 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100 dark:border-red-500/30">
               <FiTrash2 className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-extrabold text-gray-800 text-center mb-2">
+            <h3 className="text-xl font-extrabold text-ink text-center mb-2">
               Hapus Event?
             </h3>
-            <p className="text-gray-500 text-center text-sm font-medium mb-8">
+            <p className="text-muted text-center text-sm font-medium mb-8">
               Data event{" "}
-              <span className="font-bold text-gray-800">
+              <span className="font-bold text-ink">
                 "{deleteEventModal.title}"
               </span>{" "}
               akan dihapus permanen.
@@ -1527,7 +1746,7 @@ const [wisata, setWisata] = useState([]);
                 onClick={() =>
                   setDeleteEventModal({ show: false, id: null, title: "" })
                 }
-                className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
+                className="flex-1 px-4 py-3 bg-surface2 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/[0.12] text-ink font-bold rounded-xl transition"
               >
                 Batal
               </button>
@@ -1549,21 +1768,21 @@ const [wisata, setWisata] = useState([]);
             className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
             onClick={() => setLogoutModal(false)}
           ></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100">
+          <div className="bg-card rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-500/15 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100 dark:border-red-500/30">
               <FiLogOut className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-extrabold text-gray-800 text-center mb-2">
+            <h3 className="text-xl font-extrabold text-ink text-center mb-2">
               Keluar Dashboard?
             </h3>
-            <p className="text-gray-500 text-center text-sm font-medium mb-8">
+            <p className="text-muted text-center text-sm font-medium mb-8">
               Sesi Anda akan diakhiri dan Anda perlu masuk kembali menggunakan
               Username dan Password.
             </p>
             <div className="flex space-x-3">
               <button
                 onClick={() => setLogoutModal(false)}
-                className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
+                className="flex-1 px-4 py-3 bg-surface2 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/[0.12] text-ink font-bold rounded-xl transition"
               >
                 Batal
               </button>
@@ -1593,26 +1812,26 @@ const [wisata, setWisata] = useState([]);
               setDeleteBlogModal({ show: false, id: null, title: "" })
             }
           ></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100">
+          <div className="bg-card rounded-[2rem] p-8 max-w-sm w-full relative z-10 shadow-2xl transform transition-all animate-fade-in-up">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-500/15 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-red-100 dark:border-red-500/30">
               <FiTrash2 className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-extrabold text-gray-800 text-center mb-2">
+            <h3 className="text-xl font-extrabold text-ink text-center mb-2">
               Hapus Blog?
             </h3>
-            <p className="text-gray-500 text-center text-sm font-medium mb-8">
+            <p className="text-muted text-center text-sm font-medium mb-8">
               Artikel blog{" "}
-              <span className="font-bold text-gray-800">
+              <span className="font-bold text-ink">
                 "{deleteBlogModal.title}"
               </span>{" "}
               akan dihapus permanen. Apakah Anda yakin?
             </p>
-            <div className="flex space-x-3 border-t border-gray-50 pt-5">
+            <div className="flex space-x-3 border-t border-line pt-5">
               <button
                 onClick={() =>
                   setDeleteBlogModal({ show: false, id: null, title: "" })
                 }
-                className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
+                className="flex-1 px-4 py-3 bg-surface2 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/[0.12] text-ink font-bold rounded-xl transition"
               >
                 Batal
               </button>
@@ -1627,20 +1846,7 @@ const [wisata, setWisata] = useState([]);
         </div>
       )}
 
-      {/* TOAST NOTIFICATION */}
-      <div
-        className={`fixed bottom-10 right-10 transition-all duration-500 transform ${toast.show ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0 pointer-events-none"} z-50`}
-      >
-        <div className="bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-4 border border-gray-800">
-          <div className="bg-green-500 p-2 rounded-full text-white shadow-inner">
-            <FiCheck className="w-5 h-5 font-bold" />
-          </div>
-          <div>
-            <p className="font-bold text-sm tracking-wide">Sukses!</p>
-            <p className="text-xs text-gray-300 mt-0.5">{toast.message}</p>
-          </div>
-        </div>
-      </div>
+      {/* TOAST NOTIFICATION — kini memakai sistem notifikasi global */}
     </div>
   );
 };

@@ -13,10 +13,10 @@ const Events = () => {
       <div className="Container">
         <div className="text-center">
           <h5 className="font-AlbertSans font-semibold text-PrimaryColor-0 flex items-center justify-center gap-2">
-            <img loading="lazy" src={subTitleShape} draggable="false" />
+            <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
             OUR EVENTS
           </h5>
-          <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-[14px] mb-16">
+          <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.35] sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] px-1 sm:px-2 text-HeadingColor-0 mt-[14px] mb-16">
             Unleashed by Echofy
           </h1>
         </div>
@@ -67,7 +67,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" src={eventsThumb} draggable="false" />
+                  <img decoding="async" loading="lazy" src={eventsThumb} draggable="false" />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -112,7 +112,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" src={eventsThumb2} draggable="false" />
+                  <img decoding="async" loading="lazy" src={eventsThumb2} draggable="false" />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -157,7 +157,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" src={eventsThumb3} draggable="false" />
+                  <img decoding="async" loading="lazy" src={eventsThumb3} draggable="false" />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -202,7 +202,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" draggable="false" src={eventsThumb4} />
+                  <img decoding="async" loading="lazy" draggable="false" src={eventsThumb4} />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -249,7 +249,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" src={eventsThumb2} draggable="false" />
+                  <img decoding="async" loading="lazy" src={eventsThumb2} draggable="false" />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -294,7 +294,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" src={eventsThumb} draggable="false" />
+                  <img decoding="async" loading="lazy" src={eventsThumb} draggable="false" />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -339,7 +339,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" src={eventsThumb3} draggable="false" />
+                  <img decoding="async" loading="lazy" src={eventsThumb3} draggable="false" />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -384,7 +384,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" draggable="false" src={eventsThumb4} />
+                  <img decoding="async" loading="lazy" draggable="false" src={eventsThumb4} />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -431,7 +431,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" src={eventsThumb3} draggable="false" />
+                  <img decoding="async" loading="lazy" src={eventsThumb3} draggable="false" />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -476,7 +476,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" src={eventsThumb2} draggable="false" />
+                  <img decoding="async" loading="lazy" src={eventsThumb2} draggable="false" />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -521,7 +521,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" src={eventsThumb} draggable="false" />
+                  <img decoding="async" loading="lazy" src={eventsThumb} draggable="false" />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -566,7 +566,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" draggable="false" src={eventsThumb4} />
+                  <img decoding="async" loading="lazy" draggable="false" src={eventsThumb4} />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -613,7 +613,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" draggable="false" src={eventsThumb4} />
+                  <img decoding="async" loading="lazy" draggable="false" src={eventsThumb4} />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -658,7 +658,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" src={eventsThumb} draggable="false" />
+                  <img decoding="async" loading="lazy" src={eventsThumb} draggable="false" />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -703,7 +703,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" src={eventsThumb2} draggable="false" />
+                  <img decoding="async" loading="lazy" src={eventsThumb2} draggable="false" />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">
@@ -748,7 +748,7 @@ const Events = () => {
             <div className="bg-[#e9ebea] py-5 px-4 sm:px-7 rounded-xl relative z-10 group transition-all duration-500 mt-3">
               <div className="flex flex-col md:flex-row gap-[30px] md:items-center group-hover:pb-[320px] sm:group-hover:pb-[200px] md:group-hover:pb-[160px] 2xl:group-hover:pb-[134px] transition-all duration-500">
                 <div className="rounded-xl">
-                  <img loading="lazy" src={eventsThumb3} draggable="false" />
+                  <img decoding="async" loading="lazy" src={eventsThumb3} draggable="false" />
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-4 sm:p-7 ">
                   <div className="border border-BorderColor2-0 p-[6px] inline-block rounded-3xl">

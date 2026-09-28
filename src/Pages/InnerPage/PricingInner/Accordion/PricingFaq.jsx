@@ -42,26 +42,26 @@ const Faq = () => {
       <div className="Container">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 items-center">
           <div className="relative">
-            <img
+            <img decoding="async"
               loading="lazy"
               src={faqMainShape}
               className="absolute -top-28 right-10 animate-movebtn"
             />
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2">
-              <img loading="lazy" src={subTitleShape} draggable="false" />
+              <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
               FAQ
             </h5>
-            <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-6">
+            <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.35] sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] px-1 sm:px-2 text-HeadingColor-0 mt-5 mb-6">
               Freequently Asked <br />
               Questions
             </h1>
-            <p className="font-AlbertSans text-TextColor-0 font-light mb-9">
+            <p className="font-AlbertSans text-TextColor-0 font-light mb-9 text-[15px] sm:text-base leading-[1.8] px-1 sm:px-2">
               {`Competently cultivate worldwide e-tailers through principle-centered professionally engineer high-payoff deliverables without exceptional processes. Rapidiously network cost effective vortals`}
             </p>
             <Link to={"/about"}>
               <button className="primary-btn">
                 {`Learn More`}
-                <img loading="lazy" src={buttonShape} draggable="false" />
+                <img decoding="async" loading="lazy" src={buttonShape} draggable="false" />
               </button>
             </Link>
           </div>

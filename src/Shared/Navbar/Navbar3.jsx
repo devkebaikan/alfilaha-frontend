@@ -46,7 +46,7 @@ const Navbar3 = () => {
               {/* website Logo */}
               <div>
                 <Link to="/">
-                  <img
+                  <img decoding="async"
                     loading="lazy"
                     draggable="false"
                     src={Logo}
@@ -59,7 +59,7 @@ const Navbar3 = () => {
               <div className="px-3 w-full lg:hidden flex justify-between bg-khaki h-[70px] items-center p-3">
                 <div>
                   <Link to="/">
-                    <img
+                    <img decoding="async"
                       loading="lazy"
                       draggable="false"
                       src={Logo}

@@ -83,13 +83,13 @@ const Service = () => {
   };
   return (
     <section className="service relative pt-28 pb-[120px] bg-[#f5f8ed] z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-1/2 2xl:before:h-[54.8%] before:bg-[url('/images/service2-bg.jpg')] before:-z-10 before:bg-cover before:bg-center before:bg-no-repeat">
-      <img
+      <img decoding="async"
         loading="lazy"
         src={serviceMainShape1}
         draggable="false"
         className="absolute top-32 left-20 animate-dance2 hidden lg:block"
       />
-      <img
+      <img decoding="async"
         loading="lazy"
         src={serviceMainShape2}
         draggable="false"
@@ -98,7 +98,7 @@ const Service = () => {
       <div className="Container">
         <div className="text-center">
           <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2 justify-center">
-            <img loading="lazy" src={subTitleShape} draggable="false" />
+            <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
             PRINSIP TIGA ADAB
           </h5>
           <h1 className="font-AlbertSans font-bold text-xl leading-6 sm:text-[38px] sm:leading-[48px] md:text-[40px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-white mt-5 mb-3 pb-9">

@@ -87,8 +87,8 @@ const TeamInner = () => {
         breadCrumbIcon={<FaArrowRightLong />}
         breadCrumbLink={"Team Member"}
       />
-      <section className="bg-[url('/images/team-bg.jpg')] bg-no-repeat bg-cover bg-center py-28 relative">
-        <img
+      <section className="bg-[url('/images/team-bg.jpg')] bg-no-repeat bg-cover bg-center py-16 sm:py-20 lg:py-28 relative">
+        <img decoding="async"
           loading="lazy"
           src={skillMainShape}
           draggable="false"
@@ -97,14 +97,14 @@ const TeamInner = () => {
         <div className="Container">
           <div className="text-center">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center justify-center gap-2">
-              <img loading="lazy" src={subTitleShape} draggable="false" />
+              <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
               OUR TEAM
             </h5>
-            <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
+            <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.35] sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] px-1 sm:px-2 text-HeadingColor-0 mt-5 mb-3">
               Meet Our Dedicated Members
             </h1>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7 mt-8 sm:mt-12">
             {teamData.map(
               ({
                 id,

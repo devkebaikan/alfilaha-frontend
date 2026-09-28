@@ -1,13 +1,12 @@
-import React from "react";
-import { FiPlus, FiEdit, FiTrash2 } from "react-icons/fi";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 
 const BlogGrid = ({ blogs, onAddClick, onEditClick, setDeleteBlogModal }) => {
   return (
-    <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden animate-fade-in-up p-8">
+    <div className="bg-card rounded-[2rem] shadow-sm border border-line overflow-hidden animate-fade-in-up p-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Blog Grid View</h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <h2 className="text-2xl font-bold text-ink">Blog Grid View</h2>
+          <p className="text-sm text-muted mt-1">
             Tampilan visual grid untuk semua artikel blog.
           </p>
         </div>
@@ -24,10 +23,10 @@ const BlogGrid = ({ blogs, onAddClick, onEditClick, setDeleteBlogModal }) => {
           blogs.map((item) => (
             <div
               key={`grid-${item.id}`}
-              className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full"
+              className="bg-card border border-line rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full"
             >
-              <div className="relative h-48 overflow-hidden bg-gray-100">
-                <img
+              <div className="relative h-48 overflow-hidden bg-surface2">
+                <img decoding="async"
                   loading="lazy"
                   src={
                     item.image
@@ -37,7 +36,7 @@ const BlogGrid = ({ blogs, onAddClick, onEditClick, setDeleteBlogModal }) => {
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-green-700 text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">
+                <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/60 backdrop-blur-sm text-green-700 dark:text-green-300 text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">
                   {item.date &&
                   item.date.includes("-") &&
                   item.date.split("-")[0].length === 4
@@ -49,18 +48,20 @@ const BlogGrid = ({ blogs, onAddClick, onEditClick, setDeleteBlogModal }) => {
                 </div>
               </div>
               <div className="p-6 flex flex-col flex-1">
-                <h3 className="font-bold text-xl text-gray-800 mb-3 group-hover:text-green-600 transition-colors line-clamp-2">
+                <h3 className="font-bold text-xl text-ink mb-3 group-hover:text-green-600 dark:text-green-300 transition-colors line-clamp-2">
                   {item.title}
                 </h3>
-                <p className="text-gray-500 text-sm mb-6 line-clamp-3 flex-1">
+                <p className="text-muted text-sm mb-6 line-clamp-3 flex-1">
                   {item.excerpt
-                    ? (typeof item.excerpt === 'string' ? item.excerpt.replace(/<[^>]+>/g, '') : item.excerpt)
+                    ? typeof item.excerpt === "string"
+                      ? item.excerpt.replace(/<[^>]+>/g, "")
+                      : item.excerpt
                     : "Tidak ada kutipan yang tersedia untuk artikel ini."}
                 </p>
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
+                <div className="flex items-center justify-between pt-4 border-t border-line mt-auto">
                   <button
                     onClick={() => onEditClick(item)}
-                    className="text-green-600 hover:text-white hover:bg-green-600 bg-green-50 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1"
+                    className="text-green-600 dark:text-green-300 hover:text-white hover:bg-green-600 bg-green-50 dark:bg-green-500/15 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1"
                   >
                     <FiEdit className="w-4 h-4" /> Edit
                   </button>
@@ -72,7 +73,7 @@ const BlogGrid = ({ blogs, onAddClick, onEditClick, setDeleteBlogModal }) => {
                         title: item.title,
                       })
                     }
-                    className="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1"
+                    className="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 dark:bg-red-500/15 p-2.5 rounded-lg transition shadow-sm text-sm font-semibold flex items-center gap-1"
                   >
                     <FiTrash2 className="w-4 h-4" /> Hapus
                   </button>
@@ -81,7 +82,7 @@ const BlogGrid = ({ blogs, onAddClick, onEditClick, setDeleteBlogModal }) => {
             </div>
           ))
         ) : (
-          <div className="col-span-full text-center py-10 text-gray-500 font-bold">
+          <div className="col-span-full text-center py-10 text-muted font-bold">
             Belum ada blog yang ditambahkan.
           </div>
         )}

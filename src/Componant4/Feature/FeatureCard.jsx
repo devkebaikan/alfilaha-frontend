@@ -8,14 +8,14 @@ const FeatureCard = ({
 }) => {
   return (
     <div className="group flex flex-col sm:flex-row lg:flex-col xl:flex-row lg:items-start xl:items-center sm:items-center gap-5 overflow-hidden bg-[#f7f7f7] px-[30px] py-8 rounded relative z-10 before:absolute before:bottom-0 before:right-0 before:w-0 before:h-full before:bg-SecondaryColor-0 before:transition-all before:duration-500 before:-z-10 hover:before:left-0 hover:before:w-full">
-      <img
+      <img decoding="async"
         loading="lazy"
         src={featureShape}
         draggable="false"
         className="absolute bottom-0 right-0 -z-10"
       />
       <div className="w-[76px] h-[76px] rounded-full flex justify-center items-center overflow-hidden bg-PrimaryColor-0 relative z-10 before:absolute before:bottom-0 before:right-0 before:w-full before:h-full before:bg-white before:scale-0 before:transition-all before:duration-500 before:-z-10 group-hover:before:scale-100">
-        <img
+        <img decoding="async"
           loading="lazy"
           src={featureIcon}
           className="brightness-0 invert-[1] transition-all duration-500 group-hover:brightness-1 group-hover:invert-[inherit]"

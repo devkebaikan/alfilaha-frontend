@@ -11,7 +11,7 @@ const GaleriFull = () => {
         breadCrumbLink={"Galeri"}
         bgImage={"/images/IMG_0615.JPG"}
       />
-      <div className="bg-[#f8fcfb]">
+      <div className="bg-surface">
         <GaleriAlfilaha isHome={false} />
       </div>
     </>

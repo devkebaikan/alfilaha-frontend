@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Preview Icon PWA Alfilaha — background transparan</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        background: #f1f5f9;
+        margin: 0;
+        padding: 40px 20px;
+        color: #1e293b;
+      }
+      h1 { text-align: center; font-size: 20px; margin-bottom: 6px; }
+      p.note { text-align: center; color: #64748b; font-size: 14px; margin: 0 0 8px; }
+      p.ok { text-align: center; color: #15803d; font-size: 13px; margin: 0 0 32px; font-weight: 600; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 24px;
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      .card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(15,23,42,.12); }
+      .card h2 { font-size: 14px; margin: 0 0 12px; color: #334155; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .badge { font-size: 11px; background: #e2e8f0; color: #475569; border-radius: 999px; padding: 2px 10px; font-weight: 600; }
+      .badge.plain { background: #dcfce7; color: #166534; }
+      .badge.alpha { background: #fef3c7; color: #92400e; }
+      /* checkerboard = penanda transparansi */
+      .stage {
+        display: grid; place-items: center;
+        background-image: linear-gradient(45deg, #d9dee3 25%, transparent 25%),
+          linear-gradient(-45deg, #d9dee3 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #d9dee3 75%),
+          linear-gradient(-45deg, transparent 75%, #d9dee3 75%);
+        background-size: 22px 22px;
+        background-color: #fff;
+        background-position: 0 0, 0 11px, 11px -11px, -11px 0;
+        border-radius: 12px;
+        padding: 24px;
+      }
+      .stage img { display: block; }
+      .legend { margin-top: 14px; font-size: 12px; color: #64748b; line-height: 1.5; }
+      .legend b { color: #334155; }
+    </style>
+  </head>
+  <body>
+    <h1>Preview Icon PWA — background TRANSPARAN (alpha channel)</h1>
+    <p class="note">Sumber: <code>/home/fauzan/Gambar/667b6720-...jpeg</code>. Area di luar kotak hijau rounded-square → benar-benar transparan (lihat pola kotak-kotak), bukan putih maupun hijau.</p>
+    <p class="ok">Verifikasi pixel: 0 piksel putih terlihat (whiteVisible=0) di semua ukuran; area solid hanya kotak hijau + logo kaligrafi.</p>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Trim kasar <span class="badge">icon-source.png (untuk pembanding)</span></h2>
+        <div class="stage"><img src="/icon-source.png" width="240" /></div>
+        <div class="legend"><b>Sebelum:</b> crop bbox masih menyisakan putih di 4 sudut luar.</div>
+      </div>
+
+      <div class="card">
+        <h2>Master transparan <span class="badge alpha">1024×1024 · alpha</span></h2>
+        <div class="stage"><img src="/icon-transparent.png" width="240" /></div>
+        <div class="legend"><b>icon-transparent.png</b> — 4 sudut luar &amp; semua area di luar rounded-square transparan, tepi anti-aliasing semi-transparan (halus, tanpa halo).</div>
+      </div>
+
+      <div class="card">
+        <h2>Manifest 512 <span class="badge alpha">512×512 · purpose: any</span></h2>
+        <div class="stage"><img src="/icon-512.png" width="240" /></div>
+        <div class="legend">Kotak hijau + logo solid; sekelilingnya transparan.</div>
+      </div>
+
+      <div class="card">
+        <h2>Manifest 192 <span class="badge alpha">192×192 · purpose: any</span></h2>
+        <div class="stage"><img src="/icon-192.png" width="240" /></div>
+        <div class="legend">Ukuran dipakai Android saat install / layar utama.</div>
+      </div>
+
+      <div class="card">
+        <h2>Maskable 512 <span class="badge">512×512 · purpose: maskable</span></h2>
+        <div class="stage"><img src="/icon-maskable-512.png" width="240" /></div>
+        <div class="legend"><b>Tetap opaque (hijau penuh)</b> — Android adaptive icon wajib background solid agar tidak berubah hitam saat di-crop.</div>
+      </div>
+
+      <div class="card">
+        <h2>iOS 180 <span class="badge alpha">180×180</span></h2>
+        <div class="stage"><img src="/apple-touch-icon.png" width="150" /></div>
+        <div class="legend">Juga tersedia 152×152 (iPad) &amp; 167×167 (iPad Pro), semua dengan transparansi.</div>
+      </div>
+
+      <div class="card">
+        <h2>Favicon <span class="badge alpha">16 / 32 / 48 / ico</span></h2>
+        <div class="stage" style="gap:18px">
+          <img src="/favicon-16.png" width="16" />
+          <img src="/favicon-32.png" width="32" />
+          <img src="/favicon-48.png" width="48" />
+        </div>
+        <div class="legend">favicon.ico = gabungan 16+32+48 PNG (bisa transparan).</div>
+      </div>
+    </div>
+
+    <script>
+      const imgs = document.querySelectorAll(".stage img");
+      const dl = (n, w) => {
+        const c = document.createElement("canvas"); c.width = c.height = w;
+        c.getContext("2d").drawImage(document.querySelector('img[src="/icon-512.png"]'), 0, 0, w, w);
+        return c;
+      };
+    </script>
+  </body>
+</html>

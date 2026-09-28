@@ -80,7 +80,7 @@ const Gallary = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-0 items-center">
           <div>
             <h5 className="font-AlbertSans font-semibold text-PrimaryColor-0 flex items-center gap-2">
-              <img loading="lazy" src={subTitleShape} draggable="false" />
+              <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
               ZOO PHOTO GALLERY!
             </h5>
             <h1 className="font-AlbertSans font-bold text-xl leading-7 sm:text-[36px] sm:leading-[46px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[38px] xl:leading-[48px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-[14px] mb-3">

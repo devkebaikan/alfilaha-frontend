@@ -9,7 +9,7 @@ const RegisterInternal = () => {
     nama_lengkap: "",
     username: "",
     role: "Santri",
-    password: ""
+    password: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -26,13 +26,16 @@ const RegisterInternal = () => {
     setError("");
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
         },
-        body: JSON.stringify(formData),
-      });
+      );
 
       const data = await res.json();
 
@@ -52,21 +55,24 @@ const RegisterInternal = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-surface2 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-ink">
           Buat Akun Baru
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-muted">
           Atau{" "}
-          <Link to="/login-perawatan" className="font-medium text-PrimaryColor-0 hover:text-green-500">
+          <Link
+            to="/login-perawatan"
+            className="font-medium text-PrimaryColor-0 hover:text-green-500"
+          >
             login ke akun Anda
           </Link>
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-card py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {error && (
             <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
               {error}
@@ -74,12 +80,12 @@ const RegisterInternal = () => {
           )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-ink">
                 Nama Lengkap
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaIdCard className="text-gray-400" />
+                <div className="absolute ioke apakah nset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaIdCard className="text-muted" />
                 </div>
                 <input
                   name="nama_lengkap"
@@ -87,19 +93,18 @@ const RegisterInternal = () => {
                   required
                   value={formData.nama_lengkap}
                   onChange={handleChange}
-                  className="focus:ring-PrimaryColor-0 focus:border-PrimaryColor-0 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2 px-3 border"
+                  className="focus:ring-PrimaryColor-0 focus:border-PrimaryColor-0 block w-full pl-10 sm:text-sm border-line rounded-md py-2 px-3 border"
                   placeholder="Nama lengkap Anda"
                 />
               </div>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-ink">
                 Username
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaUser className="text-gray-400" />
+                  <FaUser className="text-muted" />
                 </div>
                 <input
                   name="username"
@@ -107,40 +112,41 @@ const RegisterInternal = () => {
                   required
                   value={formData.username}
                   onChange={handleChange}
-                  className="focus:ring-PrimaryColor-0 focus:border-PrimaryColor-0 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2 px-3 border"
+                  className="focus:ring-PrimaryColor-0 focus:border-PrimaryColor-0 block w-full pl-10 sm:text-sm border-line rounded-md py-2 px-3 border"
                   placeholder="Username Anda"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-ink">
                 Role / Peran
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaUserTag className="text-gray-400" />
+                  <FaUserTag className="text-muted" />
                 </div>
                 <select
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className="focus:ring-PrimaryColor-0 focus:border-PrimaryColor-0 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2 px-3 border"
+                  className="focus:ring-PrimaryColor-0 focus:border-PrimaryColor-0 block w-full pl-10 sm:text-sm border-line rounded-md py-2 px-3 border"
                 >
                   <option value="Santri">Santri</option>
-                  <option value="Guru">Guru</option>
-                  <option value="Petugas">Petugas</option>
+                  <option value="Petani">Petani</option>
+                  <option value="Asstaidz">Asstaidz</option>
+                  <option value="Pengelola">Pengelola</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-ink">
                 Password
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaLock className="text-gray-400" />
+                  <FaLock className="text-muted" />
                 </div>
                 <input
                   name="password"
@@ -148,7 +154,7 @@ const RegisterInternal = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="focus:ring-PrimaryColor-0 focus:border-PrimaryColor-0 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2 px-3 border"
+                  className="focus:ring-PrimaryColor-0 focus:border-PrimaryColor-0 block w-full pl-10 sm:text-sm border-line rounded-md py-2 px-3 border"
                   placeholder="********"
                 />
               </div>
@@ -174,13 +180,15 @@ const RegisterInternal = () => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center"
+              className="bg-card rounded-3xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center"
             >
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-500 mb-5">
                 <FiCheckCircle size={40} />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Registrasi Berhasil!</h3>
-              <p className="text-gray-500">Mengarahkan ke halaman login...</p>
+              <h3 className="text-2xl font-bold text-ink mb-2">
+                Registrasi Berhasil!
+              </h3>
+              <p className="text-muted">Mengarahkan ke halaman login...</p>
             </motion.div>
           </div>
         )}

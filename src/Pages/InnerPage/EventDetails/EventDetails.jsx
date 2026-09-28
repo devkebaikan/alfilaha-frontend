@@ -12,7 +12,7 @@ const EventDetails = () => {
     const fetchEvent = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events`
+          `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/events`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -29,13 +29,15 @@ const EventDetails = () => {
   if (!eventData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <h2 className="text-2xl font-bold text-gray-500">Memuat event...</h2>
+        <h2 className="text-2xl font-bold text-muted">Memuat event...</h2>
       </div>
     );
   }
 
   const dateDisplay =
-    eventData.date && eventData.date.includes("-") && eventData.date.split("-")[0].length === 4
+    eventData.date &&
+    eventData.date.includes("-") &&
+    eventData.date.split("-")[0].length === 4
       ? `${new Date(eventData.date).getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][new Date(eventData.date).getMonth()]} ${new Date(eventData.date).getFullYear()}`
       : eventData.date;
 
@@ -50,12 +52,12 @@ const EventDetails = () => {
         breadCrumbContent={eventData.title}
         bgImage={"/images/services-plant-1.jpg"}
       />
-      <section className="py-20 lg:py-28 bg-[#f3f4f8]">
+      <section className="py-20 lg:py-28 bg-surface2">
         <div className="Container">
-          <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+          <div className="max-w-5xl mx-auto bg-card rounded-3xl shadow-xl overflow-hidden border border-line">
             {/* Foto menjadi lebih besar */}
             <div className="relative w-full h-[400px] sm:h-[500px] lg:h-[700px] overflow-hidden">
-              <img
+              <img decoding="async"
                 loading="lazy"
                 draggable="false"
                 src={
@@ -70,20 +72,24 @@ const EventDetails = () => {
                 {eventData.category || "Kegiatan"}
               </div>
             </div>
-            
+
             <div className="px-6 py-10 sm:p-12 lg:p-16">
               <h1 className="font-AlbertSans font-extrabold text-left text-3xl sm:text-4xl lg:text-5xl text-HeadingColor-0 mb-8 leading-tight">
                 {eventData.title}
               </h1>
-              
-              <div className="flex flex-wrap items-center gap-6 mb-10 border-b border-gray-200 pb-8">
-                <div className="flex items-center gap-3 bg-gray-50 px-5 py-2.5 rounded-full border border-gray-200">
-                  <FaUserCircle className="text-2xl text-gray-400" />
-                  <span className="font-AlbertSans text-gray-600 font-medium text-sm">Admin Alfilaha</span>
+
+              <div className="flex flex-wrap items-center gap-6 mb-10 border-b border-line pb-8">
+                <div className="flex items-center gap-3 bg-surface2 px-5 py-2.5 rounded-full border border-line">
+                  <FaUserCircle className="text-2xl text-muted" />
+                  <span className="font-AlbertSans text-muted font-medium text-sm">
+                    Admin Alfilaha
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 bg-green-50 px-5 py-2.5 rounded-full border border-green-100 shadow-sm">
                   <FaRegCalendarCheck className="text-xl text-PrimaryColor-0" />
-                  <span className="font-AlbertSans text-PrimaryColor-0 font-bold text-sm">{dateDisplay}</span>
+                  <span className="font-AlbertSans text-PrimaryColor-0 font-bold text-sm">
+                    {dateDisplay}
+                  </span>
                 </div>
               </div>
 

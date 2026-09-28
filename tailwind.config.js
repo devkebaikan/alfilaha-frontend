@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
@@ -9,14 +10,29 @@ export default {
       colors: {
         PrimaryColor: ["#0c7f6e"],
         SecondaryColor: ["#001819"],
-        HeadingColor: ["#001819"],
-        TextColor: ["#868681"],
+        // Ketiganya theme-aware (lihat CSS variable di src/index.css).
+        // Nilai light mode sama persis dengan nilai desain aslinya, jadi
+        // light mode tidak berubah sama sekali.
+        HeadingColor: ["var(--heading-color)"],
+        TextColor: ["var(--body-text-color)"],
         TextColor2: ["#bababa"],
         BodyBg: ["#f3f4f8"],
         BorderColor: ["#243f38"],
-        BorderColor2: ["#dee4da"],
+        BorderColor2: ["var(--border-soft)"],
         BorderColor3: ["#83A8FF"],
         BorderColor4: ["#ffffff1a"],
+        // Warna tema — nilainya diambil dari CSS variable di src/index.css
+        // sehingga otomatis berubah saat <html data-theme> berganti.
+        // PENTING: warna di bawah berbasis var() polos, jadi modifier opacity
+        // TIDAK bisa dipakai (mis. `bg-card/50` diam-diam diabaikan Tailwind
+        // dan dirender 100% opaque). Untuk warna translucent tulis literal,
+        // mis. `bg-white/20 dark:bg-black/30`.
+        surface: "var(--bg-primary)",
+        surface2: "var(--bg-secondary)",
+        card: "var(--card-bg)",
+        ink: "var(--text-primary)",
+        muted: "var(--text-secondary)",
+        line: "var(--border-color)",
       },
       screens: {
         sm: "576px",

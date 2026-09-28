@@ -122,7 +122,7 @@ const Navbar2 = () => {
               {/* website Logo */}
               <div>
                 <Link to="/">
-                  <img
+                  <img decoding="async"
                     loading="lazy"
                     src={Logo}
                     className="hidden lg:block w-full brightness-0 invert-[1]"
@@ -133,7 +133,7 @@ const Navbar2 = () => {
               <div className="w-full lg:hidden flex justify-between h-[70px] items-center py-3">
                 <div className="w-28">
                   <Link to="/">
-                    <img
+                    <img decoding="async"
                       loading="lazy"
                       draggable="false"
                       src={Logo}

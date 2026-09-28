@@ -9,7 +9,7 @@ const Donate = () => {
         <div className="grid grid-cols-3 gap-7">
           <div className="col-span-3 lg:col-span-2 rounded-lg pl-10 md:pl-[74px] pt-28 pb-[120px] bg-[url('/images/donate-thumb-1.png')] bg-no-repeat bg-cover bg-center">
             <h5 className="font-AlbertSans font-semibold text-PrimaryColor-0 flex items-center gap-2">
-              <img loading="lazy" src={subTitleShape} draggable="false" />
+              <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
               OUR DONATE
             </h5>
             <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[34px] sm:leading-[44px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-white mt-[14px] mb-6">

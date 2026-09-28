@@ -13,7 +13,7 @@ const TeamCard = ({
   return (
     <div className="group">
       <div className="relative z-10 overflow-hidden before:absolute before:bottom-0 before:left-0 before:bg-[#f5f8ed] before:w-full before:h-1/2 before:rounded-t-md before:-z-10">
-        <img
+        <img decoding="async"
           loading="lazy"
           src={teamThumb}
           className="w-full h-[297px] object-cover lg:w-full xl:w-full m-auto"

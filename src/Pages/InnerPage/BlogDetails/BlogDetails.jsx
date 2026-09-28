@@ -2,10 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import BreadCrumb from "../../../Shared/BreadCrumb/BreadCrumb";
 import blog_detailsThumb from "/images/blog-details-thumb.jpg";
-import blog_detailsImg from "/images/services-details-benifis-thumb-1.png";
-import blog_detailsImg2 from "/images/services-details-benifis-thumb-2.png";
 import itemthumb from "/images/post-1.png";
-import itemthumb2 from "/images/post-2.png";
 import itemthumb3 from "/images/post-3.png";
 import { IoSearch } from "react-icons/io5";
 import { FaUserCircle } from "react-icons/fa";
@@ -13,8 +10,6 @@ import {
   FaAnglesLeft,
   FaAnglesRight,
   FaArrowRightLong,
-  FaCircleCheck,
-  FaCommentsDollar,
   FaFacebookF,
   FaLinkedinIn,
   FaPinterestP,
@@ -22,7 +17,6 @@ import {
   FaRegFolderOpen,
   FaXTwitter,
 } from "react-icons/fa6";
-import { BiSolidQuoteAltRight } from "react-icons/bi";
 
 const BlogDetails = () => {
   const { id } = useParams();
@@ -51,7 +45,7 @@ const BlogDetails = () => {
   if (!blog) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <h2 className="text-2xl font-bold text-gray-500">Memuat artikel...</h2>
+        <h2 className="text-2xl font-bold text-muted">Memuat artikel...</h2>
       </div>
     );
   }
@@ -68,11 +62,12 @@ const BlogDetails = () => {
 
   const currentIndex = allBlogs.findIndex((b) => b.id === parseInt(id));
   const previousBlog = currentIndex > 0 ? allBlogs[currentIndex - 1] : null;
-  const nextBlog = currentIndex !== -1 && currentIndex < allBlogs.length - 1 ? allBlogs[currentIndex + 1] : null;
-  
-  const recentBlogs = allBlogs
-    .filter((b) => b.id !== parseInt(id))
-    .slice(0, 3);
+  const nextBlog =
+    currentIndex !== -1 && currentIndex < allBlogs.length - 1
+      ? allBlogs[currentIndex + 1]
+      : null;
+
+  const recentBlogs = allBlogs.filter((b) => b.id !== parseInt(id)).slice(0, 3);
 
   return (
     <>
@@ -87,11 +82,11 @@ const BlogDetails = () => {
       />
       <section className="py-28">
         <div className="Container">
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-12">
-            <div className="col-span-2">
-              <div className="border border-BorderColor2-0 rounded-md overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+            <div className="lg:col-span-2">
+              <div className="border border-line rounded-md overflow-hidden">
                 <div className="relative">
-                  <img
+                  <img decoding="async"
                     loading="lazy"
                     draggable="false"
                     src={
@@ -99,7 +94,7 @@ const BlogDetails = () => {
                         ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${blog.image}`
                         : blog_detailsThumb
                     }
-                    className="w-full object-cover"
+                    className="w-full h-[220px] sm:h-[320px] md:h-[420px] object-cover"
                     style={{ maxHeight: "500px" }}
                   />
                   <h6 className="font-AlbertSans text-white px-5 py-2 rounded absolute top-5 left-5 bg-PrimaryColor-0">
@@ -136,12 +131,12 @@ const BlogDetails = () => {
                   <div>
                     <h6 className="font-AlbertSans text-lg font-medium">
                       <Link to={"/"}>
-                        <button className="font-AlbertSans font-normal text-sm px-5 py-2 text-HeadingColor-0 rounded bg-[#f3f4f8] transition-all duration-500 hover:bg-PrimaryColor-0 hover:text-white mr-2 ml-1">
+                        <button className="font-AlbertSans font-normal text-sm px-5 py-2 text-HeadingColor-0 rounded bg-surface2 transition-all duration-500 hover:bg-PrimaryColor-0 hover:text-white mr-2 ml-1">
                           Environmental
                         </button>
                       </Link>
                       <Link to={"/"}>
-                        <button className="font-AlbertSans font-normal text-sm px-5 py-2 text-HeadingColor-0 rounded bg-[#f3f4f8] transition-all duration-500 hover:bg-PrimaryColor-0 hover:text-white">
+                        <button className="font-AlbertSans font-normal text-sm px-5 py-2 text-HeadingColor-0 rounded bg-surface2 transition-all duration-500 hover:bg-PrimaryColor-0 hover:text-white">
                           Cleaning
                         </button>
                       </Link>
@@ -182,7 +177,7 @@ const BlogDetails = () => {
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-[60px]">
-                <div className="rounded-md bg-[#f3f4f8] pt-8 pb-10 px-9">
+                <div className="rounded-md bg-surface2 pt-8 pb-10 px-9">
                   {previousBlog ? (
                     <>
                       <button className="font-AlbertSans font-medium text-lg text-HeadingColor-0 flex items-center gap-2">
@@ -194,10 +189,14 @@ const BlogDetails = () => {
                         className="flex flex-col sm:flex-row lg:flex-col xl:flex-row xl:items-center gap-5 sm:items-center lg:items-start mt-5"
                       >
                         <div>
-                          <img 
-                            loading="lazy" 
-                            draggable="false" 
-                            src={previousBlog.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${previousBlog.image}` : itemthumb} 
+                          <img decoding="async"
+                            loading="lazy"
+                            draggable="false"
+                            src={
+                              previousBlog.image
+                                ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${previousBlog.image}`
+                                : itemthumb
+                            }
                             className="w-[81px] h-[80px] object-cover rounded"
                           />
                         </div>
@@ -212,10 +211,12 @@ const BlogDetails = () => {
                       </Link>
                     </>
                   ) : (
-                    <div className="h-full flex items-center text-gray-400">Tidak ada artikel sebelumnya</div>
+                    <div className="h-full flex items-center text-muted">
+                      Tidak ada artikel sebelumnya
+                    </div>
                   )}
                 </div>
-                <div className="rounded-md bg-[#f3f4f8] pt-8 pb-10 px-9 flex flex-col items-end">
+                <div className="rounded-md bg-surface2 pt-8 pb-10 px-9 flex flex-col items-end">
                   {nextBlog ? (
                     <>
                       <button className="font-AlbertSans font-medium text-lg text-HeadingColor-0 flex items-center gap-2">
@@ -235,23 +236,29 @@ const BlogDetails = () => {
                           </p>
                         </div>
                         <div>
-                          <img 
-                            loading="lazy" 
-                            draggable="false" 
-                            src={nextBlog.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${nextBlog.image}` : itemthumb3} 
+                          <img decoding="async"
+                            loading="lazy"
+                            draggable="false"
+                            src={
+                              nextBlog.image
+                                ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${nextBlog.image}`
+                                : itemthumb3
+                            }
                             className="w-[81px] h-[80px] object-cover rounded"
                           />
                         </div>
                       </Link>
                     </>
                   ) : (
-                    <div className="h-full flex items-center text-gray-400">Tidak ada artikel selanjutnya</div>
+                    <div className="h-full flex items-center text-muted">
+                      Tidak ada artikel selanjutnya
+                    </div>
                   )}
                 </div>
               </div>
             </div>
             <div className="col-span-2 lg:col-span-1">
-              <div className="relative inline-block w-full mb-7 p-4 sm:p-8 lg:p-6 xl:p-8 rounded-md bg-[#f3f4f8]">
+              <div className="relative inline-block w-full mb-7 p-4 sm:p-8 lg:p-6 xl:p-8 rounded-md bg-surface2">
                 <input
                   type="text"
                   name="search"
@@ -267,14 +274,14 @@ const BlogDetails = () => {
                   <IoSearch />
                 </button>
               </div>
-              <div className="bg-[#f3f4f8] rounded-md px-4 sm:px-8 lg:px-6 xl:px-8 pt-7 pb-4 mb-7">
+              <div className="bg-surface2 rounded-md px-4 sm:px-8 lg:px-6 xl:px-8 pt-7 pb-4 mb-7">
                 <h4 className="font-AlbertSans font-semibold text-2xl text-HeadingColor-0 pb-3 mb-8 relative before:absolute before:bottom-0 before:left-0 before:w-7 before:h-[2px] before:bg-PrimaryColor-0">
                   Categories
                 </h4>
                 <ul className="mt-8">
                   <li>
                     <Link to={"/service_details"}>
-                      <button className="w-full font-AlbertSans text-left text-HeadingColor-0 transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded bg-white mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white">
+                      <button className="w-full font-AlbertSans text-left text-HeadingColor-0 transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded bg-card mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white">
                         <span className="flex items-center gap-3">
                           <FaRegFolderOpen className="text-PrimaryColor-0 transition-all duration-500 group-hover:text-white" />
                           Ocean Cleaning
@@ -285,7 +292,7 @@ const BlogDetails = () => {
                   </li>
                   <li>
                     <Link to={"/service_details2"}>
-                      <button className="w-full font-AlbertSans text-left text-HeadingColor-0 transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded bg-white mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white">
+                      <button className="w-full font-AlbertSans text-left text-HeadingColor-0 transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded bg-card mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white">
                         <span className="flex items-center gap-3">
                           <FaRegFolderOpen className="text-PrimaryColor-0 transition-all duration-500 group-hover:text-white" />
                           Dust Recycling
@@ -296,7 +303,7 @@ const BlogDetails = () => {
                   </li>
                   <li>
                     <Link to={"/service_details3"}>
-                      <button className="w-full font-AlbertSans text-left text-HeadingColor-0 transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded bg-white mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white">
+                      <button className="w-full font-AlbertSans text-left text-HeadingColor-0 transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded bg-card mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white">
                         <span className="flex items-center gap-3">
                           <FaRegFolderOpen className="text-PrimaryColor-0 transition-all duration-500 group-hover:text-white" />
                           Plant Seedlings
@@ -307,7 +314,7 @@ const BlogDetails = () => {
                   </li>
                   <li>
                     <Link to={"/service_details4"}>
-                      <button className="w-full font-AlbertSans text-left text-HeadingColor-0 transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded bg-white mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white">
+                      <button className="w-full font-AlbertSans text-left text-HeadingColor-0 transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded bg-card mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white">
                         <span className="flex items-center gap-3">
                           <FaRegFolderOpen className="text-PrimaryColor-0 transition-all duration-500 group-hover:text-white" />
                           Renewable Energy
@@ -318,7 +325,7 @@ const BlogDetails = () => {
                   </li>
                   <li>
                     <Link to={"/service_details5"}>
-                      <button className="w-full font-AlbertSans text-left text-HeadingColor-0 transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded bg-white mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white">
+                      <button className="w-full font-AlbertSans text-left text-HeadingColor-0 transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded bg-card mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white">
                         <span className="flex items-center gap-3">
                           <FaRegFolderOpen className="text-PrimaryColor-0 transition-all duration-500 group-hover:text-white" />
                           Environmental
@@ -329,7 +336,7 @@ const BlogDetails = () => {
                   </li>
                   <li>
                     <Link to={"/service_details6"}>
-                      <button className="w-full font-AlbertSans text-left text-HeadingColor-0 transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded bg-white mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white">
+                      <button className="w-full font-AlbertSans text-left text-HeadingColor-0 transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded bg-card mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white">
                         <span className="flex items-center gap-3">
                           <FaRegFolderOpen className="text-PrimaryColor-0 transition-all duration-500 group-hover:text-white" />
                           Forest Cleaning
@@ -340,19 +347,29 @@ const BlogDetails = () => {
                   </li>
                 </ul>
               </div>
-              <div className="px-4 sm:px-8 lg:px-6 xl:px-8 bg-[#f3f4f8] rounded-md pt-7 pb-4 mb-7">
+              <div className="px-4 sm:px-8 lg:px-6 xl:px-8 bg-surface2 rounded-md pt-7 pb-4 mb-7">
                 <h4 className="font-AlbertSans font-semibold text-2xl text-HeadingColor-0 pb-3 mb-8 relative before:absolute before:bottom-0 before:left-0 before:w-7 before:h-[2px] before:bg-PrimaryColor-0">
                   Artikel Terbaru
                 </h4>
                 {recentBlogs.length > 0 ? (
                   recentBlogs.map((rb, idx) => (
-                    <Link to={`/blog_details/${rb.id}`} key={rb.id} className="block w-full">
-                      <button className={`w-full group flex gap-4 ${idx === 0 ? 'mb-6' : 'my-6'}`}>
+                    <Link
+                      to={`/blog_details/${rb.id}`}
+                      key={rb.id}
+                      className="block w-full"
+                    >
+                      <button
+                        className={`w-full group flex gap-4 ${idx === 0 ? "mb-6" : "my-6"}`}
+                      >
                         <div>
-                          <img 
-                            loading="lazy" 
-                            draggable="false" 
-                            src={rb.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${rb.image}` : itemthumb} 
+                          <img decoding="async"
+                            loading="lazy"
+                            draggable="false"
+                            src={
+                              rb.image
+                                ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${rb.image}`
+                                : itemthumb
+                            }
                             className="w-[81px] h-[80px] object-cover rounded"
                           />
                         </div>
@@ -368,7 +385,9 @@ const BlogDetails = () => {
                     </Link>
                   ))
                 ) : (
-                  <p className="text-gray-400 text-sm pb-4">Belum ada artikel lain.</p>
+                  <p className="text-muted text-sm pb-4">
+                    Belum ada artikel lain.
+                  </p>
                 )}
               </div>
             </div>

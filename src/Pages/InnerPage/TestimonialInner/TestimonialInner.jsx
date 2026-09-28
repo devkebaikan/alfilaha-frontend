@@ -101,20 +101,20 @@ const TestimonialInner = () => {
         breadCrumbIcon={<FaArrowRightLong />}
         breadCrumbLink={"Testimonial"}
       />
-      <section className="py-28 bg-[#f5f8ed] relative z-10 before:absolute before:top-0 before:left-1/2 before:-translate-x-1/2 before:w-2/3 before:-z-10 before:h-2/3 before:bg-[url('/images/map.png')] before:bg-center before:bg-cover before:bg-no-repeat overflow-hidden testimonial">
+      <section className="py-16 sm:py-20 lg:py-28 bg-surface2 dark:bg-PrimaryColor-0/10 relative z-10 before:absolute before:top-0 before:left-1/2 before:-translate-x-1/2 before:w-2/3 before:-z-10 before:h-2/3 before:bg-[url('/images/map.webp')] before:bg-center before:bg-cover before:bg-no-repeat overflow-hidden testimonial">
         <div className="Container">
           <div className="text-center">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2 justify-center">
-              <img loading="lazy" src={subTitleShape} draggable="false" />
+              <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
               TESTIMONIALS
             </h5>
-            <h1 className="font-AlbertSans font-bold text-xl leading-7 sm:text-[36px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
+            <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.3] sm:text-[36px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3 px-1 sm:px-2">
               Clients Best Feedback About
               <br />
               Echofy Provission
             </h1>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-[56px]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 mt-10 sm:mt-[56px]">
             {testiData.map(
               ({
                 id,

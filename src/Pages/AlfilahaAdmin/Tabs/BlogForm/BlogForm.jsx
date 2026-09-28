@@ -1,4 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect } from "react";
+import { adminFetch } from "../../../../adminAuth";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { FiArrowLeft, FiImage, FiSave } from "react-icons/fi";
@@ -34,7 +35,7 @@ const BlogForm = ({ initialData, onSave, onCancel, showToast }) => {
       formData.append("image", file);
 
       try {
-        const response = await fetch(
+        const response = await adminFetch(
           `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/upload`,
           {
             method: "POST",
@@ -89,19 +90,19 @@ const BlogForm = ({ initialData, onSave, onCancel, showToast }) => {
   };
 
   return (
-    <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden animate-fade-in-up">
-      <div className="p-8 border-b border-gray-50 flex items-center gap-4 bg-white">
+    <div className="bg-card rounded-[2rem] shadow-sm border border-line overflow-hidden animate-fade-in-up">
+      <div className="p-8 border-b border-line flex items-center gap-4 bg-card">
         <button
           onClick={onCancel}
-          className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-xl transition"
+          className="p-2 bg-surface2 hover:bg-surface2 text-muted rounded-xl transition"
         >
           <FiArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold text-ink">
             {initialData ? "Edit Artikel Blog" : "Tulis Artikel Baru"}
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted mt-1">
             Gunakan editor di bawah untuk menulis konten dengan format yang
             kaya.
           </p>
@@ -112,7 +113,7 @@ const BlogForm = ({ initialData, onSave, onCancel, showToast }) => {
         <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-ink mb-2">
                 Judul Artikel
               </label>
               <input
@@ -120,12 +121,12 @@ const BlogForm = ({ initialData, onSave, onCancel, showToast }) => {
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
+                className="w-full px-5 py-4 rounded-xl border border-line focus:ring-2 focus:ring-green-500 outline-none transition bg-surface2 focus:bg-card text-ink font-medium"
                 placeholder="Masukkan judul..."
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-ink mb-2">
                 Tanggal Posting
               </label>
               <input
@@ -133,13 +134,13 @@ const BlogForm = ({ initialData, onSave, onCancel, showToast }) => {
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
+                className="w-full px-5 py-4 rounded-xl border border-line focus:ring-2 focus:ring-green-500 outline-none transition bg-surface2 focus:bg-card text-ink font-medium"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-ink mb-2">
               {initialData
                 ? "Ganti Gambar Utama (Opsional)"
                 : "Upload Gambar Utama"}
@@ -150,12 +151,12 @@ const BlogForm = ({ initialData, onSave, onCancel, showToast }) => {
                 required={!initialData}
                 accept="image/*"
                 onChange={(e) => setImage(e.target.files[0])}
-                className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
+                className="w-full px-5 py-4 rounded-xl border border-line focus:ring-2 focus:ring-green-500 outline-none transition bg-surface2 focus:bg-card text-ink font-medium"
               />
             </div>
             {image && (
-              <div className="mt-4 relative h-48 w-full max-w-sm rounded-xl overflow-hidden border border-gray-200 shadow-inner">
-                <img
+              <div className="mt-4 relative h-48 w-full max-w-sm rounded-xl overflow-hidden border border-line shadow-inner">
+                <img decoding="async"
                   loading="lazy"
                   src={URL.createObjectURL(image)}
                   alt="Preview"
@@ -165,9 +166,9 @@ const BlogForm = ({ initialData, onSave, onCancel, showToast }) => {
             )}
             {!image && existingImage && (
               <div className="mt-4">
-                <p className="text-xs text-gray-500 mb-2">Gambar Saat Ini:</p>
-                <div className="relative h-48 w-full max-w-sm rounded-xl overflow-hidden border border-gray-200 shadow-inner">
-                  <img
+                <p className="text-xs text-muted mb-2">Gambar Saat Ini:</p>
+                <div className="relative h-48 w-full max-w-sm rounded-xl overflow-hidden border border-line shadow-inner">
+                  <img decoding="async"
                     loading="lazy"
                     src={`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${existingImage}`}
                     alt="Existing"
@@ -179,7 +180,7 @@ const BlogForm = ({ initialData, onSave, onCancel, showToast }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-ink mb-2">
               Cuplikan (Excerpt)
             </label>
             <textarea
@@ -188,15 +189,15 @@ const BlogForm = ({ initialData, onSave, onCancel, showToast }) => {
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
               placeholder="Tulis sedikit ringkasan untuk memancing pembaca..."
-              className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
+              className="w-full px-5 py-4 rounded-xl border border-line focus:ring-2 focus:ring-green-500 outline-none transition bg-surface2 focus:bg-card text-ink font-medium"
             ></textarea>
           </div>
 
           <div className="pb-12">
-            <label className="block text-sm font-bold text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-ink mb-2">
               Konten Artikel (Rich Text)
             </label>
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="bg-card rounded-xl border border-line overflow-hidden">
               <ReactQuill
                 ref={quillRef}
                 theme="snow"
@@ -208,11 +209,11 @@ const BlogForm = ({ initialData, onSave, onCancel, showToast }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 pt-10 border-t border-gray-100">
+          <div className="flex items-center gap-4 pt-10 border-t border-line">
             <button
               type="button"
               onClick={onCancel}
-              className="px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
+              className="px-6 py-4 bg-surface2 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/[0.12] text-ink font-bold rounded-xl transition"
             >
               Batal
             </button>

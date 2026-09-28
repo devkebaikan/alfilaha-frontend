@@ -1,10 +1,7 @@
-import { Link } from "react-router-dom";
 import BreadCrumb from "../../../Shared/BreadCrumb/BreadCrumb";
 import projectDetailsThumb from "/images/project-details-thumb.jpg";
 import projectDetailsListThumb from "/images/project-details-item-images.jpg";
-import wedgetIcon from "/images/widget-icon.png";
-import { FaArrowRight, FaArrowRightLong, FaCircleCheck } from "react-icons/fa6";
-import { MdEmail } from "react-icons/md";
+import { FaArrowRightLong, FaCircleCheck } from "react-icons/fa6";
 
 const ProjectDetails = () => {
   return (
@@ -16,16 +13,16 @@ const ProjectDetails = () => {
         breadCrumbIcon2={<FaArrowRightLong />}
         breadCrumbContent={"Echology Energy"}
       />
-      <section className="py-[120px]">
+      <section className="py-16 sm:py-20 lg:py-[120px]">
         <div className="Container">
-          <img
+          <img decoding="async"
             loading="lazy"
             src={projectDetailsThumb}
             draggable="false"
-            className="w-full"
+            className="w-full h-[200px] sm:h-[320px] lg:h-auto object-cover rounded-lg"
           />
-          <div className="grid grid-cols-3 gap-[70px] mt-12">
-            <div className="col-span-3 lg:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-[70px] mt-8 lg:mt-12">
+            <div className="lg:col-span-2">
               <h2 className="font-AlbertSans font-bold text-3xl sm:text-4xl text-HeadingColor-0">
                 Rapidiously Formulate efficient
               </h2>
@@ -56,7 +53,7 @@ const ProjectDetails = () => {
               </p>
               <div className="grid gap-7 grid-cols-1 lg:grid-cols-1 md:grid-cols-2 items-center xl:grid-cols-2 mt-12">
                 <div>
-                  <img
+                  <img decoding="async"
                     loading="lazy"
                     src={projectDetailsListThumb}
                     draggable="false"
@@ -109,28 +106,28 @@ const ProjectDetails = () => {
                 Competently architect intermandated deliverables client niches
                 continually underwhelm
               </h2>
-              <p className="font-AlbertSans text-TextColor-0 mt-5">
+              <p className="font-AlbertSans text-TextColor-0 text-[15px] sm:text-base mt-5 leading-[1.8]">
                 Appropriately communicate economically sound e-commerce after
                 enterprise services. Dramatically target cross-media solutions
                 and error-free platforms. Monotonectally pontificate 24/365
                 human capital and dynamic potentialities compellingly pursue
               </p>
             </div>
-            <div className="col-span-3 lg:col-span-1">
-              <div className="rounded-lg overflow-hidden bg-[#f5f8ed] mb-7">
-                <div className="mx-9 pt-9 border-b border-dashed border-[#D9DDEC] pb-4">
+            <div className="lg:col-span-1">
+              <div className="rounded-lg overflow-hidden bg-surface2 dark:bg-PrimaryColor-0/10 mb-7">
+                <div className="mx-5 sm:mx-9 pt-6 sm:pt-9 border-b border-dashed border-line pb-4">
                   <p className="font-AlbertSans text-TextColor-0">Clients :</p>
                   <h5 className="font-AlbertSans font-medium text-HeadingColor-0 pt-1">
                     Holquim Group & Company
                   </h5>
                 </div>
-                <div className="mx-9 pt-3 border-b border-dashed border-[#D9DDEC] pb-4">
+                <div className="mx-5 sm:mx-9 pt-3 border-b border-dashed border-line pb-4">
                   <p className="font-AlbertSans text-TextColor-0">Category :</p>
                   <h5 className="font-AlbertSans font-medium text-HeadingColor-0 pt-1">
                     Dust Recycling
                   </h5>
                 </div>
-                <div className="mx-9 pt-3 border-b border-dashed border-[#D9DDEC] pb-4">
+                <div className="mx-9 pt-3 border-b border-dashed border-line pb-4">
                   <p className="font-AlbertSans text-TextColor-0">
                     Starting Date :
                   </p>
@@ -138,7 +135,7 @@ const ProjectDetails = () => {
                     02 January, 2024
                   </h5>
                 </div>
-                <div className="mx-9 pt-3 border-b border-dashed border-[#D9DDEC] pb-4">
+                <div className="mx-9 pt-3 border-b border-dashed border-line pb-4">
                   <p className="font-AlbertSans text-TextColor-0">
                     Ending Date :
                   </p>
@@ -146,7 +143,7 @@ const ProjectDetails = () => {
                     05 June, 2024
                   </h5>
                 </div>
-                <div className="mx-9 pt-3">
+                <div className="mx-5 sm:mx-9 pt-3">
                   <p className="font-AlbertSans text-TextColor-0">
                     Project Value :
                   </p>
@@ -155,7 +152,6 @@ const ProjectDetails = () => {
                   </h5>
                 </div>
               </div>
-
             </div>
           </div>
         </div>

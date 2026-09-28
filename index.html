@@ -1,10 +1,57 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/images/iconalfilaha.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0c7f6e" />
+    <meta
+      name="description"
+      content="Aplikasi Ecopesantren Alfilaha: jadwal aktivitas, tugas santri, dan informasi pondok."
+    />
+
+    <!-- iOS / Safari -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Alfilaha" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
     <title>Alfilaha - ecopesantren</title>
+
+    <!-- Terapkan tema sebelum React mount supaya tidak ada kedipan (FOUC) -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("alfilaha-theme");
+          var theme =
+            saved === "light" || saved === "dark"
+              ? saved
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          var root = document.documentElement;
+          root.setAttribute("data-theme", theme);
+          root.classList.toggle("dark", theme === "dark");
+          root.style.colorScheme = theme;
+          // Transisi baru aktif setelah frame pertama
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              root.classList.add("theme-ready");
+            });
+          });
+        } catch (e) {
+          /* localStorage diblokir — biarkan ThemeContext yang menangani */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

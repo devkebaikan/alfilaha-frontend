@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import { FiX, FiImage, FiSave, FiArrowLeft, FiUploadCloud } from "react-icons/fi";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { FiSave, FiArrowLeft } from "react-icons/fi";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { adminFetch } from "../../../../adminAuth";
 
 const LayananForm = ({ initialData, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -79,7 +80,7 @@ const LayananForm = ({ initialData, onSave, onCancel }) => {
         formData.append("image", file);
 
         try {
-          const response = await fetch(
+          const response = await adminFetch(
             `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/upload`,
             {
               method: "POST",
@@ -121,7 +122,7 @@ const LayananForm = ({ initialData, onSave, onCancel }) => {
         },
       },
     }),
-    []
+    [],
   );
 
   const formats = [
@@ -140,19 +141,19 @@ const LayananForm = ({ initialData, onSave, onCancel }) => {
   ];
 
   return (
-    <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden animate-fade-in-up">
-      <div className="p-8 border-b border-gray-50 flex items-center gap-4 bg-white">
+    <div className="bg-card rounded-[2rem] shadow-sm border border-line overflow-hidden animate-fade-in-up">
+      <div className="p-8 border-b border-line flex items-center gap-4 bg-card">
         <button
           onClick={onCancel}
-          className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-xl transition"
+          className="p-2 bg-surface2 hover:bg-surface2 text-muted rounded-xl transition"
         >
           <FiArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold text-ink">
             {initialData ? "Edit Layanan" : "Tambah Layanan Baru"}
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted mt-1">
             Gunakan editor di bawah untuk menulis konten dan mengatur layanan.
           </p>
         </div>
@@ -161,7 +162,7 @@ const LayananForm = ({ initialData, onSave, onCancel }) => {
       <div className="p-8">
         <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-ink mb-2">
               Judul Layanan <span className="text-red-500">*</span>
             </label>
             <input
@@ -169,17 +170,18 @@ const LayananForm = ({ initialData, onSave, onCancel }) => {
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
+              className="w-full px-5 py-4 rounded-xl border border-line focus:ring-2 focus:ring-green-500 outline-none transition bg-surface2 focus:bg-card text-ink font-medium"
               placeholder="Misal: Pembersihan Laut"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-ink mb-2">
               {initialData
                 ? "Ganti Gambar Utama (Opsional)"
-                : "Upload Gambar Utama"} <span className="text-red-500">*</span>
+                : "Upload Gambar Utama"}{" "}
+              <span className="text-red-500">*</span>
             </label>
             <div className="flex items-center gap-4">
               <input
@@ -188,13 +190,13 @@ const LayananForm = ({ initialData, onSave, onCancel }) => {
                 accept="image/*"
                 onChange={handleImageUpload}
                 ref={fileInputRef}
-                className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
+                className="w-full px-5 py-4 rounded-xl border border-line focus:ring-2 focus:ring-green-500 outline-none transition bg-surface2 focus:bg-card text-ink font-medium"
               />
               {imagePreview && (
                 <button
                   type="button"
                   onClick={removeImage}
-                  className="px-4 py-4 bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 font-bold rounded-xl transition whitespace-nowrap"
+                  className="px-4 py-4 bg-red-50 dark:bg-red-500/15 hover:bg-red-100 dark:hover:bg-red-500/20 dark:bg-red-500/20 text-red-500 hover:text-red-700 dark:text-red-300 font-bold rounded-xl transition whitespace-nowrap"
                 >
                   Hapus Gambar
                 </button>
@@ -202,9 +204,9 @@ const LayananForm = ({ initialData, onSave, onCancel }) => {
             </div>
             {imagePreview && (
               <div className="mt-4">
-                <p className="text-xs text-gray-500 mb-2">Preview Gambar:</p>
-                <div className="relative h-48 w-full max-w-sm rounded-xl overflow-hidden border border-gray-200 shadow-inner">
-                  <img
+                <p className="text-xs text-muted mb-2">Preview Gambar:</p>
+                <div className="relative h-48 w-full max-w-sm rounded-xl overflow-hidden border border-line shadow-inner">
+                  <img decoding="async"
                     loading="lazy"
                     src={imagePreview}
                     alt="Preview"
@@ -216,10 +218,11 @@ const LayananForm = ({ initialData, onSave, onCancel }) => {
           </div>
 
           <div className="pb-12">
-            <label className="block text-sm font-bold text-gray-700 mb-2">
-              Deskripsi / Konten (Rich Text) <span className="text-red-500">*</span>
+            <label className="block text-sm font-bold text-ink mb-2">
+              Deskripsi / Konten (Rich Text){" "}
+              <span className="text-red-500">*</span>
             </label>
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="bg-card rounded-xl border border-line overflow-hidden">
               <ReactQuill
                 ref={quillRef}
                 theme="snow"
@@ -232,11 +235,11 @@ const LayananForm = ({ initialData, onSave, onCancel }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 pt-10 border-t border-gray-100">
+          <div className="flex items-center gap-4 pt-10 border-t border-line">
             <button
               type="button"
               onClick={onCancel}
-              className="px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
+              className="px-6 py-4 bg-surface2 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/[0.12] text-ink font-bold rounded-xl transition"
             >
               Batal
             </button>

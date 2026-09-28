@@ -17,7 +17,7 @@ const DonationsCard = ({
   return (
     <div className="inline-block group">
       <div className="relative z-10 overflow-hidden rounded-t-md">
-        <img
+        <img decoding="async"
           loading="lazy"
           src={donateImg}
           className="w-full transition-all duration-500 group-hover:blur-[2px]"

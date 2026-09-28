@@ -14,13 +14,13 @@ const ProjectCard = ({
   return (
     <div className="relative z-10 group rounded-md overflow-hidden">
       <div className="overflow-hidden relative z-10 before:absolute before:top-0 before:left-1/2 before:w-0 before:h-full before:bg-PrimaryColor-0 before:transition-all before:duration-500 group-hover:before:w-full group-hover:before:left-0 group-hover:before:opacity-0">
-        <img
+        <img decoding="async"
           loading="lazy"
           src={projectThumb}
           draggable="false"
-          className="w-full h-[450px] object-cover"
+          className="w-full h-[260px] sm:h-[350px] md:h-[450px] object-cover"
         />
-        <img
+        <img decoding="async"
           loading="lazy"
           src={projectShape}
           draggable="false"
@@ -28,8 +28,8 @@ const ProjectCard = ({
            duration-500 group-hover:-top-[180px] group-hover:-right-[190px]"
         />
       </div>
-      <div className="w-11/12 -mt-[42px] bg-[#f5f8ed] rounded-md overflow-hidden px-4 md:px-8 pb-8 transition-all duration-500 relative z-10 after:absolute after:left-0 after:top-0 after:w-[5px] after:h-full after:bg-PrimaryColor-0 after:z-10 before:-z-10 before:absolute before:left-0 before:w-[5px] before:h-full before:bg-SecondaryColor-0 before:transition-all before:duration-500 group-hover:before:w-full group-hover:-mt-[86px]">
-        <img
+      <div className="w-11/12 sm:w-full -mt-[42px] bg-surface2 dark:bg-PrimaryColor-0/10 rounded-md overflow-hidden px-5 md:px-8 pb-6 md:pb-8 transition-all duration-500 relative z-10 after:absolute after:left-0 after:top-0 after:w-[5px] after:h-full after:bg-PrimaryColor-0 after:z-10 before:-z-10 before:absolute before:left-0 before:w-[5px] before:h-full before:bg-SecondaryColor-0 before:transition-all before:duration-500 group-hover:before:w-full group-hover:-mt-[86px]">
+        <img decoding="async"
           loading="lazy"
           src={projectContentShape}
           draggable="false"

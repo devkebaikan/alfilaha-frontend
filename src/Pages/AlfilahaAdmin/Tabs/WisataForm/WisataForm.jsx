@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { FiArrowLeft, FiSave, FiUploadCloud } from "react-icons/fi";
@@ -31,19 +31,19 @@ const WisataForm = ({ initialData, onSave, onCancel }) => {
   };
 
   return (
-    <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden animate-fade-in-up">
-      <div className="p-8 border-b border-gray-50 flex items-center gap-4 bg-white">
+    <div className="bg-card rounded-[2rem] shadow-sm border border-line overflow-hidden animate-fade-in-up">
+      <div className="p-8 border-b border-line flex items-center gap-4 bg-card">
         <button
           onClick={onCancel}
-          className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-xl transition"
+          className="p-2 bg-surface2 hover:bg-surface2 text-muted rounded-xl transition"
         >
           <FiArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold text-ink">
             {initialData ? "Edit Paket Wisata" : "Tambah Paket Wisata"}
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted mt-1">
             Gunakan form di bawah ini untuk mengatur detail paket wisata.
           </p>
         </div>
@@ -53,7 +53,7 @@ const WisataForm = ({ initialData, onSave, onCancel }) => {
         <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-ink mb-2">
                 Nama Paket <span className="text-red-500">*</span>
               </label>
               <input
@@ -61,61 +61,80 @@ const WisataForm = ({ initialData, onSave, onCancel }) => {
                 required
                 value={namaPaket}
                 onChange={(e) => setNamaPaket(e.target.value)}
-                className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium"
+                className="w-full px-5 py-4 rounded-xl border border-line focus:ring-2 focus:ring-green-500 outline-none transition bg-surface2 focus:bg-card text-ink font-medium"
                 placeholder="Contoh: Edukasi Basic"
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-ink mb-2">
                 Harga / Rentang Harga <span className="text-red-500">*</span>
               </label>
               <select
                 required
                 value={harga}
                 onChange={(e) => setHarga(e.target.value)}
-                className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition bg-gray-50 focus:bg-white text-gray-800 font-medium cursor-pointer"
+                className="w-full px-5 py-4 rounded-xl border border-line focus:ring-2 focus:ring-green-500 outline-none transition bg-surface2 focus:bg-card text-ink font-medium cursor-pointer"
               >
-                <option value="" disabled>-- Pilih Harga Paket --</option>
+                <option value="" disabled>
+                  -- Pilih Harga Paket --
+                </option>
                 <option value="Rp 20.000 / orang">Rp 20.000 / orang</option>
                 <option value="Rp 100.000 / orang">Rp 100.000 / orang</option>
-                <option value="Rp 150.000 / keluarga">Rp 150.000 / keluarga</option>
+                <option value="Rp 150.000 / keluarga">
+                  Rp 150.000 / keluarga
+                </option>
               </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
-              {initialData ? "Ganti Gambar (Opsional)" : "Upload Gambar (Opsional)"}
+            <label className="block text-sm font-bold text-ink mb-2">
+              {initialData
+                ? "Ganti Gambar (Opsional)"
+                : "Upload Gambar (Opsional)"}
             </label>
-            <label className="flex-1 border-2 border-dashed border-gray-300 rounded-[24px] flex flex-col items-center justify-center text-center bg-gray-50 hover:bg-[#F5FAF7] hover:border-[#16804B] transition-colors cursor-pointer group min-h-[160px]">
-              <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-[#16804B] shadow-sm mb-3 group-hover:scale-110 transition-transform">
+            <label className="flex-1 border-2 border-dashed border-line rounded-[24px] flex flex-col items-center justify-center text-center bg-surface2 hover:bg-[#F5FAF7] dark:hover:bg-[#1E2A25] dark:bg-[#18211D] hover:border-[#16804B] transition-colors cursor-pointer group min-h-[160px]">
+              <div className="w-14 h-14 bg-card rounded-full flex items-center justify-center text-[#16804B] dark:text-[#4ADE80] shadow-sm mb-3 group-hover:scale-110 transition-transform">
                 <FiUploadCloud size={24} />
               </div>
-              <p className="text-gray-700 font-bold mb-1 text-sm">
-                {gambar ? gambar.name : (initialData && existingGambar ? existingGambar : "Pilih Gambar Baru")}
+              <p className="text-ink font-bold mb-1 text-sm">
+                {gambar
+                  ? gambar.name
+                  : initialData && existingGambar
+                    ? existingGambar
+                    : "Pilih Gambar Baru"}
               </p>
-              <p className="text-gray-400 text-xs">Maks. 2MB (Format: JPG, PNG)</p>
-              <input type="file" className="hidden" accept="image/*" onChange={(e) => setGambar(e.target.files[0])} />
+              <p className="text-muted text-xs">
+                Maks. 2MB (Format: JPG, PNG)
+              </p>
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => setGambar(e.target.files[0])}
+              />
             </label>
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Fasilitas / Deskripsi <span className="text-red-500">*</span></label>
-            <div className="bg-white rounded-[20px] border border-gray-200 overflow-hidden focus-within:ring-2 focus-within:ring-[#16804B] focus-within:border-[#16804B] transition-all">
-              <ReactQuill 
-                theme="snow" 
-                value={deskripsi} 
+            <label className="block text-sm font-bold text-ink mb-2">
+              Fasilitas / Deskripsi <span className="text-red-500">*</span>
+            </label>
+            <div className="bg-card rounded-[20px] border border-line overflow-hidden focus-within:ring-2 focus-within:ring-[#16804B] focus-within:border-[#16804B] transition-all">
+              <ReactQuill
+                theme="snow"
+                value={deskripsi}
                 onChange={setDeskripsi}
                 className="h-40 border-none"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-4 pt-10 border-t border-gray-100">
+          <div className="flex items-center gap-4 pt-10 border-t border-line">
             <button
               type="button"
               onClick={onCancel}
-              className="px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
+              className="px-6 py-4 bg-surface2 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/[0.12] text-ink font-bold rounded-xl transition"
             >
               Batal
             </button>

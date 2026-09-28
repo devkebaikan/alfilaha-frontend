@@ -52,13 +52,13 @@ const EventCard = ({
   }
 
   return (
-    <div className="group rounded-md overflow-hidden bg-white border border-BorderColor2-0 transition-all duration-500 hover:shadow-lg flex flex-col h-full">
+    <div className="group rounded-md overflow-hidden bg-card border border-line transition-all duration-500 hover:shadow-lg flex flex-col h-full">
       <div className="relative overflow-hidden before:absolute before:bottom-0 before:left-0 before:bg-gradient-to-t before:from-[rgba(5,22,0,0.5)] before:to-transparent before:w-full before:h-full shrink-0">
-        <img
+        <img decoding="async"
           loading="lazy"
           src={eventThumb}
           alt={eventTitle}
-          className="w-full h-64 object-cover transition-all duration-500 scale-100 group-hover:scale-110"
+          className="w-full h-52 sm:h-64 object-cover transition-all duration-500 scale-100 group-hover:scale-110"
         />
         {eventDate && (
           <div className="absolute top-5 left-5">
@@ -73,7 +73,7 @@ const EventCard = ({
           </div>
         )}
       </div>
-      <div className="px-7 pt-6 pb-8 flex flex-col flex-grow">
+      <div className="px-5 sm:px-7 pt-5 sm:pt-6 pb-6 sm:pb-8 flex flex-col flex-grow">
         {eventCategory && (
           <span className="text-PrimaryColor-0 font-AlbertSans font-semibold text-sm uppercase tracking-wide">
             {eventCategory}
@@ -85,9 +85,13 @@ const EventCard = ({
           </h3>
         </Link>
         <p className="font-AlbertSans text-TextColor-0 mb-6 leading-relaxed line-clamp-3 flex-grow">
-          {eventDesc ? (typeof eventDesc === 'string' ? eventDesc.replace(/<[^>]+>/g, '') : eventDesc) : ''}
+          {eventDesc
+            ? typeof eventDesc === "string"
+              ? eventDesc.replace(/<[^>]+>/g, "")
+              : eventDesc
+            : ""}
         </p>
-        <div className="pt-6 mt-auto border-t border-BorderColor2-0">
+        <div className="pt-6 mt-auto border-t border-line">
           <Link
             to={eventUrl}
             className="inline-flex items-center gap-2 font-AlbertSans text-PrimaryColor-0 font-bold hover:gap-3 transition-all text-[15px] uppercase tracking-wide"

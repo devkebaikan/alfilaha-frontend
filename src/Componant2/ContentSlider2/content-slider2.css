@@ -93,3 +93,8 @@
     -webkit-text-stroke-width: 1px;
   }
 }
+
+/* Mode gelap: turunkan intensitas hijau agar tidak menyilaukan */
+[data-theme="dark"] .content-slider-section2 {
+  background: #4a7a00;
+}

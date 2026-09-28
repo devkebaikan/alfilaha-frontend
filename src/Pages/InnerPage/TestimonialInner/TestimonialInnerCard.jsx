@@ -9,10 +9,10 @@ const TestimonialCard = ({
   testiShape,
 }) => {
   return (
-    <div className="px-5 sm:px-10 lg:px-4 xl:px-10 pt-9 pb-8 bg-white relative group rounded-xl z-10 overflow-hidden before:absolute before:top-0 before:left-1/2 before:w-0 before:h-full before:bg-SecondaryColor-0 before:-z-10 before:transition-all before:duration-500 hover:before:w-full hover:before:left-0">
+    <div className="px-5 sm:px-10 lg:px-4 xl:px-10 pt-9 pb-8 bg-card relative group rounded-xl z-10 overflow-hidden before:absolute before:top-0 before:left-1/2 before:w-0 before:h-full before:bg-SecondaryColor-0 before:-z-10 before:transition-all before:duration-500 hover:before:w-full hover:before:left-0">
       <div className="flex flex-col sm:flex-row gap-7 lg:gap-4 xl:gap-7">
         <div>
-          <img loading="lazy" src={testiImg} />
+          <img decoding="async" loading="lazy" src={testiImg} />
         </div>
         <div className="flex-1">
           <ul className="flex gap-[6px] items-center">
@@ -37,7 +37,7 @@ const TestimonialCard = ({
         {testiTitle}
       </h5>
       <div className="absolute top-10 right-8">
-        <img loading="lazy" src={testiShape} />
+        <img decoding="async" loading="lazy" src={testiShape} />
       </div>
     </div>
   );

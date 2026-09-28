@@ -40,7 +40,7 @@ const EventInner = () => {
         <div className="Container">
           <div className="text-center mb-12">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center justify-center gap-2">
-              <img
+              <img decoding="async"
                 loading="lazy"
                 src={subTitleShape}
                 draggable="false"
@@ -48,25 +48,25 @@ const EventInner = () => {
               />
               EVENT & KEGIATAN
             </h5>
-            <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5">
+            <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.35] sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] px-1 sm:px-2 text-HeadingColor-0 mt-5">
               Kegiatan & Acara <br className="hidden sm:block" />
               Pesantren Alfilaha
             </h1>
-            <p className="font-AlbertSans text-TextColor-0 mt-4 max-w-2xl mx-auto">
+            <p className="font-AlbertSans text-TextColor-0 text-[16px] sm:text-[17px] mt-5 sm:mt-6 leading-[1.8] max-w-2xl mx-auto px-1 sm:px-2">
               Ikuti berbagai kegiatan edukatif, workshop, dan event menarik yang
               kami selenggarakan untuk santri dan masyarakat umum.
             </p>
           </div>
           {loading ? (
-            <div className="text-center py-20 text-gray-500 font-bold">
+            <div className="text-center py-20 text-muted font-bold">
               Memuat Event...
             </div>
           ) : events.length === 0 ? (
-            <div className="text-center py-20 text-gray-500 font-bold">
+            <div className="text-center py-20 text-muted font-bold">
               Belum ada event saat ini.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 mt-[60px]">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7 mt-10 sm:mt-[60px]">
               {events.map((event) => (
                 <div key={event.id}>
                   <EventCard

@@ -4,6 +4,64 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Tema: Light / Dark ──────────────────────────────────────────
+   Warna dipusatkan di sini. Komponen memakai utilitas semantik
+   Tailwind yang dipetakan ke variable ini (lihat tailwind.config.js):
+   bg-surface · bg-surface2 · bg-card · text-ink · text-muted · border-line */
+
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --border-color: #e0e0e0;
+  --card-bg: #ffffff;
+  /* Token brand lama (HeadingColor / TextColor / BorderColor2) dijadikan
+     theme-aware di sini, sehingga ratusan call site ikut beradaptasi tanpa
+     diubah satu per satu. Nilai light = nilai asli desain. */
+  --heading-color: #001819;
+  --body-text-color: #868681;
+  --border-soft: #dee4da;
+}
+
+[data-theme="dark"] {
+  /* Ramp 3 lapis (canvas → surface2 → card) supaya tiap lapisan bisa
+     dibedakan. Sebelumnya --bg-secondary == --card-bg sehingga card
+     "tenggelam" dan tampilan dark terasa gepeng. */
+  --bg-primary: #0B1210;
+  --bg-secondary: #18211D;
+  --card-bg: #212A26;
+  --text-primary: #f0f0f0;
+  --text-secondary: #b0b0b0;
+  --border-color: #2E3A35;
+  --heading-color: #e8f0ee;
+  --body-text-color: #a3a8a3;
+  --border-soft: #2f3a37;
+}
+
+:root {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Transisi halus hanya setelah frame pertama, supaya tidak beranimasi saat load.
+   Flag .theme-ready dipasang oleh script anti-FOUC di index.html. */
+html.theme-ready,
+html.theme-ready body {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
 html {
   scroll-behavior: smooth;
   box-sizing: border-box;
@@ -14,10 +72,22 @@ body {
   overflow-x: hidden;
 }
 
+/* Safe area (PWA / perangkat berponi) */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.safe-x {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
 /*Common Tailwind CSS Start Here*/
 
 .Container {
-  @apply w-full sm:w-[540px] md:w-[720px] lg:w-[960px] xl:w-[1140px] 2xl:w-[1320px] px-2 md:px-3 lg:px-4 xl:px-5 mx-auto;
+  @apply w-full sm:w-[540px] md:w-[720px] lg:w-[960px] xl:w-[1140px] 2xl:w-[1320px] px-4 sm:px-5 md:px-6 lg:px-8 xl:px-10 mx-auto;
 }
 
 .header-btn {
@@ -137,4 +207,129 @@ body {
 
 .animal-box.active .animal-btn {
   transform: translateY(-50%) translateX(-50%) scale(1);
+}
+
+/* ── Notifikasi toast (sistem notifikasi aplikasi) ── */
+.notif-toast {
+  animation: notif-masuk 0.22s ease-out;
+}
+
+/* Banner notifikasi dalam halaman (mis. hasil kirim form) */
+.notif-banner {
+  animation: notif-banner-masuk 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.notif-banner > span:first-child {
+  animation: notif-banner-strip 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.notif-banner .notif-ikon {
+  animation: notif-pop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes notif-banner-masuk {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes notif-banner-strip {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes notif-masuk {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes notif-pop {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notif-toast {
+    animation: none;
+  }
+
+  .notif-banner,
+  .notif-banner > span:first-child,
+  .notif-banner .notif-ikon {
+    animation: none;
+  }
+}
+
+/* ── Rich text / tipografi artikel ──────────────────────────────
+   Plugin @tailwindcss/typography memakai warna default hampir hitam
+   (gray-700/gray-900) lewat variabel --tw-prose-*. Di mode gelap teks
+   jadi tak terbaca. Variabel di bawah disandingkan ke token tema
+   (lihat :root & [data-theme="dark"] di atas) supaya otomatis
+   menyesuaikan, tanpa menyentuh tiap file yang memakai .prose. */
+.prose {
+  --tw-prose-body: var(--body-text-color);
+  --tw-prose-headings: var(--heading-color);
+  --tw-prose-lead: var(--body-text-color);
+  --tw-prose-bold: var(--text-primary);
+  --tw-prose-bullets: var(--text-secondary);
+  --tw-prose-counters: var(--text-secondary);
+  --tw-prose-quotes: var(--heading-color);
+  --tw-prose-quote-borders: #0c7f6e;
+  --tw-prose-captions: var(--text-secondary);
+  --tw-prose-code: var(--heading-color);
+  --tw-prose-pre-code: var(--text-primary);
+  --tw-prose-pre-bg: var(--bg-secondary);
+  --tw-prose-th-borders: var(--border-soft);
+  --tw-prose-td-borders: var(--border-soft);
+  --tw-prose-hr: var(--border-soft);
+  --tw-prose-links: #0c7f6e;
+  --tw-prose-invert-links: #4ade80;
+}
+
+/* Halaman pertanian memakai aksen prose-green (link hijau terang),
+   dipertahankan agar tidak berubah dari perilaku plugin. */
+.prose-green {
+  --tw-prose-links: #16a34a;
+  --tw-prose-invert-links: #22c55e;
+}
+
+.prose-invert {
+  --tw-prose-body: var(--text-primary);
+  --tw-prose-headings: var(--heading-color);
+  --tw-prose-lead: var(--text-primary);
+  --tw-prose-bold: var(--text-primary);
+  --tw-prose-bullets: var(--text-secondary);
+  --tw-prose-counters: var(--text-secondary);
+  --tw-prose-quotes: var(--heading-color);
+  --tw-prose-captions: var(--text-secondary);
+  --tw-prose-code: var(--heading-color);
+  --tw-prose-pre-code: var(--text-primary);
+  --tw-prose-pre-bg: var(--bg-secondary);
+  --tw-prose-th-borders: var(--border-soft);
+  --tw-prose-td-borders: var(--border-soft);
+  --tw-prose-hr: var(--border-soft);
 }

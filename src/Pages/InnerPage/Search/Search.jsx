@@ -136,15 +136,15 @@ const Search = () => {
         bgImage={"/images/blog-new-1.jpg"}
       />
 
-      <section className="pt-20 pb-28 min-h-[50vh] bg-[#fdfdfd]">
+      <section className="pt-20 pb-28 min-h-[50vh] bg-surface">
         <div className="Container">
-          <div className="mb-14 border-b border-gray-100 pb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="mb-14 border-b border-line pb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800 font-AlbertSans">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-ink font-AlbertSans">
                 Hasil pencarian:{" "}
                 <span className="text-PrimaryColor-0">"{query}"</span>
               </h2>
-              <p className="text-gray-500 mt-2">
+              <p className="text-muted mt-2">
                 Ditemukan {totalResults} hasil yang relevan di seluruh halaman.
               </p>
             </div>
@@ -161,9 +161,9 @@ const Search = () => {
                   {/* Static Pages Results */}
                   {filteredPages.length > 0 && (
                     <div>
-                      <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                      <h3 className="text-2xl font-bold text-ink mb-6 flex items-center gap-2">
                         Halaman & Layanan{" "}
-                        <span className="bg-gray-100 text-gray-500 text-sm py-1 px-3 rounded-full">
+                        <span className="bg-surface2 text-muted text-sm py-1 px-3 rounded-full">
                           {filteredPages.length}
                         </span>
                       </h3>
@@ -181,7 +181,7 @@ const Search = () => {
                                 duration: 0.3,
                                 delay: index * 0.05,
                               }}
-                              className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-PrimaryColor-0 transition-all"
+                              className="bg-card p-5 rounded-2xl border border-line shadow-sm hover:shadow-md hover:border-PrimaryColor-0 transition-all"
                             >
                               <div className="flex justify-between items-start mb-2">
                                 <h4 className="font-bold text-lg text-HeadingColor-0 group-hover:text-PrimaryColor-0 transition-colors">
@@ -204,9 +204,9 @@ const Search = () => {
                   {/* Blog Results */}
                   {filteredBlogs.length > 0 && (
                     <div>
-                      <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                      <h3 className="text-2xl font-bold text-ink mb-6 flex items-center gap-2">
                         Artikel Blog{" "}
-                        <span className="bg-gray-100 text-gray-500 text-sm py-1 px-3 rounded-full">
+                        <span className="bg-surface2 text-muted text-sm py-1 px-3 rounded-full">
                           {filteredBlogs.length}
                         </span>
                       </h3>
@@ -247,14 +247,14 @@ const Search = () => {
                   )}
                 </div>
               ) : (
-                <div className="text-center py-24 bg-white/50 backdrop-blur-sm rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center">
-                  <div className="w-24 h-24 bg-gray-50 text-gray-300 rounded-full flex items-center justify-center mb-6">
+                <div className="text-center py-24 bg-surface2 rounded-3xl border border-line shadow-sm flex flex-col items-center">
+                  <div className="w-24 h-24 bg-surface2 text-muted rounded-full flex items-center justify-center mb-6">
                     <IoSearch size={48} />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                  <h3 className="text-2xl font-bold text-ink mb-2">
                     Tidak Ditemukan
                   </h3>
-                  <p className="text-gray-500 max-w-md mx-auto mb-8">
+                  <p className="text-muted max-w-md mx-auto mb-8 text-[15px] sm:text-base leading-[1.8] px-1 sm:px-2">
                     Maaf, kami tidak dapat menemukan artikel atau halaman yang
                     cocok dengan kata kunci{" "}
                     <span className="font-bold">"{query}"</span>. Silakan coba

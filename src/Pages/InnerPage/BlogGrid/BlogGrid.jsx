@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { FaAngleRight, FaArrowRightLong } from "react-icons/fa6";
 import BlogCard from "./BlogCard";
-import { Link } from "react-router-dom";
 import subTitleShape from "/images/sub-title-shape.png";
 import BreadCrumb from "../../../Shared/BreadCrumb/BreadCrumb";
 
@@ -39,15 +38,16 @@ const BlogGrid = () => {
         <div className="Container">
           <div className="text-center mb-12">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center justify-center gap-2">
-              <img loading="lazy" src={subTitleShape} draggable="false" />
+              <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
               BLOG TERBARU
             </h5>
-            <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
-              Baca Berita Terbaru <br className="hidden sm:block" /> dari Blog Kami
+            <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.35] sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] px-1 sm:px-2 text-HeadingColor-0 mt-5 mb-3">
+              Baca Berita Terbaru <br className="hidden sm:block" /> dari Blog
+              Kami
             </h1>
           </div>
           <div className="mt-[60px]">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7">
               {blogs.length > 0 ? (
                 blogs.map((item) => {
                   const dateDisplay =
@@ -76,7 +76,7 @@ const BlogGrid = () => {
                   );
                 })
               ) : (
-                <div className="col-span-full text-center py-10 text-gray-500 font-bold">
+                <div className="col-span-full text-center py-10 text-muted font-bold">
                   Belum ada artikel blog yang tersedia saat ini.
                 </div>
               )}
@@ -87,22 +87,22 @@ const BlogGrid = () => {
       <div>
         <ul className="flex items-center gap-2 justify-center pb-[120px] pt-[80px]">
           <li>
-            <button className="h-[50px] w-[50px] font-AlbertSans rounded-full border-BorderColor2-0 border bg-white flex justify-center items-center text-HeadingColor-0 transition-all duration-500 hover:text-white overflow-hidden relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
+            <button className="h-[50px] w-[50px] font-AlbertSans rounded-full border-line border bg-card flex justify-center items-center text-HeadingColor-0 transition-all duration-500 hover:text-white overflow-hidden relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
               01
             </button>
           </li>
           <li>
-            <button className="h-[50px] w-[50px] font-AlbertSans rounded-full border-BorderColor2-0 border bg-white flex justify-center items-center text-HeadingColor-0 transition-all duration-500 hover:text-white overflow-hidden relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
+            <button className="h-[50px] w-[50px] font-AlbertSans rounded-full border-line border bg-card flex justify-center items-center text-HeadingColor-0 transition-all duration-500 hover:text-white overflow-hidden relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
               02
             </button>
           </li>
           <li>
-            <button className="h-[50px] w-[50px] font-AlbertSans rounded-full border-BorderColor2-0 border bg-white flex justify-center items-center text-HeadingColor-0 transition-all duration-500 hover:text-white overflow-hidden relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
+            <button className="h-[50px] w-[50px] font-AlbertSans rounded-full border-line border bg-card flex justify-center items-center text-HeadingColor-0 transition-all duration-500 hover:text-white overflow-hidden relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
               03
             </button>
           </li>
           <li>
-            <button className="h-[50px] w-[50px] font-AlbertSans rounded-full border-BorderColor2-0 border bg-white flex justify-center items-center text-HeadingColor-0 transition-all duration-500 hover:text-white overflow-hidden relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
+            <button className="h-[50px] w-[50px] font-AlbertSans rounded-full border-line border bg-card flex justify-center items-center text-HeadingColor-0 transition-all duration-500 hover:text-white overflow-hidden relative z-10 before:absolute before:top-0 before:left-0 before:w-full before:h-full before:-z-10 before:bg-PrimaryColor-0 before:transition-all before:duration-500 before:scale-0 hover:before:scale-100">
               <FaAngleRight />
             </button>
           </li>

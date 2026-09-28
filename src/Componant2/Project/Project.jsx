@@ -89,7 +89,7 @@ const Project = () => {
     <section className="project bg-[url('/images/project-bg.jpg')] bg-cover bg-center bg-no-repeat py-28 project">
       <div className="text-center">
         <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center justify-center gap-2">
-          <img loading="lazy" src={subTitleShape} draggable="false" />
+          <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
           PROYEK KAMI
         </h5>
         <h1 className="font-AlbertSans font-bold text-xl leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">

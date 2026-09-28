@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import testiImg from "/images/testi-new-1.jpg";
-import testiImg2 from "/images/testi-new-2.jpg";
+import testiImg2 from "/images/testi-new-2.webp";
 import testiShape from "/images/envato.png";
 import testiShape2 from "/images/amazon.png";
 import testiMainShape1 from "/images/testi-shape-1.png";
@@ -82,35 +82,44 @@ const Testimonial = () => {
     },
   };
   return (
-    <section className="py-28 bg-[#f5f8ed] relative z-10 before:absolute before:top-0 before:left-1/2 before:-translate-x-1/2 before:w-2/3 before:-z-10 before:h-2/3 before:bg-[url('/images/map.png')] before:bg-center before:bg-cover before:bg-no-repeat overflow-hidden testimonial">
+    <section className="py-14 sm:py-20 lg:py-28 bg-[#f5f8ed] dark:bg-surface relative z-10 before:absolute before:top-0 before:left-1/2 before:-translate-x-1/2 before:w-2/3 before:-z-10 before:h-2/3 before:bg-[url('/images/map.webp')] dark:before:opacity-30 before:bg-center before:bg-cover before:bg-no-repeat overflow-hidden testimonial">
       <img
+        decoding="async"
         loading="lazy"
         src={testiMainShape1}
         draggable="false"
-        className="absolute -z-10 top-44 right-[5%] animate-zoomInOut"
+        className="absolute -z-10 top-44 right-[5%] animate-zoomInOut hidden sm:block"
       />
       <img
+        decoding="async"
         loading="lazy"
         src={testiMainShape2}
         draggable="false"
-        className="absolute -z-10 top-16 right-[20%] animate-zoomInOut"
+        className="absolute -z-10 top-16 right-[20%] animate-zoomInOut hidden sm:block"
       />
       <img
+        decoding="async"
         loading="lazy"
         src={testiMainShape3}
         draggable="false"
-        className="absolute -z-10 top-44 left-[5%] animate-zoomInOut"
+        className="absolute -z-10 top-44 left-[5%] animate-zoomInOut hidden sm:block"
       />
       <img
+        decoding="async"
         loading="lazy"
         src={testiMainShape4}
         draggable="false"
-        className="absolute -z-10 top-16 left-[20%] animate-zoomInOut"
+        className="absolute -z-10 top-16 left-[20%] animate-zoomInOut hidden sm:block"
       />
       <div className="Container">
         <div className="text-center">
-          <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2 justify-center">
-            <img loading="lazy" src={subTitleShape} draggable="false" />
+          <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 dark:text-[#4ADE80] flex items-center gap-2 justify-center">
+            <img
+              decoding="async"
+              loading="lazy"
+              src={subTitleShape}
+              draggable="false"
+            />
             TESTIMONI
           </h5>
           <h1 className="font-AlbertSans font-bold text-xl leading-7 sm:text-[36px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
@@ -119,36 +128,34 @@ const Testimonial = () => {
             Alfilaha Eco Pesantren
           </h1>
         </div>
-        <div className="mt-[46px]">
+        <div className="mt-8 sm:mt-[46px]">
           <Swiper {...settings} pagination={pagination} modules={[Pagination]}>
-            <div>
-              {testiData.map(
-                ({
-                  id,
-                  testiImg,
-                  testiRatingIcon,
-                  testiName,
-                  testiDesignation,
-                  testiDesc,
-                  testiShape,
-                }) => {
-                  return (
-                    <SwiperSlide key={id}>
-                      <div className="pb-[80px] pt-3">
-                        <TestimonialCard
-                          testiImg={testiImg}
-                          testiRatingIcon={testiRatingIcon}
-                          testiName={testiName}
-                          testiDesignation={testiDesignation}
-                          testiDesc={testiDesc}
-                          testiShape={testiShape}
-                        />
-                      </div>
-                    </SwiperSlide>
-                  );
-                },
-              )}
-            </div>
+            {testiData.map(
+              ({
+                id,
+                testiImg,
+                testiRatingIcon,
+                testiName,
+                testiDesignation,
+                testiDesc,
+                testiShape,
+              }) => {
+                return (
+                  <SwiperSlide key={id}>
+                    <div className="pb-14 sm:pb-[80px] pt-3">
+                      <TestimonialCard
+                        testiImg={testiImg}
+                        testiRatingIcon={testiRatingIcon}
+                        testiName={testiName}
+                        testiDesignation={testiDesignation}
+                        testiDesc={testiDesc}
+                        testiShape={testiShape}
+                      />
+                    </div>
+                  </SwiperSlide>
+                );
+              },
+            )}
           </Swiper>
         </div>
       </div>

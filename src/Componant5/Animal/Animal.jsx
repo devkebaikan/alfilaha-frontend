@@ -42,7 +42,7 @@ const Animal = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-7 items-center">
           <div className="animal-box rounded-md overflow-hidden bg-[#e6e7e9] text-center relative group pt-10 pb-8 before:absolute before:left-0 before:top-0 before:w-full before:h-0 before:bg-[url('/images/animal-5.png')] before:bg-no-repeat before:bg-cover before:bg-center before:transition-all before:duration-500 hover:before:h-full">
             <div className="w-[80px] h-[80px] bg-white flex justify-center items-center rounded-full m-auto">
-              <img loading="lazy" src={animalIcon} />
+              <img decoding="async" loading="lazy" src={animalIcon} />
             </div>
             <h4 className="font-AlbertSans font-semibold text-[22px] text-HeadingColor-0 mt-3">
               Giraffes
@@ -57,7 +57,7 @@ const Animal = () => {
           </div>
           <div className="animal-box rounded-md overflow-hidden bg-[#e6e7e9] text-center relative group pt-10 pb-8 before:absolute before:left-0 before:top-0 before:w-full before:h-0 before:bg-[url('/images/animal-2.png')] before:bg-no-repeat before:bg-cover before:bg-center before:transition-all before:duration-500 hover:before:h-full">
             <div className="w-[80px] h-[80px] bg-white flex justify-center items-center rounded-full m-auto">
-              <img loading="lazy" src={animalIcon2} />
+              <img decoding="async" loading="lazy" src={animalIcon2} />
             </div>
             <h4 className="font-AlbertSans font-semibold text-[22px] text-HeadingColor-0 mt-3">
               Tiger
@@ -72,7 +72,7 @@ const Animal = () => {
           </div>
           <div className="animal-box active rounded-md overflow-hidden bg-[#e6e7e9] text-center relative group pt-10 pb-8 before:absolute before:left-0 before:top-0 before:w-full before:h-0 before:bg-[url('/images/animal-3.png')] before:bg-no-repeat before:bg-cover before:bg-center before:transition-all before:duration-500 hover:before:h-full">
             <div className="w-[80px] h-[80px] bg-white flex justify-center items-center rounded-full m-auto">
-              <img loading="lazy" src={animalIcon3} />
+              <img decoding="async" loading="lazy" src={animalIcon3} />
             </div>
             <h4 className="font-AlbertSans font-semibold text-[22px] text-HeadingColor-0 mt-3">
               Lion
@@ -87,7 +87,7 @@ const Animal = () => {
           </div>
           <div className="animal-box rounded-md overflow-hidden bg-[#e6e7e9] text-center relative group pt-10 pb-8 before:absolute before:left-0 before:top-0 before:w-full before:h-0 before:bg-[url('/images/animal-4.png')] before:bg-no-repeat before:bg-cover before:bg-center before:transition-all before:duration-500 hover:before:h-full">
             <div className="w-[80px] h-[80px] bg-white flex justify-center items-center rounded-full m-auto">
-              <img loading="lazy" src={animalIcon4} />
+              <img decoding="async" loading="lazy" src={animalIcon4} />
             </div>
             <h4 className="font-AlbertSans font-semibold text-[22px] text-HeadingColor-0 mt-3">
               Elephent
@@ -102,7 +102,7 @@ const Animal = () => {
           </div>
           <div className="animal-box rounded-md overflow-hidden bg-[#e6e7e9] text-center relative group pt-10 pb-8 before:absolute before:left-0 before:top-0 before:w-full before:h-0 before:bg-[url('/images/animal-1.png')] before:bg-no-repeat before:bg-cover before:bg-center before:transition-all before:duration-500 hover:before:h-full">
             <div className="w-[80px] h-[80px] bg-white flex justify-center items-center rounded-full m-auto">
-              <img loading="lazy" src={animalIcon5} />
+              <img decoding="async" loading="lazy" src={animalIcon5} />
             </div>
             <h4 className="font-AlbertSans font-semibold text-[22px] text-HeadingColor-0 mt-3">
               Zebra
@@ -117,7 +117,7 @@ const Animal = () => {
           </div>
           <div className="animal-box rounded-md overflow-hidden bg-[#e6e7e9] text-center relative group pt-10 pb-8 before:absolute before:left-0 before:top-0 before:w-full before:h-0 before:bg-[url('/images/animal-6.png')] before:bg-no-repeat before:bg-cover before:bg-center before:transition-all before:duration-500 hover:before:h-full">
             <div className="w-[80px] h-[80px] bg-white flex justify-center items-center rounded-full m-auto">
-              <img loading="lazy" src={animalIcon6} />
+              <img decoding="async" loading="lazy" src={animalIcon6} />
             </div>
             <h4 className="font-AlbertSans font-semibold text-[22px] text-HeadingColor-0 mt-3">
               Monkey

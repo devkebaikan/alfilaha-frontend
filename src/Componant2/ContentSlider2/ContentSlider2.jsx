@@ -9,7 +9,7 @@ const ContentSlider2 = () => {
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content2">
-          <img
+          <img decoding="async"
             loading="lazy"
             src={contentSliderImg}
             className="h-[30px] md:h-[80px] w-auto object-contain"
@@ -20,7 +20,7 @@ const ContentSlider2 = () => {
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content2">
-          <img
+          <img decoding="async"
             loading="lazy"
             src={contentSliderImg}
             className="h-[30px] md:h-[80px] w-auto object-contain"
@@ -31,7 +31,7 @@ const ContentSlider2 = () => {
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content2">
-          <img
+          <img decoding="async"
             loading="lazy"
             src={contentSliderImg}
             className="h-[30px] md:h-[80px] w-auto object-contain"
@@ -44,7 +44,7 @@ const ContentSlider2 = () => {
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content2">
-          <img
+          <img decoding="async"
             loading="lazy"
             src={contentSliderImg}
             className="h-[30px] md:h-[80px] w-auto object-contain"
@@ -55,7 +55,7 @@ const ContentSlider2 = () => {
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content2">
-          <img
+          <img decoding="async"
             loading="lazy"
             src={contentSliderImg}
             className="h-[30px] md:h-[80px] w-auto object-contain"
@@ -66,7 +66,7 @@ const ContentSlider2 = () => {
           <h1>Alfilaha</h1>
         </div>
         <div className="content-slider-content2">
-          <img
+          <img decoding="async"
             loading="lazy"
             src={contentSliderImg}
             className="h-[30px] md:h-[80px] w-auto object-contain"

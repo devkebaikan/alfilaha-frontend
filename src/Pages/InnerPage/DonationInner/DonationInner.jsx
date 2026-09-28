@@ -105,19 +105,19 @@ const DonationInner = () => {
         breadCrumbIcon={<FaArrowRightLong />}
         breadCrumbLink={"Contact Us"}
       />
-      <section className="service relative pt-28 pb-[120px] bg-[#f5f8ed] z-10">
+      <section className="service relative pt-28 pb-[120px] bg-surface2 dark:bg-PrimaryColor-0/10 z-10">
         <div className="Container">
           <div className="text-center">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2 justify-center">
-              <img loading="lazy" src={subTitleShape} draggable="false" />
+              <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
               DONATIONS
             </h5>
-            <h1 className="font-AlbertSans font-bold text-xl leading-6 sm:text-[38px] sm:leading-[48px] md:text-[40px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
+            <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.3] sm:text-[38px] sm:leading-[48px] md:text-[40px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3 px-1 sm:px-2">
               For Savings Environments <br />
               Donation Money
             </h1>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 mt-[60px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7 mt-10 sm:mt-[60px]">
             {DonationData.map(
               ({
                 id,

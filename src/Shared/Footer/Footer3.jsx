@@ -15,13 +15,13 @@ import {
 const Footer3 = () => {
   return (
     <footer className="bg-[url('/images/footer4-bg.jpg')] bg-no-repeat bg-center bg-cover relative z-10 pt-28 overflow-hidden">
-      <img
+      <img decoding="async"
         loading="lazy"
         src={footerLine}
         draggable="false"
         className="absolute -z-10 right-0 -bottom-20 opacity-70"
       />
-      <img
+      <img decoding="async"
         loading="lazy"
         src={footerShape3}
         draggable="false"
@@ -31,7 +31,7 @@ const Footer3 = () => {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
           <div>
             <Link to={"/"}>
-              <img loading="lazy" src={footerLogo} draggable={false} />
+              <img decoding="async" loading="lazy" src={footerLogo} draggable={false} />
             </Link>
             <p className="font-AlbertSans text-white opacity-60 mt-10 mb-9">
               Sometimes goods can arrive early when creative designneed place to
@@ -174,7 +174,7 @@ const Footer3 = () => {
             </h4>
             <Link to={"/"} className="flex items-center gap-[18px] group">
               <div>
-                <img
+                <img decoding="async"
                   loading="lazy"
                   src={footerImg}
                   className="w-[80px] h-[80px] rounded"
@@ -191,7 +191,7 @@ const Footer3 = () => {
             </Link>
             <Link to={"/"} className="flex items-center gap-[18px] group mt-5">
               <div>
-                <img
+                <img decoding="async"
                   loading="lazy"
                   src={footerImg2}
                   className="w-[80px] h-[80px] rounded"

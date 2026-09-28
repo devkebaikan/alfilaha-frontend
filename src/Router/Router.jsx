@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import Main from "../Main/Main";
 import Main2 from "../Main/Main2";
 import Main3 from "../Main/Main3";
@@ -45,12 +45,15 @@ import StatusPendaftaran from "../Pages/InnerPage/Pendaftaran/StatusPendaftaran"
 import LoginSantri from "../Pages/InnerPage/Pendaftaran/LoginSantri";
 import TanamanDetail from "../Pages/InnerPage/Tanaman/TanamanDetail";
 import KoleksiTanaman from "../Pages/InnerPage/Tanaman/KoleksiTanaman";
+import KoleksiTernak from "../Pages/InnerPage/Peternakan/KoleksiTernak";
+import TernakDetail from "../Pages/InnerPage/Peternakan/TernakDetail";
 import RegisterInternal from "../Pages/InnerPage/Auth/RegisterInternal";
 import LoginInternal from "../Pages/InnerPage/Auth/LoginInternal";
+import DashboardSantri from "../Pages/InnerPage/DashboardSantri/DashboardSantri";
 
 const router = createBrowserRouter([
   {
-   path: "/",
+    path: "/",
     errorElement: <ErrorPage />,
     element: <Main />,
     children: [
@@ -199,12 +202,24 @@ const router = createBrowserRouter([
         element: <KoleksiTanaman />,
       },
       {
+        path: "/peternakan/:jenis",
+        element: <TernakDetail />,
+      },
+      {
+        path: "/peternakan",
+        element: <KoleksiTernak />,
+      },
+      {
         path: "/register-petani",
         element: <RegisterInternal />,
       },
       {
         path: "/login-perawatan",
         element: <LoginInternal />,
+      },
+      {
+        path: "/dashboard-santri",
+        element: <DashboardSantri />,
       },
     ],
   },

@@ -9,7 +9,7 @@ const WhyChoose = () => {
       <div className="Container">
         <div className="grid grid-cols-1 lg:items-center lg:grid-cols-2 2xl:gap-20">
           <div className="bg-SecondaryColor-0 rounded-t-md">
-            <img
+            <img decoding="async"
               loading="lazy"
               src={WhyChooseImg}
               draggable="false"
@@ -21,7 +21,7 @@ const WhyChoose = () => {
               <FaStarOfLife />
               CAMPING & OUTBOUND
             </h5>
-            <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-white mt-2 mb-6">
+            <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.35] sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] px-1 sm:px-2 text-white mt-2 mb-6">
               Ruang Lebih Lama
               <br /> untuk Rombongan Kita.
             </h1>
@@ -31,7 +31,7 @@ const WhyChoose = () => {
             </p>
             <div className="flex flex-col sm:flex-row sm:items-center gap-7 mt-12">
               <div>
-                <img loading="lazy" src={boxImg} draggable="false" />
+                <img decoding="async" loading="lazy" src={boxImg} draggable="false" />
               </div>
               <div className="flex-1">
                 <h5 className="font-AlbertSans font-semibold text-xl text-white">
@@ -44,7 +44,7 @@ const WhyChoose = () => {
             </div>
             <div className="flex flex-col sm:flex-row gap-7 mt-12">
               <div>
-                <img loading="lazy" src={boxImg2} draggable="false" />
+                <img decoding="async" loading="lazy" src={boxImg2} draggable="false" />
               </div>
               <div className="flex-1">
                 <h5 className="font-AlbertSans font-semibold text-xl text-white">
@@ -57,7 +57,7 @@ const WhyChoose = () => {
             </div>
             <div className="flex flex-col sm:flex-row gap-7 mt-12">
               <div>
-                <img loading="lazy" src={boxImg} draggable="false" />
+                <img decoding="async" loading="lazy" src={boxImg} draggable="false" />
               </div>
               <div className="flex-1">
                 <h5 className="font-AlbertSans font-semibold text-xl text-white">

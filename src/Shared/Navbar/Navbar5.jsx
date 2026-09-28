@@ -148,7 +148,7 @@ const Navbar5 = () => {
             {/* website Logo */}
             <div className=" w-48 lg:w-52">
               <Link to="/">
-                <img
+                <img decoding="async"
                   loading="lazy"
                   draggable="false"
                   src={Logo}
@@ -161,7 +161,7 @@ const Navbar5 = () => {
             <div className="px-3 w-full lg:hidden flex justify-between bg-khaki h-[70px] items-center p-3">
               <div className="w-28">
                 <Link to="/">
-                  <img
+                  <img decoding="async"
                     loading="lazy"
                     draggable="false"
                     src={Logo}

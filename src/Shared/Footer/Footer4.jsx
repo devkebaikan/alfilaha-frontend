@@ -21,13 +21,13 @@ import { HiOutlineMail } from "react-icons/hi";
 const Footer4 = () => {
   return (
     <footer className="bg-HeadingColor-0 relative z-10 overflow-hidden">
-      <img
+      <img decoding="async"
         loading="lazy"
         src={footerLine}
         draggable="false"
         className="absolute -z-10 right-0 -bottom-20 opacity-70"
       />
-      <img
+      <img decoding="async"
         loading="lazy"
         src={footerShape3}
         draggable="false"
@@ -37,7 +37,7 @@ const Footer4 = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8  lg:grid-cols-4 items-center py-[56px] border-b border-BorderColor-0">
           <div>
             <Link to={"/"}>
-              <img loading="lazy" src={footerLogo} draggable={false} />
+              <img decoding="async" loading="lazy" src={footerLogo} draggable={false} />
             </Link>
           </div>
           <div className="flex gap-4">
@@ -203,7 +203,7 @@ const Footer4 = () => {
             <ul className="grid grid-cols-3 gap-2">
               <li>
                 <Link to={"/"}>
-                  <img
+                  <img decoding="async"
                     loading="lazy"
                     src={post1}
                     draggable={false}
@@ -213,7 +213,7 @@ const Footer4 = () => {
               </li>
               <li>
                 <Link to={"/"}>
-                  <img
+                  <img decoding="async"
                     loading="lazy"
                     src={post2}
                     draggable={false}
@@ -223,7 +223,7 @@ const Footer4 = () => {
               </li>
               <li>
                 <Link to={"/"}>
-                  <img
+                  <img decoding="async"
                     loading="lazy"
                     src={post3}
                     draggable={false}
@@ -233,7 +233,7 @@ const Footer4 = () => {
               </li>
               <li>
                 <Link to={"/"}>
-                  <img
+                  <img decoding="async"
                     loading="lazy"
                     src={post4}
                     draggable={false}
@@ -243,7 +243,7 @@ const Footer4 = () => {
               </li>
               <li>
                 <Link to={"/"}>
-                  <img
+                  <img decoding="async"
                     loading="lazy"
                     src={post5}
                     draggable={false}
@@ -253,7 +253,7 @@ const Footer4 = () => {
               </li>
               <li>
                 <Link to={"/"}>
-                  <img
+                  <img decoding="async"
                     loading="lazy"
                     src={post6}
                     draggable={false}

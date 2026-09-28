@@ -1,21 +1,10 @@
 import { Link } from "react-router-dom";
 import BreadCrumb from "../../../Shared/BreadCrumb/BreadCrumb";
-import wedgetIcon from "/images/widget-icon.png";
 import icon from "/images/notice-icon.png";
 import serviceDetailsIcon from "/images/sidebar-icon.png";
 import serviceDetailsIcon2 from "/images/sidebar-icon2.png";
 import serviceDetailsThumb from "/images/services-plant-2.jpg";
-import projectDetialsBoxImg from "/images/services-details-benifis-thumb-1.png";
-import projectDetialsBoxImg2 from "/images/services-details-benifis-thumb-2.png";
-import {
-  FaArrowRight,
-  FaArrowRightLong,
-  FaRegFolderOpen,
-} from "react-icons/fa6";
-import { MdEmail } from "react-icons/md";
-import { HiDownload } from "react-icons/hi";
-import { BsFileEarmarkPdf } from "react-icons/bs";
-import { IoMdCheckmark } from "react-icons/io";
+import { FaArrowRightLong, FaRegFolderOpen } from "react-icons/fa6";
 
 const ServiceDetails2 = () => {
   return (
@@ -27,11 +16,11 @@ const ServiceDetails2 = () => {
         breadCrumbIcon2={<FaArrowRightLong />}
         breadCrumbContent={"Daur Ulang Sampah"}
       />
-      <section className="py-[120px] bg-white">
+      <section className="py-[120px] bg-card">
         <div className="Container">
           <div className="grid grid-cols-3 gap-[70px]">
             <div className="col-span-3 lg:col-span-2">
-              <img
+              <img decoding="async"
                 loading="lazy"
                 src={serviceDetailsThumb}
                 className="w-full"
@@ -40,62 +29,87 @@ const ServiceDetails2 = () => {
                 Daur Ulang Sampah
               </h2>
               <p className="font-AlbertSans text-TextColor-0 mt-6">
-                Layanan pengelolaan sampah organik dan anorganik untuk mengurangi volume limbah yang berakhir di tempat pembuangan akhir. Kami mengubah masalah limbah menjadi sumber daya bernilai.
+                Layanan pengelolaan sampah organik dan anorganik untuk
+                mengurangi volume limbah yang berakhir di tempat pembuangan
+                akhir. Kami mengubah masalah limbah menjadi sumber daya
+                bernilai.
               </p>
               <p className="font-AlbertSans text-TextColor-0 mt-7 mb-11">
-                Dengan sistem daur ulang yang modern, kami memfasilitasi proses konversi sampah menjadi produk-produk yang bermanfaat seperti kompos dan kerajinan. Langkah ini tidak hanya mengurangi polusi tetapi juga membuka peluang ekonomi sirkular bagi masyarakat sekitar.
+                Dengan sistem daur ulang yang modern, kami memfasilitasi proses
+                konversi sampah menjadi produk-produk yang bermanfaat seperti
+                kompos dan kerajinan. Langkah ini tidak hanya mengurangi polusi
+                tetapi juga membuka peluang ekonomi sirkular bagi masyarakat
+                sekitar.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-7">
-                <div className="flex flex-col md:flex-row lg:flex-col xl:flex-row gap-5 bg-[#f3f4f8] rounded-md px-6 py-7">
-                  <div className="w-[72px] h-[72px] rounded-full bg-white flex justify-center items-center">
-                    <img loading="lazy" src={serviceDetailsIcon} />
+                <div className="flex flex-col md:flex-row lg:flex-col xl:flex-row gap-5 bg-surface2 rounded-md px-6 py-7">
+                  <div className="w-[72px] h-[72px] rounded-full bg-card flex justify-center items-center">
+                    <img decoding="async" loading="lazy" src={serviceDetailsIcon} />
                   </div>
                   <div className="flex-1">
                     <h6 className="font-AlbertSans font-semibold text-[22px] text-HeadingColor-0">
                       Sistem Terpadu
                     </h6>
                     <p className="font-AlbertSans text-TextColor-0 mt-3">
-                      Sistem pengelolaan limbah terintegrasi dari hulu hingga hilir secara efisien.
+                      Sistem pengelolaan limbah terintegrasi dari hulu hingga
+                      hilir secara efisien.
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col md:flex-row lg:flex-col xl:flex-row gap-5 bg-[#f3f4f8] rounded-md px-6 py-7">
-                  <div className="w-[72px] h-[72px] rounded-full bg-white flex justify-center items-center">
-                    <img loading="lazy" src={serviceDetailsIcon2} />
+                <div className="flex flex-col md:flex-row lg:flex-col xl:flex-row gap-5 bg-surface2 rounded-md px-6 py-7">
+                  <div className="w-[72px] h-[72px] rounded-full bg-card flex justify-center items-center">
+                    <img decoding="async" loading="lazy" src={serviceDetailsIcon2} />
                   </div>
                   <div className="flex-1">
                     <h6 className="font-AlbertSans font-semibold text-[22px] text-HeadingColor-0">
                       Produk Bermanfaat
                     </h6>
                     <p className="font-AlbertSans text-TextColor-0 mt-3">
-                      Menghasilkan barang dan kompos berkualitas yang siap digunakan kembali.
+                      Menghasilkan barang dan kompos berkualitas yang siap
+                      digunakan kembali.
                     </p>
                   </div>
                 </div>
               </div>
               <div className="bg-PrimaryColor-0 px-[42px] rounded-md py-7 flex flex-col sm:flex-row sm:items-center gap-8 mt-[62px]">
                 <div className=" pr-8 sm:border-r-2 border-[#94c933]">
-                  <img loading="lazy" src={icon} />
+                  <img decoding="async" loading="lazy" src={icon} />
                 </div>
                 <div className="flex-1">
                   <p className="font-AlbertSans italic text-lg sm:text-[22px] leading-8 text-white">
-                    Mengubah barang sisa menjadi sesuatu yang berharga demi menjaga keseimbangan ekosistem.
+                    Mengubah barang sisa menjadi sesuatu yang berharga demi
+                    menjaga keseimbangan ekosistem.
                   </p>
                 </div>
               </div>
-
             </div>
             <div className="col-span-3 lg:col-span-1">
-              <div className="bg-[#f3f4f8] rounded-md px-4 sm:px-8 lg:px-6 xl:px-8 pt-7 pb-4 mb-7">
+              <div className="bg-surface2 rounded-md px-4 sm:px-8 lg:px-6 xl:px-8 pt-7 pb-4 mb-7">
                 <h4 className="font-AlbertSans font-semibold text-2xl text-HeadingColor-0 pb-3 mb-8 relative before:absolute before:bottom-0 before:left-0 before:w-7 before:h-[2px] before:bg-PrimaryColor-0">
                   Kategori Layanan
                 </h4>
                 <ul className="mt-8">
                   <li>
                     <Link to={"/service_details"}>
-                      <button className={"w-full font-AlbertSans text-left transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white " + (window.location?.pathname === '/service_details' || !window.location ? 'bg-PrimaryColor-0 text-white' : 'bg-white text-HeadingColor-0')}>
+                      <button
+                        className={
+                          "w-full font-AlbertSans text-left transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white " +
+                          (window.location?.pathname === "/service_details" ||
+                          !window.location
+                            ? "bg-PrimaryColor-0 text-white"
+                            : "bg-card text-HeadingColor-0")
+                        }
+                      >
                         <span className="flex items-center gap-3">
-                          <FaRegFolderOpen className={"transition-all duration-500 group-hover:text-white " + (window.location?.pathname === '/service_details' || !window.location ? 'text-white' : 'text-PrimaryColor-0')} />
+                          <FaRegFolderOpen
+                            className={
+                              "transition-all duration-500 group-hover:text-white " +
+                              (window.location?.pathname ===
+                                "/service_details" || !window.location
+                                ? "text-white"
+                                : "text-PrimaryColor-0")
+                            }
+                          />
                           Pembersihan Laut
                         </span>
                         <FaArrowRightLong className="text-white" />
@@ -104,9 +118,23 @@ const ServiceDetails2 = () => {
                   </li>
                   <li>
                     <Link to={"/service_details2"}>
-                      <button className={"w-full font-AlbertSans text-left transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white " + (window.location?.pathname === '/service_details2' ? 'bg-PrimaryColor-0 text-white' : 'bg-white text-HeadingColor-0')}>
+                      <button
+                        className={
+                          "w-full font-AlbertSans text-left transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white " +
+                          (window.location?.pathname === "/service_details2"
+                            ? "bg-PrimaryColor-0 text-white"
+                            : "bg-card text-HeadingColor-0")
+                        }
+                      >
                         <span className="flex items-center gap-3">
-                          <FaRegFolderOpen className={"transition-all duration-500 group-hover:text-white " + (window.location?.pathname === '/service_details2' ? 'text-white' : 'text-PrimaryColor-0')} />
+                          <FaRegFolderOpen
+                            className={
+                              "transition-all duration-500 group-hover:text-white " +
+                              (window.location?.pathname === "/service_details2"
+                                ? "text-white"
+                                : "text-PrimaryColor-0")
+                            }
+                          />
                           Daur Ulang Sampah
                         </span>
                         <FaArrowRightLong className="text-white" />
@@ -115,9 +143,23 @@ const ServiceDetails2 = () => {
                   </li>
                   <li>
                     <Link to={"/service_details3"}>
-                      <button className={"w-full font-AlbertSans text-left transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white " + (window.location?.pathname === '/service_details3' ? 'bg-PrimaryColor-0 text-white' : 'bg-white text-HeadingColor-0')}>
+                      <button
+                        className={
+                          "w-full font-AlbertSans text-left transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white " +
+                          (window.location?.pathname === "/service_details3"
+                            ? "bg-PrimaryColor-0 text-white"
+                            : "bg-card text-HeadingColor-0")
+                        }
+                      >
                         <span className="flex items-center gap-3">
-                          <FaRegFolderOpen className={"transition-all duration-500 group-hover:text-white " + (window.location?.pathname === '/service_details3' ? 'text-white' : 'text-PrimaryColor-0')} />
+                          <FaRegFolderOpen
+                            className={
+                              "transition-all duration-500 group-hover:text-white " +
+                              (window.location?.pathname === "/service_details3"
+                                ? "text-white"
+                                : "text-PrimaryColor-0")
+                            }
+                          />
                           Pengurangan Emisi
                         </span>
                         <FaArrowRightLong className="text-white" />
@@ -126,9 +168,23 @@ const ServiceDetails2 = () => {
                   </li>
                   <li>
                     <Link to={"/service_details4"}>
-                      <button className={"w-full font-AlbertSans text-left transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white " + (window.location?.pathname === '/service_details4' ? 'bg-PrimaryColor-0 text-white' : 'bg-white text-HeadingColor-0')}>
+                      <button
+                        className={
+                          "w-full font-AlbertSans text-left transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white " +
+                          (window.location?.pathname === "/service_details4"
+                            ? "bg-PrimaryColor-0 text-white"
+                            : "bg-card text-HeadingColor-0")
+                        }
+                      >
                         <span className="flex items-center gap-3">
-                          <FaRegFolderOpen className={"transition-all duration-500 group-hover:text-white " + (window.location?.pathname === '/service_details4' ? 'text-white' : 'text-PrimaryColor-0')} />
+                          <FaRegFolderOpen
+                            className={
+                              "transition-all duration-500 group-hover:text-white " +
+                              (window.location?.pathname === "/service_details4"
+                                ? "text-white"
+                                : "text-PrimaryColor-0")
+                            }
+                          />
                           Penanaman Pohon
                         </span>
                         <FaArrowRightLong className="text-white" />
@@ -137,9 +193,23 @@ const ServiceDetails2 = () => {
                   </li>
                   <li>
                     <Link to={"/service_details5"}>
-                      <button className={"w-full font-AlbertSans text-left transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white " + (window.location?.pathname === '/service_details5' ? 'bg-PrimaryColor-0 text-white' : 'bg-white text-HeadingColor-0')}>
+                      <button
+                        className={
+                          "w-full font-AlbertSans text-left transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white " +
+                          (window.location?.pathname === "/service_details5"
+                            ? "bg-PrimaryColor-0 text-white"
+                            : "bg-card text-HeadingColor-0")
+                        }
+                      >
                         <span className="flex items-center gap-3">
-                          <FaRegFolderOpen className={"transition-all duration-500 group-hover:text-white " + (window.location?.pathname === '/service_details5' ? 'text-white' : 'text-PrimaryColor-0')} />
+                          <FaRegFolderOpen
+                            className={
+                              "transition-all duration-500 group-hover:text-white " +
+                              (window.location?.pathname === "/service_details5"
+                                ? "text-white"
+                                : "text-PrimaryColor-0")
+                            }
+                          />
                           Energi Berkelanjutan
                         </span>
                         <FaArrowRightLong className="text-white" />
@@ -148,9 +218,23 @@ const ServiceDetails2 = () => {
                   </li>
                   <li>
                     <Link to={"/service_details6"}>
-                      <button className={"w-full font-AlbertSans text-left transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white " + (window.location?.pathname === '/service_details6' ? 'bg-PrimaryColor-0 text-white' : 'bg-white text-HeadingColor-0')}>
+                      <button
+                        className={
+                          "w-full font-AlbertSans text-left transition-all duration-500 group px-7 py-4 flex items-center justify-between rounded mb-3 overflow-hidden z-[1] relative before:absolute before:top-0 before:right-0 before:w-0 before:-z-[1] before:h-full before:bg-PrimaryColor-0 before:rounded before:transition-all before:duration-500 hover:before:w-full hover:before:left-0 hover:text-white " +
+                          (window.location?.pathname === "/service_details6"
+                            ? "bg-PrimaryColor-0 text-white"
+                            : "bg-card text-HeadingColor-0")
+                        }
+                      >
                         <span className="flex items-center gap-3">
-                          <FaRegFolderOpen className={"transition-all duration-500 group-hover:text-white " + (window.location?.pathname === '/service_details6' ? 'text-white' : 'text-PrimaryColor-0')} />
+                          <FaRegFolderOpen
+                            className={
+                              "transition-all duration-500 group-hover:text-white " +
+                              (window.location?.pathname === "/service_details6"
+                                ? "text-white"
+                                : "text-PrimaryColor-0")
+                            }
+                          />
                           Pencegahan Pemanasan
                         </span>
                         <FaArrowRightLong className="text-white" />
@@ -159,8 +243,6 @@ const ServiceDetails2 = () => {
                   </li>
                 </ul>
               </div>
-
-
             </div>
           </div>
         </div>

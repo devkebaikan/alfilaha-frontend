@@ -8,7 +8,7 @@ import bannerShape from "/images/banner-shape.png";
 const Banner = () => {
   return (
     <section className="bg-[url('/images/hero-bg.jpg')] bg-cover bg-center bg-no-repeat h-[650px] sm:h-[680px] lg:h-[660px] xl:h-[872px] flex items-center relative z-10 overflow-hidden">
-      <img
+      <img decoding="async"
         loading="lazy"
         src={bannerShape}
         draggable="false"
@@ -18,14 +18,14 @@ const Banner = () => {
         <div className="grid lg:grid-cols-2 items-center pt-[70px] lg:pt-[90px] gap-16 lg:gap-0">
           <div className="relative">
             <h5 className="font-AlbertSans text-PrimaryColor-0 font-medium flex items-center gap-2 mb-5">
-              <img loading="lazy" src={shape} />
+              <img decoding="async" loading="lazy" src={shape} />
               KEBUN ALFILAHA
             </h5>
             <h1 className="font-AlbertSans font-extrabold text-HeadingColor-0 text-[30px] leading-[36px] sm:text-[56px] sm:leading-[60px] md:text-[68x] lg:text-[50px] xl:text-[65px] 2xl:text-[76px] xl:leading-[72px] 2xl:leading-[82px]">
               Menghidupkan Sunnah <br />
               di Atas Tanah
             </h1>
-            <p className="font-AlbertSans text-lg text-TextColor-0 mb-10 mt-4">
+            <p className="font-AlbertSans text-[16px] sm:text-lg text-TextColor-0 mb-10 mt-5 sm:mt-6 leading-[1.8] max-w-2xl px-1 sm:px-2">
               Lebih dari sekadar lahan pertanian. Ini adalah laboratorium tempat
               mempraktikkan budaya regeneratif dan tga adab utama.
             </p>
@@ -33,7 +33,7 @@ const Banner = () => {
               <Link to={"/project"}>
                 <button className="primary-btn">
                   {`Lihat Hasil Kebun Kita`}
-                  <img loading="lazy" src={buttonShape} draggable="false" />
+                  <img decoding="async" loading="lazy" src={buttonShape} draggable="false" />
                 </button>
               </Link>
             </div>
@@ -70,7 +70,7 @@ const Banner = () => {
             </div>
           </div>
           <div className="absolute -z-10 top-0 lg:-right-[27rem] xl:-right-[18rem] 2xl:right-0 hidden lg:block">
-            <img
+            <img decoding="async"
               loading="lazy"
               src={bannerImg}
               draggable="false"

@@ -87,19 +87,19 @@ const ProjectInner = () => {
         breadCrumbIcon={<FaArrowRightLong />}
         breadCrumbLink={"Projects"}
       />
-      <section className="py-28 bg-[#f3f4f8]">
+      <section className="py-16 sm:py-20 lg:py-28 bg-surface2">
         <div className="Container">
           <div className="text-center">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center justify-center gap-2">
-              <img loading="lazy" src={subTitleShape} draggable="false" />
+              <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
               LAYANAN KAMI
             </h5>
-            <h1 className="font-AlbertSans font-bold text-xl leading-6 sm:text-[38px] sm:leading-[48px] md:text-[40px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5">
+            <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.3] sm:text-[38px] sm:leading-[48px] md:text-[40px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 px-1 sm:px-2">
               Echofy Provide Environment <br />
               Best Leading Services
             </h1>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 mt-[60px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7 mt-10 sm:mt-[60px]">
             {ProjectData.map(
               ({
                 id,

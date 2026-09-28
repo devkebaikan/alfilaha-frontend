@@ -61,11 +61,11 @@ const KubusAlfilaha = () => {
         breadCrumbLink={"Kubus Alfilaha"}
         bgImage={"/images/kubus-bg.jpg"}
       />
-      <section className="py-28">
+      <section className="py-16 sm:py-20 lg:py-28">
         <div className="Container">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-16">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center justify-center gap-2">
-              <img
+              <img decoding="async"
                 loading="lazy"
                 src={subTitleShape}
                 draggable="false"
@@ -73,48 +73,48 @@ const KubusAlfilaha = () => {
               />
               KUBUS ALFILAHA
             </h5>
-            <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5">
+            <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.35] sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] px-1 sm:px-2 text-HeadingColor-0 mt-5">
               Menghidupkan Sunnah <br className="hidden sm:block" />
               di Atas Tanah
             </h1>
-            <p className="font-AlbertSans text-TextColor-0 mt-4 max-w-3xl mx-auto">
+            <p className="font-AlbertSans text-TextColor-0 text-[16px] sm:text-[17px] mt-5 sm:mt-6 leading-[1.8] max-w-3xl mx-auto px-1 sm:px-2">
               Bukan sekadar ater produksi, ini adalah cara perspektif kita
               menakarkan budaya regenerasi dan tiga hal ini utama.
             </p>
           </div>
 
           {/* Tiga Pilar */}
-          <div className="space-y-12">
+          <div className="space-y-10 sm:space-y-12">
             {pilarData.map((pilar, index) => (
               <div
                 key={pilar.id}
-                className={`grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center ${
+                className={`grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center ${
                   index % 2 === 1 ? "lg:flex-row-reverse" : ""
                 }`}
               >
                 <div
                   className={`${
                     index % 2 === 1 ? "lg:order-2" : ""
-                  } bg-white p-8 rounded-lg shadow-lg border border-BorderColor2-0`}
+                  } bg-card p-5 sm:p-7 lg:p-8 rounded-lg shadow-lg border border-line`}
                 >
                   <div
                     className={`${pilar.color} w-20 h-20 rounded-full flex items-center justify-center text-white mb-6`}
                   >
                     {pilar.icon}
                   </div>
-                  <h2 className="font-AlbertSans font-bold text-3xl text-HeadingColor-0 mb-2">
+                  <h2 className="font-AlbertSans font-bold text-2xl sm:text-3xl text-HeadingColor-0 mb-2">
                     {pilar.title}
                   </h2>
-                  <p className="font-AlbertSans text-PrimaryColor-0 text-xl font-medium mb-4">
+                  <p className="font-AlbertSans text-PrimaryColor-0 text-lg sm:text-xl font-medium mb-4">
                     {pilar.subtitle}
                   </p>
-                  <p className="font-AlbertSans text-TextColor-0 text-lg leading-relaxed">
+                  <p className="font-AlbertSans text-TextColor-0 text-[15px] sm:text-lg leading-relaxed">
                     {pilar.description}
                   </p>
                 </div>
 
                 <div className={index % 2 === 1 ? "lg:order-1" : ""}>
-                  <div className="bg-gradient-to-br from-gray-50 to-white p-8 rounded-lg border border-BorderColor2-0">
+                  <div className="bg-gradient-to-br from-surface2 to-card p-5 sm:p-7 lg:p-8 rounded-lg border border-line">
                     <h3 className="font-AlbertSans font-semibold text-xl text-HeadingColor-0 mb-6">
                       Prinsip & Praktik:
                     </h3>
@@ -138,16 +138,19 @@ const KubusAlfilaha = () => {
           </div>
 
           {/* Call to Action */}
-          <div className="mt-20 text-center bg-PrimaryColor-0 text-white p-12 rounded-lg">
-            <h2 className="font-AlbertSans font-bold text-3xl mb-4">
+          <div className="mt-12 sm:mt-20 text-center bg-PrimaryColor-0 text-white p-6 sm:p-9 lg:p-12 rounded-lg">
+            <h2 className="font-AlbertSans font-bold text-2xl sm:text-3xl mb-4">
               Mari Bergabung dengan Gerakan Kami
             </h2>
-            <p className="font-AlbertSans text-lg mb-8 max-w-2xl mx-auto">
+            <p className="font-AlbertSans text-[16px] sm:text-lg mb-8 leading-[1.8] max-w-2xl mx-auto px-1 sm:px-2">
               Jadilah bagian dari komunitas yang peduli pada bumi, sesama, dan
               keadilan. Bersama kita ciptakan masa depan yang berkelanjutan.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/contact" className="primary-btn2 !bg-white !text-HeadingColor-0 hover:!bg-gray-100">
+              <Link
+                to="/contact"
+                className="primary-btn2 !bg-card !text-HeadingColor-0 hover:!bg-gray-100"
+              >
                 Hubungi Kami
                 <FaArrowRightLong />
               </Link>

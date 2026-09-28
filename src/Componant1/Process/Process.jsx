@@ -36,20 +36,20 @@ const processData = [
 
 const Process = () => {
   return (
-    <section className="pb-10 relative z-10 pt-28">
+    <section className="pb-8 sm:pb-10 relative z-10 pt-14 sm:pt-20 lg:pt-28">
       <div className="processShape"></div>
       <div className="Container">
         <div className="text-center">
-          <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2 justify-center">
-            <img loading="lazy" src={subTitleShape} draggable="false" />
+          <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 dark:text-[#4ADE80] flex items-center gap-2 justify-center">
+            <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
             PROSES KERJA
           </h5>
-          <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3">
+          <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.35] sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] px-1 sm:px-2 text-HeadingColor-0 mt-5 mb-3">
             Langkah Nyata Melestarikan Alam
           </h1>
         </div>
-        <div className="pb-16 mt-[60px]">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+        <div className="pb-10 sm:pb-16 mt-8 sm:mt-[60px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 sm:gap-7">
             {processData.map(
               ({ id, processIcon, processTitle, boxShape, processDesc }) => {
                 return (

@@ -7,7 +7,7 @@ import mainShape from "/images/hero4-shape.png";
 const WhyChoose = () => {
   return (
     <section className="py-[120px] bg-[url('/images/why-choose-bg.png')] bg-cover bg-right lg:bg-center bg-no-repeat relative">
-      <img
+      <img decoding="async"
         loading="lazy"
         src={mainShape}
         draggable="false"
@@ -21,7 +21,7 @@ const WhyChoose = () => {
               <FaStarOfLife />
               WHY CHOOSE US
             </h5>
-            <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-2 mb-6">
+            <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.35] sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] px-1 sm:px-2 text-HeadingColor-0 mt-2 mb-6">
               Building a Foundation
               <br />
               of Reliability.
@@ -35,7 +35,7 @@ const WhyChoose = () => {
             </p>
             <div className="bg-white flex justify-around pt-[48px] pb-10 rounded-md mt-12">
               <div className="text-center">
-                <img
+                <img decoding="async"
                   loading="lazy"
                   src={icon}
                   draggable="false"
@@ -46,7 +46,7 @@ const WhyChoose = () => {
                 </h5>
               </div>
               <div className="text-center">
-                <img
+                <img decoding="async"
                   loading="lazy"
                   src={icon2}
                   draggable="false"
@@ -57,7 +57,7 @@ const WhyChoose = () => {
                 </h5>
               </div>
               <div className="text-center">
-                <img
+                <img decoding="async"
                   loading="lazy"
                   src={icon3}
                   draggable="false"

@@ -14,7 +14,7 @@ const ServiceCard = ({
   return (
     <div className="rounded-xl bg-white group relative z-10 overflow-hidden before:absolute before:bottom-0 before:left-0 before:w-full before:h-0 before:bg-SecondaryColor-0 before:-z-10 before:transition-all before:duration-500 hover:before:h-full hover:before:top-0">
       <div className="overflow-hidden relative z-10 rounded-t-lg before:absolute before:top-0 before:left-1/2 before:w-0 before:h-full before:bg-PrimaryColor-0 before:transition-all before:duration-500 group-hover:before:w-full group-hover:before:left-0 group-hover:before:opacity-0">
-        <img
+        <img decoding="async"
           loading="lazy"
           src={serviceImg}
           draggable="false"
@@ -23,7 +23,7 @@ const ServiceCard = ({
       </div>
       <div className="px-[30px]">
         <div className="-mt-10 relative z-10 mb-5">
-          <img loading="lazy" src={serviceIcon} draggable="false" />
+          <img decoding="async" loading="lazy" src={serviceIcon} draggable="false" />
         </div>
         <Link to={serviceUrl}>
           <button className="font-AlbertSans font-semibold text-[26px] pb-[10px] text-HeadingColor-0 transition-all duration-500 group-hover:text-white relative before:absolute before:bottom-0 before:left-0 before:w-8 before:h-[2px] before:bg-PrimaryColor-0">
@@ -46,7 +46,7 @@ const ServiceCard = ({
           </Link>
         </div>
       </div>
-      <img
+      <img decoding="async"
         loading="lazy"
         src={serviceShape}
         draggable="false"

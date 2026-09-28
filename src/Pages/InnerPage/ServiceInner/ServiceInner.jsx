@@ -100,7 +100,9 @@ const ServiceInner = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/layanan`);
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/layanan`,
+        );
         if (response.ok) {
           const data = await response.json();
           setServices(data);
@@ -113,17 +115,24 @@ const ServiceInner = () => {
   }, []);
 
   // Use dynamic data if available, otherwise fallback to static data
-  const displayData = services.length > 0 ? services.map(item => ({
-    id: item.id,
-    serviceImg: item.image ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${item.image}` : serviceImg,
-    serviceIcon: serviceIcon, // Default icon
-    serviceUrl: `/service/${item.id}`,
-    serviceButton: <GoArrowUpRight />,
-    serviceButton2: "Selengkapnya",
-    serviceTitle: item.title || "",
-    serviceDesc: item.description ? String(item.description).replace(/<[^>]+>/g, '') : "",
-    serviceShape: serviceShape,
-  })) : serviceData;
+  const displayData =
+    services.length > 0
+      ? services.map((item) => ({
+          id: item.id,
+          serviceImg: item.image
+            ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${item.image}`
+            : serviceImg,
+          serviceIcon: serviceIcon, // Default icon
+          serviceUrl: `/service/${item.id}`,
+          serviceButton: <GoArrowUpRight />,
+          serviceButton2: "Selengkapnya",
+          serviceTitle: item.title || "",
+          serviceDesc: item.description
+            ? String(item.description).replace(/<[^>]+>/g, "")
+            : "",
+          serviceShape: serviceShape,
+        }))
+      : serviceData;
 
   return (
     <>
@@ -133,20 +142,20 @@ const ServiceInner = () => {
         breadCrumbLink={"Layanan Kami"}
         bgImage={"/images/service-banner.jpg"}
       />
-      <section className="pt-28 pb-[120px] p relative z-10 bg-[#f3f3f7]">
+      <section className="pt-28 pb-[120px] p relative z-10 bg-surface2">
         <div className="Container">
           <div className="text-center">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center justify-center gap-2">
-              <img loading="lazy" src={subTitleShape} draggable="false" />
+              <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
               LAYANAN KAMI
             </h5>
-            <h1 className="font-AlbertSans font-bold text-xl leading-6 sm:text-[38px] sm:leading-[48px] md:text-[40px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5">
+            <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.3] sm:text-[38px] sm:leading-[48px] md:text-[40px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 px-1 sm:px-2">
               Alfilaha Menyediakan Layanan <br />
               Lingkungan Terbaik Untuk Anda
             </h1>
           </div>
           <div className="mt-[60px]">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7">
               {displayData.map(
                 ({
                   id,
@@ -173,7 +182,7 @@ const ServiceInner = () => {
                       />
                     </div>
                   );
-                }
+                },
               )}
             </div>
           </div>

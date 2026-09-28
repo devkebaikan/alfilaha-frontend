@@ -13,7 +13,7 @@ const PricingAccordion = ({ children, faqIcon, title, id, active = false }) => {
     <div className="mb-5 rounded-md overflow-hidden">
       <h2>
         <button
-          className="faq-button rounded-md flex items-center justify-between pl-4 pr-2 md:pl-7 md:pr-6 lg:pl-6 lg:pr-4 xl:pl-7 xl:pr-6 py-5 w-full text-left font-medium font-AlbertSans hover:bg-PrimaryColor-0 transition-all duration-500 group bg-white border border-BorderColor2-0"
+          className="faq-button bg-card rounded-md flex items-center justify-between pl-4 pr-2 md:pl-7 md:pr-6 lg:pl-6 lg:pr-4 xl:pl-7 xl:pr-6 py-5 w-full text-left font-medium font-AlbertSans hover:bg-PrimaryColor-0 transition-all duration-500 group border-line"
           onClick={(e) => {
             e.preventDefault();
             setAccordionOpen(!accordionOpen);
@@ -26,7 +26,7 @@ const PricingAccordion = ({ children, faqIcon, title, id, active = false }) => {
               accordionOpen && "!text-white"
             }`}
           >
-            <img
+            <img decoding="async"
               loading="lazy"
               src={faqIcon}
               className="w-8 h-[18px] transition-all duration-500"
@@ -46,7 +46,7 @@ const PricingAccordion = ({ children, faqIcon, title, id, active = false }) => {
         id={`accordion-text-${id}`}
         role="region"
         aria-labelledby={`accordion-title-${id}`}
-        className={`grid font-AlbertSans font-light leading-[26px] text-TextColor-0 bg-white px-4 md:px-7 lg:px-6 xl:px-7 overflow-hidden transition-all duration-300 ease-in-out bg-normalBlack ${
+        className={`grid font-AlbertSans font-light leading-[26px] text-TextColor-0 bg-card px-4 md:px-7 lg:px-6 xl:px-7 overflow-hidden transition-all duration-300 ease-in-out bg-normalBlack ${
           accordionOpen
             ? "grid-rows-[1fr] opacity-100"
             : "grid-rows-[0fr] opacity-0"
