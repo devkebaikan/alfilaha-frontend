@@ -11,7 +11,7 @@ const BlogGrid = () => {
     const fetchBlogs = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs`,
+          `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/blogs?fields=list`,
         );
         if (response.ok) {
           const data = await response.json();

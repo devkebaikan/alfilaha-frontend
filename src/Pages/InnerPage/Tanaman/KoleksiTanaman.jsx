@@ -1,8 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaArrowRightLong } from "react-icons/fa6";
+import { FiInfo } from "react-icons/fi";
 import BreadCrumb from "../../../Shared/BreadCrumb/BreadCrumb";
 import subTitleShape from "/images/sub-title-shape.png";
+
+// Ubah deskripsi (bisa berisi HTML) menjadi teks singkat satu baris.
+const teksDeskripsi = (html) =>
+  String(html || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
 const KoleksiTanaman = () => {
   const [tanamanList, setTanamanList] = useState([]);
@@ -10,15 +18,12 @@ const KoleksiTanaman = () => {
   const [santriRejected, setSantriRejected] = useState(false);
 
   useEffect(() => {
+    const API = import.meta.env.VITE_PUBLIC_API || "http://localhost:5000";
+
     const fetchTanaman = async () => {
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/tanaman`,
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setTanamanList(data);
-        }
+        const res = await fetch(`${API}/api/tanaman`);
+        if (res.ok) setTanamanList(await res.json());
       } catch (err) {
         console.error(err);
       } finally {
@@ -48,21 +53,6 @@ const KoleksiTanaman = () => {
       />
       <section className="py-16 sm:py-20 lg:py-28 bg-surface2">
         <div className="Container">
-          <div className="text-center mb-8 sm:mb-12">
-            <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center justify-center gap-2">
-              <img decoding="async"
-                loading="lazy"
-                src={subTitleShape}
-                draggable="false"
-                alt="Shape"
-              />
-              KOLEKSI KAMI
-            </h5>
-            <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.35] sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] px-1 sm:px-2 text-HeadingColor-0 mt-5">
-              Jelajahi Berbagai Macam <br /> Tanaman di Alfilaha
-            </h1>
-          </div>
-
           {loading ? (
             <div className="flex justify-center items-center py-20">
               <div className="animate-spin h-10 w-10 border-4 border-PrimaryColor-0 rounded-full border-t-transparent"></div>
@@ -107,7 +97,9 @@ const KoleksiTanaman = () => {
                   >
                     <div className="relative h-52 sm:h-64 overflow-hidden shrink-0">
                       {t.gambar ? (
-                        <img loading="lazy" decoding="async"
+                        <img
+                          loading="lazy"
+                          decoding="async"
                           src={`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${t.gambar}`}
                           alt={t.nama}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -117,9 +109,6 @@ const KoleksiTanaman = () => {
                           Tanpa Foto
                         </div>
                       )}
-                      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-white/90 dark:bg-black/70 backdrop-blur px-3 py-1 rounded-full text-xs sm:text-sm font-bold text-green-700 dark:text-green-400 shadow-sm">
-                        {t.jenis || "Tanaman"}
-                      </div>
                       {santriRejected && (
                         <div className="absolute top-4 right-4 bg-red-600/90 backdrop-blur px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center gap-1">
                           <svg
@@ -137,16 +126,32 @@ const KoleksiTanaman = () => {
                       <h3 className="text-xl sm:text-2xl font-bold text-ink mb-2 group-hover:text-PrimaryColor-0 transition-colors line-clamp-1">
                         {t.nama}
                       </h3>
-                      <p className="text-muted mb-5 sm:mb-6 flex items-center gap-2 text-[13px] sm:text-sm">
-                        📍 Lokasi: {t.lokasi}
+                      <p className="text-muted mb-4 flex items-center gap-2 text-[13px] sm:text-sm">
+                        📍 Lokasi: {t.lokasi || t.nama_lokasi}
                       </p>
+                      {/* Informasi & Deskripsi singkat (dari database). */}
+                      <div className="mb-5 sm:mb-6 rounded-xl border border-line bg-surface2 px-4 py-3">
+                        <h4 className="flex items-center text-[11px] font-bold uppercase tracking-wide text-ink mb-1.5">
+                          <FiInfo className="mr-1.5 text-green-500" size={14} />
+                          Informasi &amp; Deskripsi
+                        </h4>
+                        {teksDeskripsi(t.deskripsi) ? (
+                          <p className="text-xs sm:text-[13px] leading-relaxed text-muted line-clamp-3">
+                            {teksDeskripsi(t.deskripsi)}
+                          </p>
+                        ) : (
+                          <p className="text-xs sm:text-[13px] leading-relaxed text-muted">
+                            Belum ada deskripsi untuk tanaman ini.
+                          </p>
+                        )}
+                      </div>
                       <div className="mt-auto">
                         <Link
                           to={`/tanaman/${t.id}`}
-                          className={`flex items-center justify-center w-full gap-2 font-bold transition-colors py-3 border rounded-xl ${
+                          className={`flex items-center justify-center w-full gap-2 font-bold transition-all duration-300 py-3 border rounded-xl ${
                             santriRejected
                               ? "text-muted border-line bg-surface2 pointer-events-none"
-                              : "text-PrimaryColor-0 hover:text-green-800 border-green-200 hover:bg-green-50"
+                              : "text-PrimaryColor-0 border-green-200 dark:border-green-500/30 hover:bg-PrimaryColor-0 hover:text-white hover:border-PrimaryColor-0 hover:shadow-md active:bg-PrimaryColor-0 active:text-white active:border-PrimaryColor-0 active:shadow-md"
                           }`}
                         >
                           {santriRejected ? (

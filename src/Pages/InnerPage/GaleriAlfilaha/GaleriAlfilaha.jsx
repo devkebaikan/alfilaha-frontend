@@ -128,8 +128,7 @@ const GaleriAlfilaha = ({ isHome = false }) => {
                 Galeri <span className="text-PrimaryColor-0">Al-Filaha</span>
               </h2>
               <p className="text-TextColor-0 text-[16px] sm:text-[17px] mt-5 leading-[1.8] max-w-xl">
-                Dokumentasi kegiatan, edukasi, dan lingkungan Al-Filaha.
-              </p>
+Dokumentasi kegiatan, edukasi, dan lingkungan Al-Filaha. Temukan potret keseharian santri, kegiatan belajar dan eduwisata, serta suasana asri kebun, peternakan, dan area pondok. Setiap foto adalah cerita kecil tentang tumbuh, belajar, dan hidup selaras dengan alam. </p>
             </div>
             <Link
               to="/galeri"
@@ -157,8 +156,7 @@ const GaleriAlfilaha = ({ isHome = false }) => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-muted text-base md:text-lg leading-[1.8] max-w-xl mx-auto"
             >
-              Dokumentasi kegiatan, edukasi, dan lingkungan Al-Filaha.
-            </motion.p>
+Dokumentasi kegiatan, edukasi, dan lingkungan Al-Filaha. Temukan potret keseharian santri, kegiatan belajar dan eduwisata, serta suasana asri kebun, peternakan, dan area pondok yang kami rawat bersama. Setiap foto menjadi cerita kecil tentang tumbuh, belajar, dan hidup selaras dengan alam.            </motion.p>
           </div>
         )}
 

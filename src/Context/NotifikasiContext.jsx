@@ -20,11 +20,25 @@ const MAKS_TAMPIL = 3;
 const JENDELA_DUPLIKAT = 1500;
 
 // Riwayat pesan untuk "pusat notifikasi" admin (persist di localStorage)
-// v2: dibersihkan agar aksi terima/tolak yang pernah terekam hilang.
-const KUNCI_ADMIN_PESAN = "alfilaha-admin-notif-v2";
-const MAKS_ADMIN_PESAN = 60;
-// Baseline jumlah data yang masuk dari website per sumber (appointment/reservasi/pendaftar)
+// v3: isinya HANYA peristiwa dari luar panel admin — data yang masuk dari
+// website publik dan tugas yang selesai dikerjakan Santri. Aksi admin sendiri
+// (kirim tugas, tambah/ubah/hapus data) tidak lagi dicatat supaya daftar
+// notifikasi tidak menumpuk.
+const KUNCI_ADMIN_PESAN = "alfilaha-admin-notif-v3";
+const MAKS_ADMIN_PESAN = 30;
+// Notifikasi yang sudah lewat 1 hari dibuang otomatis.
+const MAKS_USIA_PESAN = 24 * 60 * 60 * 1000;
+// Baseline jumlah data yang masuk dari website per sumber
 const KUNCI_MASUK = "alfilaha-notif-masuk-v1";
+
+const buangKedaluwarsa = (list) => {
+  if (!Array.isArray(list)) return [];
+  const batas = Date.now() - MAKS_USIA_PESAN;
+  return list.filter((p) => {
+    const waktu = p && p.waktu ? new Date(p.waktu).getTime() : 0;
+    return !waktu || waktu >= batas;
+  });
+};
 
 const GAYA = {
   success: { border: "border-green-500", ikonWadah: "bg-green-100 dark:bg-green-500/20", ikonWarna: "text-green-700 dark:text-green-300", label: "Berhasil" },
@@ -107,22 +121,26 @@ export const NotifikasiProvider = ({ children }) => {
   const counter = useRef(0);
 
   // ── Pusat notifikasi admin ─────────────────────────────────────────
-  // Tab admin yang sedang aktif → dipasang oleh AlfilahaAdmin via setAdminTab.
-  // Setiap toast yang muncul saat tab admin aktif otomatis direkam sebagai
-  // "pesan" agar admin bisa melihatnya lewat ikon lonceng & menuju ke halamannya.
-  const [adminTab, setTabAktif] = useState(null);
-  const adminTabRef = useRef(null);
+  // Berisi peristiwa dari luar panel admin saja: data yang masuk dari
+  // website publik dan tugas yang selesai dikerjakan Santri.
   const [adminPesan, setAdminPesan] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem(KUNCI_ADMIN_PESAN)) || [];
+      const mentah = JSON.parse(localStorage.getItem(KUNCI_ADMIN_PESAN));
+      return buangKedaluwarsa(mentah).slice(0, MAKS_ADMIN_PESAN);
     } catch {
       return [];
     }
   });
+  // Cermin daftar saat ini supaya penggabungan notifikasi bisa dihitung
+  // tanpa menunggu render berikutnya.
+  const listRef = useRef(adminPesan);
+  const seq = useRef(0);
 
   const simpanAdminPesan = useCallback((pembaru) => {
     setAdminPesan((prev) => {
-      const next = typeof pembaru === "function" ? pembaru(prev) : pembaru;
+      const kasar = typeof pembaru === "function" ? pembaru(prev) : pembaru;
+      const next = buangKedaluwarsa(kasar).slice(0, MAKS_ADMIN_PESAN);
+      listRef.current = next;
       try {
         localStorage.setItem(KUNCI_ADMIN_PESAN, JSON.stringify(next));
       } catch {
@@ -130,11 +148,6 @@ export const NotifikasiProvider = ({ children }) => {
       }
       return next;
     });
-  }, []);
-
-  const setAdminTab = useCallback((tab) => {
-    adminTabRef.current = tab;
-    setTabAktif(tab);
   }, []);
 
   const bacaPesan = useCallback(
@@ -170,53 +183,74 @@ export const NotifikasiProvider = ({ children }) => {
     setDaftar((d) => d.filter((x) => x.id !== id));
   }, []);
 
-  const tampilkan = useCallback(
-    (pesan, tipe = "success", opsi = {}) => {
-      if (!pesan) return;
-      const kunci = `${tipe}::${pesan}`;
-      const sekarang = Date.now();
-      const terakhir = riwayat.current.get(kunci);
-      if (terakhir && sekarang - terakhir < JENDELA_DUPLIKAT) return;
+  // Toast ringan di pojok layar. Sengaja TIDAK masuk ke pusat notifikasi:
+  // toast adalah umpan balik aksi admin sendiri, sedangkan lonceng hanya
+  // untuk peristiwa dari luar panel admin.
+  const tampilkan = useCallback((pesan, tipe = "success") => {
+    if (!pesan) return;
+    const kunci = `${tipe}::${pesan}`;
+    const sekarang = Date.now();
+    const terakhir = riwayat.current.get(kunci);
+    if (terakhir && sekarang - terakhir < JENDELA_DUPLIKAT) return;
 
-      // Rapikan riwayat yang sudah basi agar Map tidak membengkak
-      if (riwayat.current.size > 80) {
-        const batas = sekarang - JENDELA_DUPLIKAT;
-        for (const [k, v] of riwayat.current) {
-          if (v < batas) riwayat.current.delete(k);
-        }
+    // Rapikan riwayat yang sudah basi agar Map tidak membengkak
+    if (riwayat.current.size > 80) {
+      const batas = sekarang - JENDELA_DUPLIKAT;
+      for (const [k, v] of riwayat.current) {
+        if (v < batas) riwayat.current.delete(k);
       }
-      riwayat.current.set(kunci, sekarang);
+    }
+    riwayat.current.set(kunci, sekarang);
 
-      counter.current += 1;
-      setDaftar((d) => [...d, { id: counter.current, pesan, tipe }]);
+    counter.current += 1;
+    setDaftar((d) => [...d, { id: counter.current, pesan, tipe }]);
+  }, []);
 
-      // Rekam ke pusat notifikasi admin bila sedang di dalam tab admin
-      if (adminTabRef.current && opsi.simpan !== false) {
-        simpanAdminPesan((prevList) =>
-          [
-            {
-              id: Date.now(),
-              waktu: new Date().toISOString(),
-              tipe,
-              pesan,
-              tab: adminTabRef.current,
-              dibaca: false,
-            },
-            ...prevList,
-          ].slice(0, MAKS_ADMIN_PESAN),
-        );
-      }
+  // Rekam satu peristiwa dari luar panel admin ke pusat notifikasi.
+  // Kalau sumber yang sama belum dibaca, jumlah pada entri itu ditambah
+  // alih-alih membuat baris baru — inilah yang mencegah daftar menumpuk.
+  const catatPesanMasuk = useCallback(
+    ({ kunci, tab, nama, satuan, jumlah }) => {
+      const waktu = new Date().toISOString();
+      const prevList = listRef.current;
+      const idx = prevList.findIndex((p) => p.kunci === kunci && !p.dibaca);
+      const total = idx >= 0 ? (prevList[idx].jumlah || 1) + jumlah : jumlah;
+      const entri = idx >= 0
+        ? { ...prevList[idx], waktu, jumlah: total }
+        : {
+            id: `${Date.now()}-${++seq.current}`,
+            waktu,
+            tipe: "info",
+            kunci,
+            pesan: nama,
+            tab,
+            dibaca: false,
+            jumlah,
+          };
+      const next = buangKedaluwarsa([
+        entri,
+        ...prevList.filter((_, i) => i !== idx),
+      ]).slice(0, MAKS_ADMIN_PESAN);
+      listRef.current = next;
+      simpanAdminPesan(next);
+
+      const pesan =
+        jumlah === 1
+          ? nama
+          : `${jumlah} ${satuan || "data"} baru masuk.`;
+      tampilkan(pesan, "info");
     },
-    [simpanAdminPesan],
+    [simpanAdminPesan, tampilkan],
   );
 
-  // Deteksi data yang baru masuk dari website (isi form publik).
-  // Membandingkan jumlah total per sumber dengan baseline tersimpan; bila
-  // bertambah, catat ke pusat notifikasi + tampilkan toast. Baseline pertama
-  // kali dicatat tanpa notif agar tidak membanjiri dengan data lama.
+  // Deteksi data yang baru masuk dari website (isi form publik) atau dari
+  // Santri yang menyelesaikan tugas. Membandingkan jumlah total per sumber
+  // dengan baseline tersimpan; bila bertambah, catat ke pusat notifikasi +
+  // tampilkan toast. Baseline pertama kali dicatat tanpa notif agar tidak
+  // membanjiri dengan data lama.
   const pantauPesanMasuk = useCallback(
     (opsi) => {
-      const { key, tab, nama, total, satuan } = opsi;
+      const { key, total } = opsi;
       if (!key || typeof total !== "number") return;
 
       let peta = {};
@@ -235,44 +269,22 @@ export const NotifikasiProvider = ({ children }) => {
         // localStorage diblokir — abaikan
       }
 
-      if (prev !== undefined && total > prev) {
-        const jumlah = total - prev;
-        const pesan =
-          jumlah === 1
-            ? nama
-            : `${jumlah} ${satuan || "pesan baru"} baru dari website.`;
-        simpanAdminPesan((prevList) =>
-          [
-            {
-              id: Date.now(),
-              waktu: new Date().toISOString(),
-              tipe: "info",
-              pesan,
-              tab,
-              dibaca: false,
-            },
-            ...prevList,
-          ].slice(0, MAKS_ADMIN_PESAN),
-        );
-        tampilkan(pesan, "info", { simpan: false });
-      }
+      if (prev === undefined || total < prev) return;
+      catatPesanMasuk({ ...opsi, kunci: key, jumlah: total - prev });
     },
-    [simpanAdminPesan, tampilkan],
+    [catatPesanMasuk],
   );
 
   const api = useMemo(
     () => ({
-      // Opsi opsional: { simpan: false } → toast tampil, tapi tidak masuk
-      // ke riwayat pusat notifikasi (ikon lonceng).
-      success: (p, opsi) => tampilkan(p, "success", opsi),
-      error: (p, opsi) => tampilkan(p, "error", opsi),
-      warning: (p, opsi) => tampilkan(p, "warning", opsi),
-      info: (p, opsi) => tampilkan(p, "info", opsi),
+      success: (p) => tampilkan(p, "success"),
+      error: (p) => tampilkan(p, "error"),
+      warning: (p) => tampilkan(p, "warning"),
+      info: (p) => tampilkan(p, "info"),
       hapus,
       // pusat notifikasi admin
       adminPesan,
       belumDibaca,
-      setAdminTab,
       bacaPesan,
       bacaSemua,
       hapusPesan,
@@ -284,7 +296,6 @@ export const NotifikasiProvider = ({ children }) => {
       hapus,
       adminPesan,
       belumDibaca,
-      setAdminTab,
       bacaPesan,
       bacaSemua,
       hapusPesan,

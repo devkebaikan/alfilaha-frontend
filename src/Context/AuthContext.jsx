@@ -5,6 +5,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { emitAuthChange } from "../Shared/authEvents";
 
 const API = import.meta.env.VITE_PUBLIC_API || "http://localhost:5000";
 
@@ -43,6 +44,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("santri_data", JSON.stringify(data));
       setSantri(data);
     }
+    emitAuthChange();
   }, []);
 
   const logoutSantri = useCallback(() => {
@@ -50,6 +52,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("santri_data");
     setSantriToken(null);
     setSantri(null);
+    emitAuthChange();
   }, []);
 
   // Muat ulang identitas dari /api/me saat token berubah / halaman dimuat

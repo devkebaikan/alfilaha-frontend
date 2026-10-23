@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import {
   FiDroplet,
   FiCheckCircle,
@@ -8,8 +8,6 @@ import {
   FiClock,
   FiCalendar,
   FiArrowLeft,
-  FiUsers,
-  FiShoppingBag,
   FiLogOut,
   FiDownload,
   FiGrid,
@@ -17,6 +15,33 @@ import {
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { QRCodeCanvas } from "qrcode.react";
+import {
+  KartuPerawatan,
+  daftarAksi,
+  konfigurasiAksi,
+  normalisasiAksi,
+} from "./statistikPerawatan";
+import ModalBukti from "../../../Shared/ModalBukti/ModalBukti";
+import { AKSI_LABEL, parseTanamanInfo } from "../../../Shared/tugasInfo";
+import { kelompokkanRiwayat } from "../../../Shared/RiwayatTimeline/kelompokkanRiwayat";
+
+// Info tampilan (ikon/warna/label) untuk aksi apa pun, termasuk aksi kustom.
+const infoAksi = (aksi) =>
+  konfigurasiAksi(aksi) || {
+    key: String(aksi || "").toLowerCase(),
+    label: "Perawatan",
+    ringkas: "Perawatan",
+    Icon: FiCheckCircle,
+    chipBg: "bg-gray-100 dark:bg-gray-500/15",
+    chipText: "text-gray-600 dark:text-gray-400",
+    valueText: "text-gray-700",
+    chipSolid: "bg-gray-600 border-gray-600 text-white",
+  };
+
+const AksiIcon = ({ aksi, size = 18 }) => {
+  const Ikon = infoAksi(aksi).Icon;
+  return <Ikon size={size} />;
+};
 
 const TanamanDetail = () => {
   const { id } = useParams();
@@ -27,7 +52,7 @@ const TanamanDetail = () => {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [filterRiwayat, setFilterRiwayat] = useState("Semua");
-  const [showAllHistory, setShowAllHistory] = useState(false);
+  const [aksiCatalog, setAksiCatalog] = useState([]);
   const [notification, setNotification] = useState({
     isOpen: false,
     jenis: "",
@@ -52,13 +77,6 @@ const TanamanDetail = () => {
       const internalToken = localStorage.getItem("authToken");
       const santriToken = localStorage.getItem("santri_token");
 
-      console.log(
-        "Updating auth state - santriToken:",
-        !!santriToken,
-        "internalToken:",
-        !!internalToken,
-      );
-
       setIsInternalLoggedIn(!!internalToken);
       setIsSantriLoggedIn(!!santriToken);
 
@@ -66,17 +84,13 @@ const TanamanDetail = () => {
         const storedUser = localStorage.getItem("userData");
         setInternalUserData(storedUser ? JSON.parse(storedUser) : null);
       } catch (e) {
-        console.error("Gagal membaca data user internal", e);
         setInternalUserData(null);
       }
 
       try {
         const storedSantri = localStorage.getItem("santri_data");
-        const parsedSantriData = storedSantri ? JSON.parse(storedSantri) : null;
-        setSantriData(parsedSantriData);
-        console.log("Santri data updated:", parsedSantriData);
+        setSantriData(storedSantri ? JSON.parse(storedSantri) : null);
       } catch (e) {
-        console.error("Gagal membaca data santri", e);
         setSantriData(null);
       }
     };
@@ -84,11 +98,15 @@ const TanamanDetail = () => {
     // Initial load
     updateAuthState();
 
-    // Check periodically for localStorage changes
-    const interval = setInterval(updateAuthState, 500);
+    // Update saat login/logout: event "storage" (antar tab) dan "auth-change"
+    // (tab yang sama). Tidak lagi polling tiap 500ms agar ringan.
+    const onChange = () => updateAuthState();
+    window.addEventListener("storage", onChange);
+    window.addEventListener("auth-change", onChange);
 
     return () => {
-      clearInterval(interval);
+      window.removeEventListener("storage", onChange);
+      window.removeEventListener("auth-change", onChange);
     };
   }, []);
 
@@ -100,20 +118,77 @@ const TanamanDetail = () => {
     santriData?.status_pendaftaran === "Menunggu Verifikasi";
   const isSantriRejected =
     isSantriLoggedIn && santriData?.status_pendaftaran === "Ditolak";
-  // Panel perawatan tetap tampil (diredupkan untuk ditolak) dengan catatan tetap login
+  // Panel tugas hanya tampil bila pengguna login
   const canShowCareSection = isLoggedIn;
-  const isCareDisabled = isSantriPending || isSantriRejected;
-  const careLockTitle = isSantriRejected
-    ? "Pendaftaran Ditolak"
-    : "Menunggu Verifikasi";
-  const careLockMsg = isSantriRejected
-    ? "Akses perawatan dinonaktifkan karena pendaftaran Anda ditolak. Anda tetap dapat melihat koleksi tanaman, namun tidak bisa mencatat siram, pupuk, atau panen."
-    : "Anda masih dalam status Menunggu Verifikasi. Silakan tunggu konfirmasi dari admin untuk melakukan tindakan perawatan.";
 
   const [selectedFoto, setSelectedFoto] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [successMsg, setSuccessMsg] = useState("");
-  const [confirmAction, setConfirmAction] = useState(null);
+
+  // ── Mode tugas (dibuka via ?tugas=<id> dari Dashboard Santri) ──
+  // Hanya aktif bila ada tiket tugas milik santri yang login; tanpa itu halaman
+  // tampil sama seperti versi publik.
+  const [searchParams] = useSearchParams();
+  const tugasId = searchParams.get("tugas");
+  const [tugas, setTugas] = useState(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [taskDone, setTaskDone] = useState(false);
+  // Panel tugas disembunyikan otomatis 4 detik setelah tugas selesai.
+  const [panelTugasTersembunyi, setPanelTugasTersembunyi] = useState(false);
+
+  useEffect(() => {
+    if (!tugasId) {
+      setTugas(null);
+      return;
+    }
+    const token = localStorage.getItem("santri_token");
+    if (!token) {
+      setTugas(null);
+      return;
+    }
+    let batal = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/tugas/${tugasId}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!batal) setTugas(data);
+      } catch (_) {
+        // diamkan: mode tugas opsional, halaman publik tetap tampil
+      }
+    })();
+    return () => {
+      batal = true;
+    };
+  }, [tugasId]);
+
+  const taskMode = Boolean(tugas);
+  const assignedAksi = taskMode
+    ? [...new Set(
+        parseTanamanInfo(tugas.tanaman_info)
+          .filter((t) => !t.id || String(t.id) === String(id))
+          .map((t) => t.aksi)
+          .filter(Boolean),
+      )]
+    : [];
+  const aksiTugas = assignedAksi.length ? assignedAksi : ["siram", "pupuk", "panen"];
+  const tugasSelesai = taskDone || tugas?.status === "selesai";
+
+  const handleTaskSuccess = async () => {
+    setShowTaskModal(false);
+    setTaskDone(true);
+    setTugas((t) => (t ? { ...t, status: "selesai" } : t));
+    await Promise.all([fetchHistory(), refreshStatistik()]);
+  };
+
+  // Tugas yang sudah dikirim tidak bisa dikirim ulang. Pesan "terima kasih"
+  // tampil sebentar lalu seluruh panel tugas hilang otomatis.
+  useEffect(() => {
+    if (!tugasSelesai) return;
+    const timer = setTimeout(() => setPanelTugasTersembunyi(true), 4000);
+    return () => clearTimeout(timer);
+  }, [tugasSelesai]);
 
   const fetchTanaman = async () => {
     try {
@@ -129,21 +204,39 @@ const TanamanDetail = () => {
     }
   };
 
+  // Refresh ringan khusus angka perawatan (total_*/terakhir_*) tanpa menyentuh
+  // state loading/error, dipakai setelah Santri mengirim laporan dan oleh
+  // polling ringan — sehingga hitungan ikut naik tanpa refresh manual.
+  const refreshStatistik = async () => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/tanaman/${id}`,
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      setTanaman((prev) => (prev ? { ...prev, ...data } : data));
+    } catch (err) {
+      // diamkan: kegagalan polling tidak boleh mengganggu halaman
+    }
+  };
+
   const fetchHistory = async () => {
     try {
       setHistoryLoading(true);
-      // History bisa dilihat oleh siapa saja (publik), tidak perlu auth
+      // Preview saja (5 terbaru). Riwayat lengkap ada di halaman tersendiri.
+      // History bisa dilihat oleh siapa saja (publik), tidak perlu auth.
       const res = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/tanaman/${id}/riwayat`,
+        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/tanaman/${id}/riwayat?limit=5`,
       );
       if (res.ok) {
         const data = await res.json();
-        const mappedData = data.map((item) => ({
+        const arr = Array.isArray(data) ? data : data.items || [];
+        const mappedData = arr.map((item) => ({
           ...item,
           jenis_tindakan: item.tipe_aksi || item.jenis_tindakan,
           waktu_tindakan: item.created_at || item.waktu_tindakan,
         }));
-        setHistory(mappedData); // Ambil semua data riwayat
+        setHistory(mappedData);
       }
     } catch (err) {
       console.error(err);
@@ -152,145 +245,89 @@ const TanamanDetail = () => {
     }
   };
 
-  useEffect(() => {
-    fetchTanaman();
-    fetchHistory();
-  }, [id]);
-
-  const handlePerawatan = async (jenis_tindakan) => {
-    console.log("Debug - isSantriLoggedIn:", isSantriLoggedIn);
-    console.log("Debug - santriData:", santriData);
-    console.log("Debug - isInternalLoggedIn:", isInternalLoggedIn);
-    console.log("Debug - internalUserData:", internalUserData);
-
-    let token, namaPerawat, rolePerawat, userId;
-
-    // Prioritaskan santri login
-    const santriToken = localStorage.getItem("santri_token");
-    const santriDataCheck = localStorage.getItem("santri_data");
-
-    if (santriToken && santriDataCheck) {
-      // Gunakan login santri
-      const parsedSantriData = JSON.parse(santriDataCheck);
-      console.log("Debug - Using santri login:", parsedSantriData);
-
-      // Cek apakah santri sudah diterima
-      if (parsedSantriData.status_pendaftaran !== "Diterima") {
-        alert(
-          "Maaf, Anda belum diterima sebagai santri. Silakan tunggu konfirmasi dari admin.",
-        );
-        return;
-      }
-
-      token = santriToken;
-      namaPerawat = parsedSantriData.nama;
-      rolePerawat = "Santri";
-      userId = parsedSantriData.id;
-    } else if (isInternalLoggedIn && internalUserData) {
-      // Gunakan login internal
-      const internalToken = localStorage.getItem("authToken");
-      token = internalToken;
-      namaPerawat = internalUserData.nama_lengkap;
-      rolePerawat = internalUserData.role;
-      userId = internalUserData.id;
-    } else {
-      // Belum login sama sekali, arahkan ke login santri
-      console.log("Debug - No login found, redirecting to login");
-      alert("Silakan login terlebih dahulu untuk mencatat tindakan");
-      navigate("/pendaftaran");
-      return;
-    }
-
-    setActionLoading(true);
-
+  // Katalog aksi perawatan untuk tanaman ini (bisa kustom, dikelola di admin).
+  const fetchAksi = async () => {
     try {
       const res = await fetch(
         `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/tanaman/${id}/aksi`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            tipe_aksi: jenis_tindakan,
-            nama_perawat: namaPerawat,
-            role_perawat: rolePerawat,
-            user_id: userId, // Tambahkan user_id untuk foreign key constraint
-          }),
-        },
       );
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.message || errorData.error || "Gagal mencatat tindakan",
-        );
-      }
-
-      fetchHistory(); // Refresh riwayat
-      setSuccessMsg(
-        `${jenis_tindakan === "siram" ? "Penyiraman" : jenis_tindakan === "pupuk" ? "Pemupukan" : "Panen"} berhasil dicatat!`,
-      );
-      setTimeout(() => setSuccessMsg(""), 3000);
+      if (!res.ok) return;
+      const data = await res.json();
+      setAksiCatalog(Array.isArray(data?.aksi) ? data.aksi : []);
     } catch (err) {
-      console.error(err);
-      alert(err.message);
-    } finally {
-      setActionLoading(false);
-      setNotification({
-        isOpen: true,
-        jenis: jenis_tindakan,
-        timestamp: new Date(),
-      });
-
-      // Auto close after 3 seconds
-      setTimeout(() => {
-        setNotification((prev) => ({ ...prev, isOpen: false }));
-      }, 3000);
+      // diamkan: kartu tetap tampil memakai aksi baku + riwayat
     }
   };
 
-  const filteredHistory = history.filter((log) => {
-    if (filterRiwayat === "Semua") return true;
-    if (filterRiwayat === "Penyiraman") return log.jenis_tindakan === "siram";
-    if (filterRiwayat === "Pemupukan") return log.jenis_tindakan === "pupuk";
-    if (filterRiwayat === "Panen") return log.jenis_tindakan === "panen";
-    return true;
-  });
+  useEffect(() => {
+    fetchTanaman();
+    fetchHistory();
+    fetchAksi();
+  }, [id]);
 
-  const getTodayCount = (jenis) => {
-    const today = new Date().toLocaleDateString("en-CA");
-    return history.filter(
-      (log) =>
-        log.jenis_tindakan === jenis &&
-        new Date(log.waktu_tindakan).toLocaleDateString("en-CA") === today,
-    ).length;
-  };
+  // Angka perawatan ikut naik otomatis saat Santri mengirim laporan (mis. lewat
+  // Dashboard Santri / PATCH /api/tugas/:id/selesai). Poll ringan hanya saat
+  // tab sedang terlihat agar tidak membebani server.
+  useEffect(() => {
+    const POLL_MS = 60000;
+    let timer = null;
 
-  const getLimit = (jadwalStr) => {
-    if (!jadwalStr) return 0; // Default 0 (disabled) if admin hasn't set
-    const match = jadwalStr.match(/(\d+)x/);
-    return match ? parseInt(match[1]) : 0;
-  };
+    const mulaiPoll = () => {
+      stopPoll();
+      if (document.visibilityState === "visible") {
+        timer = setInterval(refreshStatistik, POLL_MS);
+      }
+    };
+    const stopPoll = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") refreshStatistik();
+      mulaiPoll();
+    };
 
-  const isSiramDisabled =
-    actionLoading || getTodayCount("siram") >= getLimit(tanaman?.jadwal_siram);
-  const isPupukDisabled =
-    actionLoading || getTodayCount("pupuk") >= getLimit(tanaman?.jadwal_pupuk);
-  const isPanenDisabled =
-    actionLoading || getTodayCount("panen") >= getLimit(tanaman?.jadwal_panen);
+    mulaiPoll();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      stopPoll();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [id]);
 
-  const displayedHistory = showAllHistory
-    ? filteredHistory
-    : filteredHistory.slice(0, 4);
+  // Kelompokkan log per sesi/tugas supaya jelas satu santri mengerjakan
+  // aksi apa saja dalam satu waktu (bukan baris terpisah-pisah). Filter dan
+  // grouping dihitung di dalam useMemo dengan dependency sederhana agar tidak
+  // dihitung ulang tiap render (penyebab halaman berat).
+  const kelompokRiwayat = useMemo(() => {
+    const filteredHistory = history.filter((log) => {
+      if (filterRiwayat === "Semua") return true;
+      return normalisasiAksi(log.jenis_tindakan) === filterRiwayat;
+    });
+    return kelompokkanRiwayat(filteredHistory);
+  }, [history, filterRiwayat]);
 
-  // Calculate jumlah aktivitas and jumlah santri yang terlibat
-  const jumlahSantriTerlibat = new Set(
-    history.map(
-      (log) => log.nama_lengkap || log.nama_perawat || log.nama_santri,
-    ),
-  ).size;
+  const displayedRiwayat = kelompokRiwayat.slice(0, 4);
+
+  const jamWIB = (t) =>
+    new Date(t)
+      .toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+      .replace(".", ":");
+  const tglIndo = (t) =>
+    new Date(t).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
+  // Kartu & ringkasan memakai agregat dari API (/api/tanaman/:id) — bukan
+  // menghitung dari riwayat preview yang kini hanya 5 entri.
+  const riwayatPerawatan = undefined;
+
+  // Daftar kartu & tab aksi: aksi baku + katalog tanaman + aksi yang ada di riwayat.
+  const daftarKartu = daftarAksi(aksiCatalog, history);
 
   const downloadQR = () => {
     const canvas = document.getElementById(`qr-canvas-${tanaman.id}`);
@@ -333,9 +370,12 @@ const TanamanDetail = () => {
         <div className="flex flex-col mb-6 gap-4">
           <Link
             to="/koleksi-tanaman"
-            className="inline-flex items-center text-green-600 font-bold hover:text-green-800 transition w-fit"
+            className="group inline-flex items-center gap-2.5 w-fit px-4 py-2 rounded-full bg-card border border-line text-sm font-bold text-ink shadow-sm transition-all duration-200 hover:shadow-md hover:border-green-300 hover:text-green-600 hover:-translate-y-0.5"
           >
-            <FiArrowLeft className="mr-2" /> Kembali ke Daftar Tanaman
+            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-green-50 text-green-600 dark:bg-green-500/15 dark:text-green-400 transition-colors group-hover:bg-green-100 dark:group-hover:bg-green-500/25">
+              <FiArrowLeft size={14} className="transition-transform duration-200 group-hover:-translate-x-0.5" />
+            </span>
+            Kembali ke Daftar Tanaman
           </Link>
 
           {isLoggedIn && (internalUserData || santriData) && (
@@ -457,248 +497,95 @@ const TanamanDetail = () => {
           <div className="md:w-1/2 p-6 sm:p-8 bg-surface2 flex flex-col border-l border-line">
             {/* Info Cards - samping kanan gambar */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-start space-x-3 bg-card p-4 rounded-xl border border-line shadow-sm">
-                <div className="p-2 bg-green-50 rounded-lg shrink-0">
-                  <FiCalendar className="text-green-600 w-5 h-5" />
+              {tanaman.usia && String(tanaman.usia).trim() !== "" && (
+                <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 sm:space-x-0 bg-card p-3 sm:p-4 rounded-xl border border-line shadow-sm h-full">
+                  <div className="p-2 bg-green-50 dark:bg-green-500/15 rounded-lg shrink-0">
+                    <FiCalendar className="text-green-600 dark:text-green-400 w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="block text-xs text-muted mb-1">
+                      Usia Tanaman
+                    </span>
+                    <span className="block font-bold text-ink text-sm break-words">
+                      {tanaman.usia}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="block text-xs text-muted mb-1">
-                    Usia Tanaman
-                  </span>
-                  <span className="font-bold text-ink text-sm">
-                    {tanaman.usia || "6 Bulan"}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3 bg-card p-4 rounded-xl border border-line shadow-sm">
-                <div className="p-2 bg-blue-50 rounded-lg shrink-0">
-                  <FiDroplet className="text-blue-600 w-5 h-5" />
-                </div>
-                <div>
-                  <span className="block text-xs text-muted mb-1">
-                    Jadwal Siram
-                  </span>
-                  <span className="font-bold text-ink text-sm">
-                    {tanaman.jadwal_siram || "2x Sehari"}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3 bg-card p-4 rounded-xl border border-line shadow-sm">
-                <div className="p-2 bg-orange-50 rounded-lg shrink-0">
-                  <FiUsers className="text-orange-600 w-5 h-5" />
-                </div>
-                <div>
-                  <span className="block text-xs text-muted mb-1">
-                    Kelompok Perawat
-                  </span>
-                  {(() => {
-                    const pj = tanaman.penanggung_jawab || "Belum ada";
-                    const parts = pj.split(" - ");
-                    return (
-                      <div className="flex flex-col">
-                        <span className="font-bold text-ink text-sm leading-tight">
-                          {parts[0]}
-                        </span>
-                        {parts.length > 1 && (
-                          <span className="text-xs font-medium text-muted mt-1 leading-snug">
-                            {parts.slice(1).join(" - ")}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-              <div className="flex items-start space-x-3 bg-card p-4 rounded-xl border border-line shadow-sm">
-                <div className="p-2 bg-teal-50 rounded-lg shrink-0">
-                  <FiUsers className="text-teal-600 w-5 h-5" />
-                </div>
-                <div>
-                  <span className="block text-xs text-muted mb-1">
-                    Santri Terlibat
-                  </span>
-                  <span className="font-bold text-ink text-sm">
-                    {jumlahSantriTerlibat} Orang
-                  </span>
-                </div>
-              </div>
+              )}
+              {daftarKartu.map((item) => (
+                <KartuPerawatan
+                  key={item.key}
+                  tanaman={tanaman}
+                  item={item}
+                  riwayat={riwayatPerawatan}
+                />
+              ))}
             </div>
 
-            {canShowCareSection && (
-              <div className="mt-12 mb-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-                  <h3 className="text-ink font-bold text-xl flex items-center">
-                    Konfirmasi Perawatan
-                  </h3>
-                </div>
 
-                {isCareDisabled && (
-                  <div
-                    className={`mb-4 p-4 rounded-2xl border flex gap-3 items-start text-sm ${isSantriRejected ? "bg-red-50 border-red-200 text-red-800" : "bg-amber-50 border-amber-200 text-amber-800"}`}
-                  >
-                    <FiInfo className="shrink-0 mt-0.5" size={18} />
-                    <div>
-                      <p className="font-bold">{careLockTitle}</p>
-                      <p className="mt-0.5 leading-relaxed">{careLockMsg}</p>
+            {/* Panel mode tugas — hanya muncul saat dibuka dari Dashboard Santri */}
+            <AnimatePresence>
+            {canShowCareSection && taskMode && !panelTugasTersembunyi && (
+              <motion.div
+                className="mt-12 mb-6 overflow-hidden"
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8, height: 0 }}
+                transition={{ duration: 0.35, ease: "easeInOut" }}
+              >
+                <div className="rounded-2xl border-2 border-green-200 dark:border-green-500/40 bg-green-50/70 dark:bg-green-500/10 p-5 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-green-100 dark:bg-green-500/20 flex items-center justify-center shrink-0">
+                      <FiCheckCircle size={22} className="text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-extrabold uppercase tracking-wide text-green-700 dark:text-green-300">
+                        Tugas dari Admin
+                      </p>
+                      <h3 className="text-ink font-extrabold text-lg leading-snug">
+                        {tugas?.nama_aktivitas || "Tugas Perawatan"}
+                      </h3>
+                      {tugas?.deskripsi && (
+                        <p className="text-sm text-muted mt-0.5">{tugas.deskripsi}</p>
+                      )}
+                      <div className="flex flex-wrap gap-1.5 mt-2.5">
+                        {aksiTugas.map((a) => (
+                          <span
+                            key={a}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold bg-card dark:bg-white/10 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-500/30 rounded-full px-2.5 py-1"
+                          >
+                            <FiDroplet size={11} /> {AKSI_LABEL[a] || a}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                )}
 
-                {successMsg && (
-                  <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-center font-semibold animate-pulse shadow-sm text-sm">
-                    {successMsg}
-                  </div>
-                )}
-
-                <div
-                  className={`grid grid-cols-3 gap-4 ${isSantriRejected ? "opacity-50 grayscale pointer-events-none select-none" : ""}`}
-                >
-                  <button
-                    onClick={() => setConfirmAction("siram")}
-                    disabled={isSiramDisabled || isCareDisabled}
-                    className={`flex flex-col items-center justify-center p-4 bg-card hover:bg-blue-50 border-2 border-blue-100 hover:border-blue-300 rounded-2xl hover:-translate-y-1 hover:shadow-md transition-all duration-300 group shadow-sm ${isSiramDisabled || isCareDisabled ? "opacity-80 cursor-not-allowed bg-surface2 border-line hover:bg-surface2 hover:border-line hover:-translate-y-0 hover:shadow-none" : ""}`}
-                  >
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition shadow-inner ${isSiramDisabled || isCareDisabled ? "bg-gray-200 dark:bg-gray-700 text-muted" : "bg-blue-100 group-hover:bg-blue-200 text-blue-600"}`}
-                    >
-                      {(isSiramDisabled || isCareDisabled) && !actionLoading ? (
-                        <FiCheckCircle size={24} />
-                      ) : (
-                        <FiDroplet size={24} />
-                      )}
+                  {tugasSelesai ? (
+                    <div className="mt-4 p-3 rounded-xl bg-green-100 dark:bg-green-500/15 border border-green-200 dark:border-green-500/30 text-green-800 dark:text-green-300 text-sm font-semibold flex items-center gap-2">
+                      <FiCheckCircle /> Tugas ini sudah diselesaikan. Terima kasih!
                     </div>
-                    <span
-                      className={`font-bold text-sm ${isSiramDisabled || isCareDisabled ? "text-muted" : "text-blue-800"}`}
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowTaskModal(true)}
+                      className="w-full mt-4 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold transition shadow-sm"
                     >
-                      {isSantriRejected
-                        ? "Ditolak"
-                        : isSantriPending
-                          ? "Menunggu Verifikasi"
-                          : isSiramDisabled && !actionLoading
-                            ? "Selesai Hari Ini"
-                            : "Siram Air"}
-                    </span>
-                    {!tanaman?.jadwal_siram && !isCareDisabled && (
-                      <span className="text-[10px] text-muted mt-1 font-bold bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded">
-                        Belum Diatur Admin
-                      </span>
-                    )}
-                    {!isSiramDisabled &&
-                      !isCareDisabled &&
-                      tanaman?.jadwal_siram && (
-                        <span className="text-[10px] text-muted mt-1">
-                          {getTodayCount("siram")}/
-                          {getLimit(tanaman.jadwal_siram)} Hari ini
-                        </span>
-                      )}
-                    {isSiramDisabled &&
-                      actionLoading === false &&
-                      tanaman?.jadwal_siram &&
-                      !isCareDisabled && (
-                        <span className="text-[10px] text-green-600 mt-1 font-bold bg-green-100 px-2 py-0.5 rounded">
-                          Sudah Dikerjakan
-                        </span>
-                      )}
-                  </button>
+                      <FiCheckCircle size={18} /> Kerjakan Tugas
+                    </button>
+                  )}
 
                   <button
-                    onClick={() => setConfirmAction("pupuk")}
-                    disabled={isPupukDisabled || isCareDisabled}
-                    className={`flex flex-col items-center justify-center p-4 bg-card hover:bg-orange-50 border-2 border-orange-100 hover:border-orange-300 rounded-2xl hover:-translate-y-1 hover:shadow-md transition-all duration-300 group shadow-sm ${isPupukDisabled || isCareDisabled ? "opacity-80 cursor-not-allowed bg-surface2 border-line hover:bg-surface2 hover:border-line hover:-translate-y-0 hover:shadow-none" : ""}`}
+                    type="button"
+                    onClick={() => navigate("/dashboard-santri")}
+                    className="w-full mt-2 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border-2 border-line text-muted hover:bg-surface2 font-bold transition text-sm"
                   >
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition shadow-inner ${isPupukDisabled || isCareDisabled ? "bg-gray-200 dark:bg-gray-700 text-muted" : "bg-orange-100 group-hover:bg-orange-200 text-orange-600"}`}
-                    >
-                      {(isPupukDisabled || isCareDisabled) && !actionLoading ? (
-                        <FiCheckCircle size={24} />
-                      ) : (
-                        <FiCheckCircle size={24} />
-                      )}
-                    </div>
-                    <span
-                      className={`font-bold text-sm ${isPupukDisabled || isCareDisabled ? "text-muted" : "text-orange-800"}`}
-                    >
-                      {isSantriRejected
-                        ? "Ditolak"
-                        : isSantriPending
-                          ? "Menunggu Verifikasi"
-                          : isPupukDisabled && !actionLoading
-                            ? "Selesai Hari Ini"
-                            : "Beri Pupuk"}
-                    </span>
-                    {!tanaman?.jadwal_pupuk && !isCareDisabled && (
-                      <span className="text-[10px] text-muted mt-1 font-bold bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded">
-                        Belum Diatur Admin
-                      </span>
-                    )}
-                    {!isPupukDisabled &&
-                      !isCareDisabled &&
-                      tanaman?.jadwal_pupuk && (
-                        <span className="text-[10px] text-muted mt-1">
-                          {getTodayCount("pupuk")}/
-                          {getLimit(tanaman.jadwal_pupuk)} Hari ini
-                        </span>
-                      )}
-                    {isPupukDisabled &&
-                      actionLoading === false &&
-                      tanaman?.jadwal_pupuk &&
-                      !isCareDisabled && (
-                        <span className="text-[10px] text-green-600 mt-1 font-bold bg-green-100 px-2 py-0.5 rounded">
-                          Sudah Dikerjakan
-                        </span>
-                      )}
-                  </button>
-
-                  <button
-                    onClick={() => setConfirmAction("panen")}
-                    disabled={isPanenDisabled || isCareDisabled}
-                    className={`flex flex-col items-center justify-center p-4 bg-card hover:bg-green-50 border-2 border-line hover:border-green-300 rounded-2xl hover:-translate-y-1 hover:shadow-md transition-all duration-300 group shadow-sm ${isPanenDisabled || isCareDisabled ? "opacity-80 cursor-not-allowed bg-surface2 border-line hover:bg-surface2 hover:border-line hover:-translate-y-0 hover:shadow-none" : ""}`}
-                  >
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition shadow-inner ${isPanenDisabled || isCareDisabled ? "bg-gray-200 dark:bg-gray-700 text-muted" : "bg-green-100 group-hover:bg-green-200 text-green-600"}`}
-                    >
-                      {(isPanenDisabled || isCareDisabled) && !actionLoading ? (
-                        <FiCheckCircle size={24} />
-                      ) : (
-                        <FiShoppingBag size={24} />
-                      )}
-                    </div>
-                    <span
-                      className={`font-bold text-sm ${isPanenDisabled || isCareDisabled ? "text-muted" : "text-green-800"}`}
-                    >
-                      {isSantriRejected
-                        ? "Ditolak"
-                        : isSantriPending
-                          ? "Menunggu Verifikasi"
-                          : isPanenDisabled && !actionLoading
-                            ? "Selesai Hari Ini"
-                            : "Panen"}
-                    </span>
-                    {!tanaman?.jadwal_panen && !isCareDisabled && (
-                      <span className="text-[10px] text-muted mt-1 font-bold bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded">
-                        Belum Diatur Admin
-                      </span>
-                    )}
-                    {!isPanenDisabled &&
-                      !isCareDisabled &&
-                      tanaman?.jadwal_panen && (
-                        <span className="text-[10px] text-muted mt-1">
-                          {getTodayCount("panen")}/
-                          {getLimit(tanaman.jadwal_panen)} Hari ini
-                        </span>
-                      )}
-                    {isPanenDisabled &&
-                      actionLoading === false &&
-                      tanaman?.jadwal_panen &&
-                      !isCareDisabled && (
-                        <span className="text-[10px] text-green-600 mt-1 font-bold bg-green-100 px-2 py-0.5 rounded">
-                          Sudah Dikerjakan
-                        </span>
-                      )}
+                    <FiArrowLeft size={16} /> Kembali ke Dashboard
                   </button>
                 </div>
-              </div>
+              </motion.div>
             )}
+            </AnimatePresence>
 
             {/* QR Code Section - tampil di bawah */}
             <div className="flex-1 flex flex-col justify-center pt-6 min-h-0 w-full">
@@ -742,16 +629,16 @@ const TanamanDetail = () => {
           </div>
 
           <div className="flex space-x-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-            {["Semua", "Penyiraman", "Pemupukan", "Panen"].map((f) => (
+            {[
+              { key: "Semua", label: "Semua" },
+              ...daftarKartu.map((j) => ({ key: j.key, label: j.label })),
+            ].map((tab) => (
               <button
-                key={f}
-                onClick={() => {
-                  setFilterRiwayat(f);
-                  setShowAllHistory(false);
-                }}
-                className={`px-4 py-2 text-sm rounded-full font-bold transition whitespace-nowrap ${filterRiwayat === f ? "bg-green-600 text-white shadow-md" : "bg-surface2 text-muted hover:bg-gray-200 dark:bg-gray-700"}`}
+                key={tab.key}
+                onClick={() => setFilterRiwayat(tab.key)}
+                className={`px-4 py-2 text-sm rounded-full font-bold transition whitespace-nowrap ${filterRiwayat === tab.key ? "bg-green-600 text-white shadow-md" : "bg-surface2 text-muted hover:bg-gray-200 dark:bg-gray-700"}`}
               >
-                {f}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -760,7 +647,7 @@ const TanamanDetail = () => {
             <div className="flex justify-center py-12">
               <div className="animate-spin h-8 w-8 border-3 border-green-500 rounded-full border-t-transparent"></div>
             </div>
-          ) : displayedHistory.length === 0 ? (
+          ) : displayedRiwayat.length === 0 ? (
             <div className="text-center py-12">
               <FiCalendar className="mx-auto text-muted mb-4" size={48} />
               <p className="text-muted text-base">
@@ -769,96 +656,80 @@ const TanamanDetail = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {displayedHistory.map((log, index) => (
-                <div key={log.id} className="flex gap-4 group">
+              {displayedRiwayat.map((grup, index) => (
+                <div key={grup.key} className="flex gap-4 group">
                   <div className="flex flex-col items-center">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm ${log.jenis_tindakan === "siram" ? "bg-blue-100 text-blue-600" : log.jenis_tindakan === "panen" ? "bg-green-100 text-green-600" : "bg-orange-100 text-orange-600"}`}
-                    >
-                      {log.jenis_tindakan === "siram" ? (
-                        <FiDroplet size={18} />
-                      ) : log.jenis_tindakan === "panen" ? (
-                        <FiShoppingBag size={18} />
-                      ) : (
-                        <FiCheckCircle size={18} />
-                      )}
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm bg-green-50 text-green-600 dark:bg-green-500/15 dark:text-green-400">
+                      <FiCheckCircle size={18} />
                     </div>
-                    {index !== displayedHistory.length - 1 && (
-                      <div className="w-0.5 h-full bg-surface2 my-2 group-hover:bg-gray-200 dark:bg-gray-700 transition"></div>
+                    {index !== displayedRiwayat.length - 1 && (
+                      <div className="w-0.5 h-full bg-surface2 my-2 transition"></div>
                     )}
                   </div>
-                  <div className="pb-4 flex-1">
-                    <div className="flex justify-between items-start">
-                      <p className="text-base font-bold text-ink">
-                        Aktivitas{" "}
-                        {log.jenis_tindakan === "siram"
-                          ? "Penyiraman"
-                          : log.jenis_tindakan === "panen"
-                            ? "Panen"
-                            : "Pemupukan"}
-                      </p>
-                      <span className="text-xs bg-surface2 text-muted px-3 py-1 rounded-full font-medium">
-                        {new Date(log.waktu_tindakan)
-                          .toLocaleTimeString("id-ID", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                          .replace(".", ":")}{" "}
-                        WIB
+                  <div className="pb-4 flex-1 bg-surface2 border border-line rounded-xl p-4">
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="min-w-0">
+                        <p className="text-base font-bold text-ink capitalize">
+                          {grup.nama_aktivitas || "Perawatan"}
+                        </p>
+                        <p className="text-sm text-muted mt-0.5">
+                          Oleh{" "}
+                          <span className="font-medium text-ink">
+                            {grup.perawat || "Santri"}
+                          </span>{" "}
+                          ({grup.role || "Santri"})
+                        </p>
+                      </div>
+                      <span className="text-xs bg-card text-muted px-3 py-1 rounded-full font-medium shrink-0 border border-line">
+                        {jamWIB(grup.waktu)} WIB
                       </span>
                     </div>
-                    <p className="text-sm text-muted mt-1">
-                      {log.jenis_tindakan === "siram"
-                        ? "Disiram"
-                        : log.jenis_tindakan === "panen"
-                          ? "Dipanen"
-                          : "Dipupuk"}{" "}
-                      oleh:{" "}
-                      <span className="font-medium text-ink">
-                        {log.nama_lengkap ||
-                          log.nama_perawat ||
-                          log.nama_santri}{" "}
-                        ({log.role || log.role_perawat || "Santri"})
-                      </span>
-                    </p>
-                    <p className="text-xs text-muted mt-1">
-                      {new Date(log.waktu_tindakan).toLocaleDateString(
-                        "id-ID",
-                        { day: "numeric", month: "long", year: "numeric" },
-                      )}
-                    </p>
-                    {log.gambar && (
-                      <div
-                        className="mt-2 text-sm font-bold text-green-600 flex items-center cursor-pointer hover:text-green-700 transition w-fit bg-green-50 px-3 py-1.5 rounded-md border border-line"
-                        onClick={() => setSelectedFoto(log)}
+
+                    <div className="mt-3 space-y-1.5">
+                      {grup.entri.map((log) => (
+                        <div key={log.id} className="flex items-center gap-2 text-sm">
+                          <span
+                            className={`${infoAksi(log.jenis_tindakan).chipText} shrink-0`}
+                          >
+                            <AksiIcon aksi={log.jenis_tindakan} size={16} />
+                          </span>
+                          <span className="text-ink font-medium">
+                            {infoAksi(log.jenis_tindakan).label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {grup.laporan && (
+                      <p className="text-sm text-muted mt-3 bg-card border border-line rounded-lg p-2 whitespace-pre-line">
+                        {grup.laporan}
+                      </p>
+                    )}
+                    {grup.foto && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedFoto(grup.entri.find((e) => e.gambar) || grup.entri[0])}
+                        className="mt-3 inline-flex items-center text-sm font-bold text-green-600 dark:text-green-400 hover:text-green-700 transition bg-card px-3 py-1.5 rounded-md border border-line"
                       >
                         <FiImage className="mr-2" /> Lihat Bukti Foto
-                      </div>
+                      </button>
                     )}
+                    <p className="text-xs text-muted mt-2">
+                      {tglIndo(grup.waktu)}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {!showAllHistory && filteredHistory.length > 4 && (
-            <button
-              onClick={() => setShowAllHistory(true)}
-              className="w-full mt-6 flex items-center justify-center gap-2 text-green-600 font-bold py-4 px-6 border-2 border-green-200 rounded-xl hover:bg-green-50 hover:border-green-300 transition-all shadow-sm"
-            >
-              <FiGrid className="text-lg" />
-              Lihat Riwayat Lengkap ({filteredHistory.length})
-            </button>
-          )}
-          {showAllHistory && filteredHistory.length > 4 && (
-            <button
-              onClick={() => setShowAllHistory(false)}
-              className="w-full mt-6 flex items-center justify-center gap-2 text-muted font-bold py-4 px-6 border-2 border-line rounded-xl hover:bg-surface2 hover:border-line transition-all shadow-sm"
-            >
-              <FiGrid className="text-lg" />
-              Tutup Sebagian Riwayat
-            </button>
-          )}
+          <Link
+            to={`/tanaman/${id}/riwayat`}
+            className="group w-full mt-6 flex items-center justify-center gap-2 text-PrimaryColor-0 font-bold py-4 px-6 border-2 border-green-200 dark:border-green-500/30 rounded-xl transition-all duration-300 shadow-sm hover:bg-PrimaryColor-0 hover:text-white hover:border-PrimaryColor-0 hover:shadow-md active:bg-PrimaryColor-0 active:text-white active:border-PrimaryColor-0 active:shadow-md"
+          >
+            <FiGrid className="text-lg" />
+            Lihat Riwayat Lengkap
+          </Link>
         </div>
       </div>
 
@@ -911,77 +782,17 @@ const TanamanDetail = () => {
         </div>
       )}
 
+      {/* Modal kirim bukti tugas (mode ?tugas=) */}
       <AnimatePresence>
-        {confirmAction && canShowCareSection && (
-          <div className="fixed inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className={`bg-card rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative ${isCareDisabled ? "opacity-70" : ""}`}
-            >
-              <div className="flex flex-col items-center text-center">
-                <div
-                  className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${confirmAction === "siram" ? "bg-blue-100 text-blue-500" : confirmAction === "panen" ? "bg-green-100 text-green-500" : "bg-orange-100 text-orange-500"} ${isCareDisabled ? "opacity-50" : ""}`}
-                >
-                  {confirmAction === "siram" ? (
-                    <FiDroplet size={32} />
-                  ) : confirmAction === "panen" ? (
-                    <FiShoppingBag size={32} />
-                  ) : (
-                    <FiCheckCircle size={32} />
-                  )}
-                </div>
-                <h3 className="text-xl font-bold text-ink mb-2">
-                  Konfirmasi Tindakan
-                </h3>
-                <p className="text-muted text-sm mb-6">
-                  {isCareDisabled ? (
-                    careLockMsg
-                  ) : (
-                    <>
-                      Apakah Anda yakin ingin mencatat aktivitas{" "}
-                      <strong>
-                        {confirmAction === "siram"
-                          ? "Penyiraman"
-                          : confirmAction === "panen"
-                            ? "Panen"
-                            : "Pemupukan"}
-                      </strong>
-                      ? Data akan tersimpan di riwayat.
-                    </>
-                  )}
-                </p>
-                <div className="flex w-full gap-3">
-                  <button
-                    onClick={() => setConfirmAction(null)}
-                    disabled={actionLoading || isCareDisabled}
-                    className={`flex-1 py-3 px-4 rounded-xl border border-line text-ink font-bold hover:bg-surface2 transition ${isCareDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
-                  >
-                    Batal
-                  </button>
-                  <button
-                    onClick={async () => {
-                      if (!isCareDisabled) {
-                        await handlePerawatan(confirmAction);
-                        setConfirmAction(null);
-                      }
-                    }}
-                    disabled={actionLoading || isCareDisabled}
-                    className={`flex-1 py-3 px-4 rounded-xl text-white font-bold transition shadow-md flex items-center justify-center ${isCareDisabled ? "opacity-50 cursor-not-allowed bg-gray-400" : confirmAction === "siram" ? "bg-blue-600 hover:bg-blue-700" : confirmAction === "panen" ? "bg-green-600 hover:bg-green-700" : "bg-orange-600 hover:bg-orange-700"}`}
-                  >
-                    {actionLoading ? (
-                      <div className="animate-spin h-5 w-5 border-2 border-white rounded-full border-t-transparent"></div>
-                    ) : isCareDisabled ? (
-                      careLockTitle
-                    ) : (
-                      "Ya, Catat!"
-                    )}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+        {showTaskModal && tugas && (
+          <ModalBukti
+            tugas={tugas}
+            token={localStorage.getItem("santri_token")}
+            tanamanId={id}
+            aksi={aksiTugas[0]}
+            onClose={() => setShowTaskModal(false)}
+            onSuccess={handleTaskSuccess}
+          />
         )}
       </AnimatePresence>
 

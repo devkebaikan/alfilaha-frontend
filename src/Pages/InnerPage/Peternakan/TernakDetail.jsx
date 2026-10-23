@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import {
   FiArrowLeft,
   FiClock,
@@ -8,39 +8,22 @@ import {
   FiInfo,
   FiLogOut,
   FiUsers,
-  FiCoffee,
-  FiDroplet,
-  FiTrash2,
-  FiShoppingBag,
   FiCheckCircle,
-  FiAlertTriangle,
-  FiHeart,
-  FiPlusCircle,
+  FiDownload,
+  FiGrid,
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { QRCodeCanvas } from "qrcode.react";
+import ModalBukti from "../../../Shared/ModalBukti/ModalBukti";
+import { parseTernakInfo } from "../../../Shared/tugasInfo";
+import { ikonAksiUntuk, PALET_WARNA } from "../../../Shared/ikonAksi";
+import { kelompokkanRiwayat } from "../../../Shared/RiwayatTimeline/kelompokkanRiwayat";
+import { GridAksiTernak } from "./KartuAksiTernak";
 
-const ikonAksi = (nama) => {
-  const n = (nama || "").toLowerCase();
-  if (n.includes("pakan")) return <FiCoffee size={22} />;
-  if (n.includes("minum") || n.includes("air")) return <FiDroplet size={22} />;
-  if (n.includes("bersihkan") || n.includes("kandang"))
-    return <FiTrash2 size={22} />;
-  if (n.includes("telur")) return <FiShoppingBag size={22} />;
-  if (n.includes("susu")) return <FiHeart size={22} />;
-  if (n.includes("mati")) return <FiAlertTriangle size={22} />;
-  return <FiPlusCircle size={22} />;
-};
-
-const warnaAksi = (nama) => {
-  const n = (nama || "").toLowerCase();
-  if (n.includes("pakan")) return "green";
-  if (n.includes("minum") || n.includes("air")) return "blue";
-  if (n.includes("bersihkan")) return "orange";
-  if (n.includes("telur") || n.includes("panen")) return "amber";
-  if (n.includes("susu")) return "purple";
-  if (n.includes("mati")) return "red";
-  return "teal";
-};
+// Ikon & warna aksi dipilih otomatis dari nama aksi lewat registry bersama
+// (src/Shared/ikonAksi.js), sehingga aksi kustom apa pun tetap mendapat ikon
+// yang sesuai tanpa perlu memetakan manual di sini.
+const warnaAksi = (nama) => ikonAksiUntuk(nama, "ternak").warna;
 
 const kapital = (t) => (t ? t.charAt(0).toUpperCase() + t.slice(1).toLowerCase() : "");
 
@@ -79,7 +62,12 @@ const thumbUrl = (nama) => {
 };
 
 const TernakDetail = () => {
-  const { jenis } = useParams();
+  // `jenis` menerima dua bentuk:
+  //   - id livestock (mis. "65")  → entry spesifik
+  //   - slug jenis legacy ("sapi") → entry pertama dari jenis tsb
+  // URL di-encode karena nama jenis bisa mengandung spasi.
+  const { jenis: param } = useParams();
+  const jenis = param ? decodeURIComponent(param) : param;
   const navigate = useNavigate();
 
   const [ternak, setTernak] = useState(null);
@@ -87,7 +75,7 @@ const TernakDetail = () => {
   const [error, setError] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
-  const [showAllHistory, setShowAllHistory] = useState(false);
+
   const [filterRiwayat, setFilterRiwayat] = useState("Semua");
 
   const [isInternalLoggedIn, setIsInternalLoggedIn] = useState(
@@ -99,13 +87,62 @@ const TernakDetail = () => {
   );
   const [santriData, setSantriData] = useState(null);
 
-  const [actionLoading, setActionLoading] = useState(false);
-  const [successMsg, setSuccessMsg] = useState("");
-  const [confirmAction, setConfirmAction] = useState(null);
-  const [pilihWaktu, setPilihWaktu] = useState(null);
-  const [nilaiAngka, setNilaiAngka] = useState("");
-  const [fotoFile, setFotoFile] = useState(null);
   const [zoomFoto, setZoomFoto] = useState(null);
+
+  // ── Mode tugas (dibuka via ?tugas=<id> dari Dashboard Santri) ──
+  const [searchParams] = useSearchParams();
+  const tugasId = searchParams.get("tugas");
+  const [tugas, setTugas] = useState(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [taskDone, setTaskDone] = useState(false);
+  // Panel tugas disembunyikan otomatis 4 detik setelah tugas selesai.
+  const [panelTugasTersembunyi, setPanelTugasTersembunyi] = useState(false);
+
+  useEffect(() => {
+    if (!tugasId) {
+      setTugas(null);
+      return;
+    }
+    const token = localStorage.getItem("santri_token");
+    if (!token) {
+      setTugas(null);
+      return;
+    }
+    let batal = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API}/api/tugas/${tugasId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!batal) setTugas(data);
+      } catch (_) {
+        // diamkan: mode tugas opsional, halaman publik tetap tampil
+      }
+    })();
+    return () => {
+      batal = true;
+    };
+  }, [tugasId]);
+
+  const taskMode = Boolean(tugas);
+  const tugasSelesai = taskDone || tugas?.status === "selesai";
+
+  const handleTaskSuccess = async () => {
+    setShowTaskModal(false);
+    setTaskDone(true);
+    setTugas((t) => (t ? { ...t, status: "selesai" } : t));
+    await Promise.all([fetchTernak(), fetchHistory()]);
+  };
+
+  // Tugas yang sudah dikirim tidak bisa dikirim ulang. Pesan "terima kasih"
+  // tampil sebentar lalu seluruh panel tugas hilang otomatis.
+  useEffect(() => {
+    if (!tugasSelesai) return;
+    const timer = setTimeout(() => setPanelTugasTersembunyi(true), 4000);
+    return () => clearTimeout(timer);
+  }, [tugasSelesai]);
 
   useEffect(() => {
     const updateAuthState = () => {
@@ -127,8 +164,14 @@ const TernakDetail = () => {
       }
     };
     updateAuthState();
-    const interval = setInterval(updateAuthState, 500);
-    return () => clearInterval(interval);
+    // Update saat login/logout lewat event, bukan polling 500ms.
+    const onChange = () => updateAuthState();
+    window.addEventListener("storage", onChange);
+    window.addEventListener("auth-change", onChange);
+    return () => {
+      window.removeEventListener("storage", onChange);
+      window.removeEventListener("auth-change", onChange);
+    };
   }, []);
 
   const isLoggedIn = isInternalLoggedIn || isSantriLoggedIn;
@@ -137,14 +180,6 @@ const TernakDetail = () => {
   const isSantriRejected =
     isSantriLoggedIn && santriData?.status_pendaftaran === "Ditolak";
   const canShowCareSection = isLoggedIn;
-  const isCareDisabled = isSantriPending || isSantriRejected;
-  const careLockTitle = isSantriRejected
-    ? "Pendaftaran Ditolak"
-    : "Menunggu Verifikasi";
-  const careLockMsg = isSantriRejected
-    ? "Akses perawatan dinonaktifkan karena pendaftaran Anda ditolak. Anda tetap dapat melihat koleksi ternak, namun tidak bisa mencatat perawatan."
-    : "Anda masih dalam status Menunggu Verifikasi. Silakan tunggu konfirmasi dari admin untuk melakukan tindakan perawatan.";
-
   const fetchTernak = async () => {
     try {
       const res = await fetch(
@@ -162,13 +197,15 @@ const TernakDetail = () => {
   const fetchHistory = async () => {
     try {
       setHistoryLoading(true);
+      // Preview saja (5 terbaru). Riwayat lengkap ada di halaman tersendiri.
       const res = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/ternak/${jenis}/riwayat`,
+        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/ternak/${encodeURIComponent(jenis)}/riwayat?limit=5`,
       );
       if (res.ok) {
         const data = await res.json();
+        const arr = Array.isArray(data) ? data : data.items || [];
         setHistory(
-          data.map((item) => ({
+          arr.map((item) => ({
             ...item,
             waktu_tindakan: item.created_at || item.waktu_tindakan,
           })),
@@ -184,101 +221,71 @@ const TernakDetail = () => {
   useEffect(() => {
     setLoading(true);
     setError(false);
-    setShowAllHistory(false);
     setFilterRiwayat("Semua");
     fetchTernak();
     fetchHistory();
   }, [jenis]);
 
-  const handlePerawatan = async () => {
-    if (!confirmAction) return;
-
-    let token;
-    if (isSantriLoggedIn && santriData?.status_pendaftaran === "Diterima") {
-      token = localStorage.getItem("santri_token");
-    } else if (isInternalLoggedIn) {
-      token = localStorage.getItem("authToken");
-    } else {
-      alert("Silakan login terlebih dahulu untuk mencatat tindakan");
-      navigate("/pendaftaran");
-      return;
-    }
-
-    setActionLoading(true);
-    try {
-      const useFoto = !!fotoFile;
-      const sendBody = useFoto ? new FormData() : {
-        master_aksi_id: confirmAction.id,
-        catatan: confirmAction.catatan || undefined,
-        jadwal_id: confirmAction.jadwal_id || undefined,
-        aktivitas_id: confirmAction.aktivitas_id || undefined,
-      };
-      if (useFoto) {
-        sendBody.append("master_aksi_id", String(confirmAction.id));
-        if (confirmAction.catatan) sendBody.append("catatan", confirmAction.catatan);
-        if (confirmAction.jadwal_id) sendBody.append("jadwal_id", String(confirmAction.jadwal_id));
-        if (confirmAction.aktivitas_id) sendBody.append("aktivitas_id", String(confirmAction.aktivitas_id));
-        if (confirmAction.butuh_input_angka) sendBody.append("nilai_angka", String(parseInt(nilaiAngka, 10) || 0));
-        sendBody.append("foto", fotoFile);
-      } else if (confirmAction.butuh_input_angka) {
-        sendBody.nilai_angka = parseInt(nilaiAngka, 10);
-      }
-      const res = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/ternak/${jenis}/aksi`,
-        {
-          method: "POST",
-          headers: useFoto
-            ? { Authorization: `Bearer ${token}` }
-            : {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-          body: useFoto ? sendBody : JSON.stringify(sendBody),
-        },
-      );
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(
-          errData.message || errData.error || "Gagal mencatat tindakan",
-        );
-      }
-      const data = await res.json();
-      fetchHistory();
-      fetchTernak();
-      if (confirmAction.butuh_input_angka && data?.total != null) {
-        setSuccessMsg(
-          `${confirmAction.label} berhasil dicatat — total kini ${data.total} ekor (mati ${data.total_mati})`,
-        );
-      } else {
-        setSuccessMsg(`${confirmAction.label} berhasil dicatat!`);
-      }
-      setTimeout(() => setSuccessMsg(""), 4000);
-    } catch (err) {
-      console.error(err);
-      alert(err.message);
-    } finally {
-      setActionLoading(false);
-      setConfirmAction(null);
-      setNilaiAngka("");
-      setFotoFile(null);
+  const downloadQR = () => {
+    if (!ternak) return;
+    const canvas = document.getElementById(`qr-canvas-${ternak.id}`);
+    if (canvas) {
+      const pngUrl = canvas
+        .toDataURL("image/png")
+        .replace("image/png", "image/octet-stream");
+      let downloadLink = document.createElement("a");
+      downloadLink.href = pngUrl;
+      const nama = (ternak.judul || ternak.nama || "").replace(/\s+/g, "_");
+      downloadLink.download = `QR_Ternak_${nama}.png`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
     }
   };
 
-  const filterOptions = [
-    "Semua",
-    ...new Set(history.map((h) => h.label)),
-  ].slice(0, 8);
-
-  const filteredHistory = history.filter(
-    (log) => filterRiwayat === "Semua" || log.label === filterRiwayat,
+  // Tab filter diambil dari katalog aksi ternak (bukan dari riwayat preview
+  // yang hanya 5 entri), dengan riwayat sebagai pelengkap.
+  const filterOptions = useMemo(
+    () => [
+      "Semua",
+      ...new Set(
+        [
+          ...(ternak?.aksi || []).map((a) => a.label),
+          ...history.map((h) => h.label),
+        ].filter(Boolean),
+      ),
+    ].slice(0, 8),
+    [ternak, history],
   );
-  const displayedHistory = showAllHistory
-    ? filteredHistory
-    : filteredHistory.slice(0, 4);
 
-  const jumlahSantriTerlibat = new Set(
-    history.map((log) => log.nama_santri || log.nama_perawat),
-  ).size;
+  // Kelompokkan log per sesi/tugas supaya jelas satu santri menyelesaikan
+  // aksi apa saja dalam satu waktu. Filter + grouping di dalam useMemo dengan
+  // dependency sederhana agar tidak dihitung ulang tiap render.
+  const kelompokRiwayat = useMemo(() => {
+    const filteredHistory = history.filter(
+      (log) => filterRiwayat === "Semua" || log.label === filterRiwayat,
+    );
+    return kelompokkanRiwayat(filteredHistory, {
+      kunciGrup: (l) =>
+        `${l.aktivitas_id || "mandiri"}|${
+          l.diinput_oleh || l.nama_perawat || "?"
+        }`,
+      catatan: (l) => l.catatan,
+    });
+  }, [history, filterRiwayat]);
+
+  const displayedRiwayat = kelompokRiwayat.slice(0, 4);
+
+  const jamWIB = (t) =>
+    new Date(t)
+      .toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+      .replace(".", ":");
+  const tglIndo = (t) =>
+    new Date(t).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
 
   // Aksi dengan nama sama digabung jadi 1 tombol (mis. "Bersihkan Kandang" Pagi/Sore)
   const grupAksi = useMemo(() => {
@@ -328,30 +335,37 @@ const TernakDetail = () => {
     );
 
   const palette = warnaAksi(ternak.nama);
+
+  // Aksi yang boleh dikerjakan: seluruhnya (mode normal) atau hanya yang
+  // ditugaskan admin (mode tugas via ?tugas=).
+  const infoTernakTugas = taskMode ? parseTernakInfo(tugas.ternak_info) : [];
+  const assignedAksiIds = new Set(
+    infoTernakTugas
+      .filter((t) => !t.id || String(t.id) === String(ternak.id))
+      .map((t) => Number(t.aksiId))
+      .filter(Boolean),
+  );
+  const grupAksiTampil =
+    taskMode && assignedAksiIds.size > 0
+      ? grupAksi.filter((g) => g.items.some((it) => assignedAksiIds.has(Number(it.id))))
+      : grupAksi;
+
+  // Aksi yang butuh nominal (mis. "Konfirmasi Ayam Mati") → jadi kolom input di
+  // modal tugas, lalu nilainya dicatat ke riwayat & total ternak ini.
+  const aksiInputAngka = (() => {
+    const kandidat = (ternak.aksi || []).filter((a) => a.butuh_input_angka);
+    if (!kandidat.length) return null;
+    const sesuaiTugas = kandidat.filter(
+      (a) => !taskMode || assignedAksiIds.size === 0 || assignedAksiIds.has(Number(a.id)),
+    );
+    return sesuaiTugas[0] || null;
+  })();
+
   const headerBg = {
     green: "from-green-800 to-green-950",
     slate: "from-slate-800 to-slate-950",
     amber: "from-amber-800 to-amber-950",
   }[palette] || "from-green-800 to-green-950";
-
-  const statVariant = (warna) => {
-    const map = {
-      green: {
-        card: "bg-green-50 dark:bg-green-500/10 border-line",
-        icon: "bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-300",
-      },
-      red: { card: "bg-red-50 dark:bg-red-500/10 border-red-100 dark:border-red-500/30", icon: "bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-300" },
-      blue: {
-        card: "bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/30",
-        icon: "bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300",
-      },
-      amber: {
-        card: "bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/30",
-        icon: "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300",
-      },
-    };
-    return map[warna] || map.green;
-  };
 
   return (
     <div className="min-h-screen bg-surface2 pt-[100px] lg:pt-[140px] pb-8 px-4 sm:px-6 lg:px-8">
@@ -359,9 +373,12 @@ const TernakDetail = () => {
         <div className="flex flex-col mb-6 gap-4">
           <Link
             to="/peternakan"
-            className="inline-flex items-center text-green-600 dark:text-green-400 font-bold hover:text-green-800 dark:hover:text-green-300 transition w-fit"
+            className="group inline-flex items-center gap-2.5 w-fit px-4 py-2 rounded-full bg-card border border-line text-sm font-bold text-ink shadow-sm transition-all duration-200 hover:shadow-md hover:border-green-300 hover:text-green-600 hover:-translate-y-0.5"
           >
-            <FiArrowLeft className="mr-2" /> Kembali ke Koleksi Ternak
+            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-green-50 text-green-600 dark:bg-green-500/15 dark:text-green-400 transition-colors group-hover:bg-green-100 dark:group-hover:bg-green-500/25">
+              <FiArrowLeft size={14} className="transition-transform duration-200 group-hover:-translate-x-0.5" />
+            </span>
+            Kembali ke Koleksi Ternak
           </Link>
 
           {isLoggedIn && (internalUserData || santriData) && (
@@ -445,7 +462,7 @@ const TernakDetail = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
               <div className="absolute bottom-4 left-4 right-4">
                 <span className="inline-block px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full mb-2 shadow-sm capitalize">
-                  {ternak.kategori}
+                  {ternak.nama}
                 </span>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-[1.25] capitalize break-words">
                   {ternak.judul || ternak.nama}
@@ -481,198 +498,100 @@ const TernakDetail = () => {
           </div>
 
           <div className="md:w-1/2 p-6 sm:p-8 bg-surface2 flex flex-col border-l border-line">
-            {canShowCareSection && (
-              <div className="mb-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-                  <h3 className="text-ink font-bold text-xl flex items-center">
-                    Konfirmasi Perawatan
-                  </h3>
-                  <span className="text-xs bg-surface2 text-muted px-3 py-1 rounded-full font-medium">
-                    {grupAksi.length} jenis aksi
-                  </span>
-                </div>
-
-                {isCareDisabled && (
-                  <div
-                    className={`mb-4 p-4 rounded-2xl border flex gap-3 items-start text-sm ${isSantriRejected ? "bg-red-50 border-red-200 text-red-800" : "bg-amber-50 border-amber-200 text-amber-800"}`}
-                  >
-                    <FiInfo className="shrink-0 mt-0.5" size={18} />
-                    <div>
-                      <p className="font-bold">{careLockTitle}</p>
-                      <p className="mt-0.5 leading-relaxed">{careLockMsg}</p>
+            {/* Panel mode tugas — hanya muncul saat dibuka dari Dashboard Santri */}
+            <AnimatePresence>
+            {canShowCareSection && taskMode && !panelTugasTersembunyi && (
+              <motion.div
+                className="mb-6 overflow-hidden"
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8, height: 0 }}
+                transition={{ duration: 0.35, ease: "easeInOut" }}
+              >
+                <div className="rounded-2xl border-2 border-green-200 dark:border-green-500/40 bg-green-50/70 dark:bg-green-500/10 p-5 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-green-100 dark:bg-green-500/20 flex items-center justify-center shrink-0">
+                      <FiCheckCircle size={22} className="text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-extrabold uppercase tracking-wide text-green-700 dark:text-green-300">
+                        Tugas dari Admin
+                      </p>
+                      <h3 className="text-ink font-extrabold text-lg leading-snug">
+                        {tugas?.nama_aktivitas || "Tugas Perawatan"}
+                      </h3>
+                      {tugas?.deskripsi && (
+                        <p className="text-sm text-muted mt-0.5">{tugas.deskripsi}</p>
+                      )}
+                      <div className="flex flex-wrap gap-1.5 mt-2.5">
+                        {(grupAksiTampil.length ? grupAksiTampil : grupAksi).map((g) => (
+                          <span
+                            key={g.key}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold bg-card dark:bg-white/10 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-500/30 rounded-full px-2.5 py-1"
+                          >
+                            {g.nama}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                )}
 
-                {successMsg && (
-                  <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-center font-semibold animate-pulse shadow-sm text-sm">
-                    {successMsg}
-                  </div>
-                )}
+                  {tugasSelesai ? (
+                    <div className="mt-4 p-3 rounded-xl bg-green-100 dark:bg-green-500/15 border border-green-200 dark:border-green-500/30 text-green-800 dark:text-green-300 text-sm font-semibold flex items-center gap-2">
+                      <FiCheckCircle /> Tugas ini sudah diselesaikan. Terima kasih!
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowTaskModal(true)}
+                      className="w-full mt-4 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold transition shadow-sm"
+                    >
+                      <FiCheckCircle size={18} /> Kerjakan Tugas
+                    </button>
+                  )}
 
-                <div
-                  className={`grid grid-cols-2 sm:grid-cols-3 gap-3 ${isSantriRejected ? "opacity-50 grayscale pointer-events-none select-none" : ""}`}
-                >
-                  {grupAksi.map((g) => {
-                    const a = g.utama;
-                    const w = warnaAksi(g.nama);
-                    const c = w === "red" ? "red" : w === "blue" ? "blue" : w === "orange" ? "orange" : w === "amber" ? "amber" : w === "purple" ? "purple" : "green";
-                    const btn = {
-                      green: "bg-card hover:bg-green-50 dark:hover:bg-green-500/15 border-2 border-line hover:border-green-300",
-                      blue: "bg-card hover:bg-blue-50 dark:hover:bg-blue-500/15 border-2 border-blue-100 dark:border-blue-500/30 hover:border-blue-300 dark:hover:border-blue-400",
-                      orange: "bg-card hover:bg-orange-50 dark:hover:bg-orange-500/15 border-2 border-orange-100 dark:border-orange-500/30 hover:border-orange-300 dark:hover:border-orange-400",
-                      amber: "bg-card hover:bg-amber-50 dark:hover:bg-amber-500/15 border-2 border-amber-100 dark:border-amber-500/30 hover:border-amber-300 dark:hover:border-amber-400",
-                      purple: "bg-card hover:bg-purple-50 dark:hover:bg-purple-500/15 border-2 border-purple-100 dark:border-purple-500/30 hover:border-purple-300 dark:hover:border-purple-400",
-                      red: "bg-card hover:bg-red-50 dark:hover:bg-red-500/15 border-2 border-red-100 dark:border-red-500/30 hover:border-red-300 dark:hover:border-red-400",
-                    }[c];
-                    const icon = {
-                      green: "bg-green-100 text-green-600",
-                      blue: "bg-blue-100 dark:bg-blue-500/20 group-hover:bg-blue-200 dark:group-hover:bg-blue-500/30 text-blue-600 dark:text-blue-300",
-                      orange: "bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-300",
-                      amber: "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300",
-                      purple: "bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300",
-                      red: "bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-300",
-                    }[c];
-                    const txt = {
-                      green: "text-green-800 dark:text-green-300",
-                      blue: "text-blue-800 dark:text-blue-300",
-                      orange: "text-orange-800 dark:text-orange-300",
-                      amber: "text-amber-800 dark:text-amber-300",
-                      purple: "text-purple-800 dark:text-purple-300",
-                      red: "text-red-800 dark:text-red-300",
-                    }[c];
-                    const jumlahHariIni = g.totalHariIni;
-                    const jumlahShown = g.totalJumlah;
-                    const disabled = actionLoading || isCareDisabled;
-                    return (
-                      <button
-                        key={g.key}
-                        onClick={() => {
-                          setNilaiAngka("");
-                          setFotoFile(null);
-                          if (g.perluPilihWaktu) setPilihWaktu(g);
-                          else setConfirmAction(a);
-                        }}
-                        disabled={disabled}
-                        className={`flex flex-col items-center justify-center p-4 rounded-2xl hover:-translate-y-1 hover:shadow-md transition-all duration-300 group shadow-sm ${btn} ${disabled ? "opacity-80 cursor-not-allowed bg-surface2 border-line hover:bg-surface2 hover:border-line hover:-translate-y-0 hover:shadow-none" : ""}`}
-                      >
-                        <div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition shadow-inner ${icon} ${disabled ? "bg-gray-200 dark:bg-gray-700 text-muted" : ""}`}
-                        >
-                          {ikonAksi(g.nama)}
-                        </div>
-                        <span
-                          className={`font-bold text-sm text-center leading-tight ${disabled ? "text-muted" : txt}`}
-                        >
-                          {isSantriRejected
-                            ? "Ditolak"
-                            : isSantriPending
-                              ? "Menunggu Verifikasi"
-                              : g.nama}
-                        </span>
-                        {g.perluPilihWaktu && !isCareDisabled ? (
-                          <span className="text-[10px] font-bold text-muted mt-1 inline-flex items-center gap-1">
-                            <FiClock className="w-3 h-3" />
-                            {g.waktuList.join(" / ")}
-                          </span>
-                        ) : (
-                          a.jam_penanda &&
-                          !isCareDisabled && (
-                            <span className="text-[10px] text-muted mt-1">
-                              {a.jam_penanda}
-                            </span>
-                          )
-                        )}
-                        {g.batas != null ? (
-                          <span className="mt-1.5 inline-flex items-center gap-1 text-xs font-black px-2.5 py-0.5 rounded-full bg-green-600 text-white shadow-sm">
-                            {jumlahHariIni}/{g.batas}
-                          </span>
-                        ) : (
-                          <span
-                            className={`mt-1.5 inline-flex items-center gap-1 text-xs font-black px-2.5 py-0.5 rounded-full ${
-                              jumlahShown > 0
-                                ? "bg-green-50 border border-line text-green-700"
-                                : "bg-surface2 border border-line text-muted"
-                            }`}
-                          >
-                            {jumlahShown}×
-                          </span>
-                        )}
-                        {g.perluAngka && !isCareDisabled && (
-                          <span className="text-[10px] text-red-500 mt-1 font-bold bg-red-50 px-2 py-0.5 rounded">
-                            Butuh jumlah
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
+                  <button
+                    type="button"
+                    onClick={() => navigate("/dashboard-santri")}
+                    className="w-full mt-2 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border-2 border-line text-muted hover:bg-surface2 font-bold transition text-sm"
+                  >
+                    <FiArrowLeft size={16} /> Kembali ke Dashboard
+                  </button>
                 </div>
-              </div>
+              </motion.div>
             )}
+            </AnimatePresence>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-start space-x-3 bg-card p-4 rounded-xl border border-line shadow-sm">
-                <div className="p-2 bg-blue-50 rounded-lg shrink-0">
-                  <FiUsers className="text-blue-600 w-5 h-5" />
-                </div>
-                <div>
-                  <span className="block text-xs text-muted mb-1">
-                    Kategori Ternak
-                  </span>
-                  <span className="font-bold text-ink text-sm capitalize">
-                    {ternak.kategori || "individu"}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3 bg-card p-4 rounded-xl border border-line shadow-sm">
-                <div className="p-2 bg-teal-50 rounded-lg shrink-0">
-                  <FiUsers className="text-teal-600 w-5 h-5" />
-                </div>
-                <div>
-                  <span className="block text-xs text-muted mb-1">
-                    Santri Terlibat
-                  </span>
-                  <span className="font-bold text-ink text-sm">
-                    {jumlahSantriTerlibat} Orang
-                  </span>
-                </div>
-              </div>
+            <div className="bg-card rounded-xl border border-line shadow-sm overflow-hidden">
+              <GridAksiTernak aksi={ternak.aksi || []} />
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mt-3">
-              <div
-                className={`flex items-start space-x-3 border p-4 rounded-xl shadow-sm ${statVariant("green").card}`}
-              >
-                <div
-                  className={`p-2 rounded-lg shrink-0 ${statVariant("green").icon}`}
-                >
-                  <FiUsers className="w-5 h-5" />
+            {/* QR Code Section - tampil di bawah */}
+            <div className="flex-1 flex flex-col justify-center pt-6 min-h-0 w-full">
+              <div className="w-full bg-card rounded-xl border border-line p-4 sm:p-5 shadow-sm flex flex-col items-center">
+                <div className="flex items-center justify-between w-full mb-3">
+                  <h3 className="flex items-center text-base font-bold text-ink">
+                    <FiGrid className="mr-1.5 text-green-500" /> QR Code
+                  </h3>
+                  <button
+                    onClick={downloadQR}
+                    className="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 px-3 rounded-lg transition-colors shadow-md text-xs"
+                  >
+                    <FiDownload size={12} /> Download
+                  </button>
                 </div>
-                <div>
-                  <span className="block text-xs text-muted mb-1">
-                    Total {ternak.judul || ternak.nama}
-                  </span>
-                  <span className="font-extrabold text-ink text-lg">
-                    {ternak.total ?? 0} ekor
-                  </span>
+                <div className="bg-card p-3 rounded-xl shadow-sm border border-line">
+                  <QRCodeCanvas
+                    id={`qr-canvas-${ternak.id}`}
+                    value={`${window.location.origin}/peternakan/${ternak.id}`}
+                    size={210}
+                    level={"H"}
+                    includeMargin={true}
+                  />
                 </div>
-              </div>
-              <div
-                className={`flex items-start space-x-3 border p-4 rounded-xl shadow-sm ${statVariant("red").card}`}
-              >
-                <div
-                  className={`p-2 rounded-lg shrink-0 ${statVariant("red").icon}`}
-                >
-                  <FiAlertTriangle className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="block text-xs text-muted mb-1">
-                    Total Mati
-                  </span>
-                  <span className="font-extrabold text-ink text-lg">
-                    {ternak.total_mati ?? 0} ekor
-                  </span>
-                </div>
+                <p className="text-[11px] text-muted mt-2 text-center">
+                  Scan QR untuk akses cepat
+                </p>
               </div>
             </div>
           </div>
@@ -692,10 +611,7 @@ const TernakDetail = () => {
               filterOptions.map((f) => (
                 <button
                   key={f}
-                  onClick={() => {
-                    setFilterRiwayat(f);
-                    setShowAllHistory(false);
-                  }}
+                  onClick={() => setFilterRiwayat(f)}
                   className={`px-4 py-2 text-sm rounded-full font-bold transition whitespace-nowrap ${filterRiwayat === f ? "bg-green-600 text-white shadow-md" : "bg-surface2 text-muted hover:bg-gray-200 dark:bg-gray-700"}`}
                 >
                   {f}
@@ -712,7 +628,7 @@ const TernakDetail = () => {
             <div className="flex justify-center py-12">
               <div className="animate-spin h-8 w-8 border-3 border-green-500 rounded-full border-t-transparent"></div>
             </div>
-          ) : displayedHistory.length === 0 ? (
+          ) : displayedRiwayat.length === 0 ? (
             <div className="text-center py-12">
               <FiCalendar className="mx-auto text-muted mb-4" size={48} />
               <p className="text-muted text-base">
@@ -721,77 +637,82 @@ const TernakDetail = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {displayedHistory.map((log, index) => (
-                <div key={log.id} className="flex gap-4 group">
+              {displayedRiwayat.map((grup, index) => (
+                <div key={grup.key} className="flex gap-4 group">
                   <div className="flex flex-col items-center">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm bg-surface2 text-muted`}
-                    >
-                      {ikonAksi(log.nama_aksi)}
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm bg-green-50 text-green-600 dark:bg-green-500/15 dark:text-green-400">
+                      <FiCheckCircle size={18} />
                     </div>
-                    {index !== displayedHistory.length - 1 && (
-                      <div className="w-0.5 h-full bg-surface2 my-2 group-hover:bg-gray-200 dark:bg-gray-700 transition"></div>
+                    {index !== displayedRiwayat.length - 1 && (
+                      <div className="w-0.5 h-full bg-surface2 my-2 transition"></div>
                     )}
                   </div>
-                  <div className="pb-4 flex-1">
-                    <div className="flex justify-between items-start">
-                      <p className="text-base font-bold text-ink">
-                        {log.label}
-                      </p>
-                      <span className="text-xs bg-surface2 text-muted px-3 py-1 rounded-full font-medium">
-                        {new Date(log.waktu_tindakan)
-                          .toLocaleTimeString("id-ID", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                          .replace(".", ":")}{" "}
-                        WIB
+                  <div className="pb-4 flex-1 bg-surface2 border border-line rounded-xl p-4">
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="min-w-0">
+                        <p className="text-base font-bold text-ink capitalize">
+                          {grup.nama_aktivitas || "Perawatan"}
+                        </p>
+                        <p className="text-sm text-muted mt-0.5">
+                          Oleh{" "}
+                          <span className="font-medium text-ink">
+                            {grup.perawat || "Santri"}
+                          </span>{" "}
+                          ({grup.role || "Santri"})
+                        </p>
+                      </div>
+                      <span className="text-xs bg-card text-muted px-3 py-1 rounded-full font-medium shrink-0 border border-line">
+                        {jamWIB(grup.waktu)} WIB
                       </span>
                     </div>
-                    <p className="text-sm text-muted mt-1">
-                      Dicatat oleh:{" "}
-                      <span className="font-medium text-ink">
-                        {log.nama_santri || log.nama_perawat} (
-                        {log.role_perawat || "Santri"})
-                      </span>
-                      {typeof log.nilai_angka === "number" && log.nilai_angka > 0 && (
-                        <span className="ml-2 inline-block text-xs bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-md">
-                          Jumlah: {log.nilai_angka} ekor
-                        </span>
-                      )}
-                    </p>
-                    {log.catatan && (
-                      <p className="text-sm text-muted mt-1 bg-surface2 border border-line rounded-lg p-2">
-                        {log.catatan}
+
+                    <div className="mt-3 space-y-1.5">
+                      {grup.entri.map((log) => {
+                        const Ikon = ikonAksiUntuk(log.nama_aksi, "ternak").Icon;
+                        const gaya = PALET_WARNA[warnaAksi(log.nama_aksi)] || PALET_WARNA.slate;
+                        return (
+                          <div key={log.id} className="flex items-center gap-2 text-sm">
+                            <span className={`${gaya.chipText} shrink-0`}>
+                              <Ikon size={16} />
+                            </span>
+                            <span className="text-ink font-medium">{log.label}</span>
+                            {typeof log.nilai_angka === "number" && log.nilai_angka > 0 && (
+                              <span className="inline-block text-xs bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-300 font-bold px-2 py-0.5 rounded-md">
+                                {log.nilai_angka} ekor
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {grup.catatan && (
+                      <p className="text-sm text-muted mt-3 bg-card border border-line rounded-lg p-2 whitespace-pre-line">
+                        {grup.catatan}
                       </p>
                     )}
-                    {log.foto && (
+                    {grup.foto && (
                       <button
                         type="button"
-                        onClick={() => setZoomFoto(fotoUrl(log.foto))}
+                        onClick={() => setZoomFoto(fotoUrl(grup.foto))}
                         className="mt-3 block max-w-[220px] group/foto"
                         aria-label="Perbesar foto perawatan"
                       >
                         <img
                           loading="lazy"
                           decoding="async"
-                          src={thumbUrl(log.foto)}
+                          src={thumbUrl(grup.foto)}
                           onError={(e) => {
                             e.currentTarget.onerror = null;
-                            e.currentTarget.src = fotoUrl(log.foto);
+                            e.currentTarget.src = fotoUrl(grup.foto);
                           }}
-                          alt={`Foto ${log.label}`}
+                          alt={`Foto ${grup.nama_aktivitas || "perawatan"}`}
                           className="h-32 w-56 object-cover rounded-xl border border-line shadow-sm group-hover/foto:opacity-85 group-hover/foto:shadow-md transition"
                         />
                       </button>
                     )}
-                    <p className="text-xs text-muted mt-1">
-                      {new Date(log.waktu_tindakan).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                      {log.nama_aktivitas && ` • ${log.nama_aktivitas}`}
+                    <p className="text-xs text-muted mt-2">
+                      {tglIndo(grup.waktu)}
                     </p>
                   </div>
                 </div>
@@ -799,238 +720,27 @@ const TernakDetail = () => {
             </div>
           )}
 
-          {!showAllHistory && filteredHistory.length > 4 && (
-            <button
-              onClick={() => setShowAllHistory(true)}
-              className="w-full mt-6 flex items-center justify-center gap-2 text-green-600 font-bold py-4 px-6 border-2 border-green-200 rounded-xl hover:bg-green-50 hover:border-green-300 transition-all shadow-sm"
-            >
-              <FiCheckCircle className="text-lg" />
-              Lihat Riwayat Lengkap ({filteredHistory.length})
-            </button>
-          )}
-          {showAllHistory && filteredHistory.length > 4 && (
-            <button
-              onClick={() => setShowAllHistory(false)}
-              className="w-full mt-6 flex items-center justify-center gap-2 text-muted font-bold py-4 px-6 border-2 border-line rounded-xl hover:bg-surface2 hover:border-line transition-all shadow-sm"
-            >
-              <FiCheckCircle className="text-lg" />
-              Tutup Sebagian Riwayat
-            </button>
-          )}
+          <Link
+            to={`/peternakan/${encodeURIComponent(jenis)}/riwayat`}
+            className="group w-full mt-6 flex items-center justify-center gap-2 text-PrimaryColor-0 font-bold py-4 px-6 border-2 border-green-200 dark:border-green-500/30 rounded-xl transition-all duration-300 shadow-sm hover:bg-PrimaryColor-0 hover:text-white hover:border-PrimaryColor-0 hover:shadow-md active:bg-PrimaryColor-0 active:text-white active:border-PrimaryColor-0 active:shadow-md"
+          >
+            <FiCheckCircle className="text-lg" />
+            Lihat Riwayat Lengkap
+          </Link>
         </div>
       </div>
 
+      {/* Modal kirim bukti tugas (mode ?tugas=) */}
       <AnimatePresence>
-        {pilihWaktu && (
-          <div
-            className="fixed inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm"
-            onClick={() => setPilihWaktu(null)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-card rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl"
-            >
-              <div className="text-center">
-                <div className="w-14 h-14 rounded-full bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400 flex items-center justify-center mx-auto mb-3">
-                  {ikonAksi(pilihWaktu.nama)}
-                </div>
-                <h3 className="text-lg font-bold text-ink">
-                  {pilihWaktu.nama}
-                </h3>
-                <p className="text-sm text-muted mt-1">
-                  Pilih waktu untuk{" "}
-                  <span className="font-semibold text-ink">
-                    {pilihWaktu.nama}
-                  </span>
-                </p>
-
-                <div className="grid grid-cols-2 gap-3 mt-5">
-                  {pilihWaktu.items.map((item) => {
-                    const jamIni = Number(item.jumlah_hari_ini) || 0;
-                    const batas = batasHarian(item);
-                    const habis =
-                      batas != null && jamIni >= batas;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        disabled={actionLoading || isCareDisabled || habis}
-                        onClick={() => {
-                          setNilaiAngka("");
-                          setFotoFile(null);
-                          setConfirmAction(item);
-                          setPilihWaktu(null);
-                        }}
-                        className={`flex flex-col items-center justify-center gap-1 p-4 rounded-2xl border-2 transition-all duration-300 shadow-sm ${
-                          habis
-                            ? "bg-surface2 border-line text-muted cursor-not-allowed opacity-70"
-                            : "bg-card border-green-200 dark:border-green-500/40 hover:-translate-y-1 hover:border-green-400 hover:shadow-md"
-                        }`}
-                      >
-                        <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 px-2 py-0.5 rounded-full">
-                          <FiClock className="w-3 h-3" />
-                          {item.waktu || "Waktu"}
-                        </span>
-                        {item.jam_penanda && (
-                          <span className="text-xs text-muted">
-                            {item.jam_penanda}
-                          </span>
-                        )}
-                        <span className="text-sm font-bold text-ink mt-1">
-                          {Number(item.jumlah) || 0}× tercatat
-                        </span>
-                        <span className="text-[10px] text-muted">
-                          {habis
-                            ? `Batas harian tercapai (${jamIni}/${batas})`
-                            : batas != null
-                              ? `Hari ini ${jamIni}/${batas}`
-                              : "Siap dicatat"}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setPilihWaktu(null)}
-                  className="mt-5 w-full py-3 px-4 rounded-xl border border-line text-ink font-bold hover:bg-surface2 transition"
-                >
-                  Batal
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {confirmAction && canShowCareSection && (
-          <div className="fixed inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className={`bg-card rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative ${isCareDisabled ? "opacity-70" : ""}`}
-            >
-              <div className="flex flex-col items-center text-center">
-                <div
-                  className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${confirmAction.sub_aksi ? "bg-orange-100 dark:bg-orange-500/20 text-orange-500 dark:text-orange-400" : "bg-green-100 dark:bg-green-500/20 text-green-500 dark:text-green-400"} ${isCareDisabled ? "opacity-50" : ""}`}
-                >
-                  {ikonAksi(confirmAction.nama_aksi)}
-                </div>
-                <h3 className="text-xl font-bold text-ink mb-2">
-                  Konfirmasi Tindakan
-                </h3>
-                <p className="text-muted text-sm mb-4">
-                  {isCareDisabled ? (
-                    careLockMsg
-                  ) : (
-                    <>
-                      Apakah Anda yakin ingin mencatat{" "}
-                      <strong>{confirmAction.label}</strong>? Data akan tersimpan
-                      di riwayat.
-                    </>
-                  )}
-                </p>
-
-                {confirmAction.butuh_input_angka && !isCareDisabled && (
-                  <div className="w-full mb-4">
-                    <label className="block text-sm font-bold text-ink text-left mb-2">
-                      {confirmAction.label_input || "Jumlah ekor"}
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max={ternak.total ?? undefined}
-                      value={nilaiAngka}
-                      onChange={(e) => setNilaiAngka(e.target.value)}
-                      placeholder={`Maksimal ${ternak.total ?? 0} ekor`}
-                      className="w-full px-4 py-3 border-2 border-line rounded-xl text-center text-lg font-bold text-ink focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition"
-                    />
-                    <p className="text-left text-[11px] text-muted mt-2">
-                      Total {(ternak.judul || ternak.nama).toLowerCase()} akan
-                      berkurang sesuai jumlah tersebut.
-                    </p>
-                  </div>
-                )}
-
-                {!isCareDisabled && (
-                  <div className="w-full mb-4 text-left">
-                    <label className="block text-sm font-bold text-ink mb-2">
-                      Foto bukti (opsional)
-                    </label>
-                    {fotoFile && (
-                      <div className="relative mb-3">
-                        <img
-                          src={URL.createObjectURL(fotoFile)}
-                          alt="Pratinjau foto"
-                          className="w-full max-h-52 object-cover rounded-xl border border-line shadow-sm"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setFotoFile(null)}
-                          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white text-lg font-bold flex items-center justify-center hover:bg-black/80 transition"
-                          aria-label="Hapus foto"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      onChange={(e) => setFotoFile(e.target.files?.[0] || null)}
-                      className="block w-full text-sm text-muted file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-surface2 file:text-ink file:font-bold hover:file:bg-gray-200 dark:bg-gray-700 transition"
-                    />
-                  </div>
-                )}
-
-                <div className="flex w-full gap-3">
-                  <button
-                    onClick={() => {
-                      setConfirmAction(null);
-                      setNilaiAngka("");
-                      setFotoFile(null);
-                    }}
-                    disabled={actionLoading || isCareDisabled}
-                    className={`flex-1 py-3 px-4 rounded-xl border border-line text-ink font-bold hover:bg-surface2 transition ${isCareDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
-                  >
-                    Batal
-                  </button>
-                  <button
-                    onClick={handlePerawatan}
-                    disabled={
-                      actionLoading ||
-                      isCareDisabled ||
-                      (confirmAction.butuh_input_angka &&
-                        (!nilaiAngka || parseInt(nilaiAngka, 10) <= 0))
-                    }
-                    className={`flex-1 py-3 px-4 rounded-xl text-white font-bold transition shadow-md flex items-center justify-center ${
-                      isCareDisabled ||
-                      (confirmAction.butuh_input_angka &&
-                        (!nilaiAngka || parseInt(nilaiAngka, 10) <= 0))
-                        ? "opacity-50 cursor-not-allowed bg-gray-400"
-                        : confirmAction.butuh_input_angka
-                          ? "bg-red-600 hover:bg-red-700"
-                          : "bg-green-600 hover:bg-green-700"
-                    }`}
-                  >
-                    {actionLoading ? (
-                      <div className="animate-spin h-5 w-5 border-2 border-white rounded-full border-t-transparent"></div>
-                    ) : isCareDisabled ? (
-                      careLockTitle
-                    ) : (
-                      "Ya, Catat!"
-                    )}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+        {showTaskModal && tugas && (
+          <ModalBukti
+            tugas={tugas}
+            token={localStorage.getItem("santri_token")}
+            ternakId={ternak.id}
+            inputAngka={aksiInputAngka}
+            onClose={() => setShowTaskModal(false)}
+            onSuccess={handleTaskSuccess}
+          />
         )}
       </AnimatePresence>
 

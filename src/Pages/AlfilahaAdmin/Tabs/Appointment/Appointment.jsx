@@ -10,6 +10,7 @@ import {
   FiTrash2,
   FiMessageSquare,
 } from "react-icons/fi";
+import ActionMenu from "../../../../Shared/ActionMenu";
 
 const Appointment = ({
   appointments,
@@ -21,6 +22,7 @@ const Appointment = ({
   setDeleteModal,
 }) => {
   const [selectedAppointment, setSelectedAppointment] = React.useState(null);
+  const [menuTerbuka, setMenuTerbuka] = React.useState(null);
   return (
     <div className="space-y-6">
       {/* QUICK STATS */}
@@ -39,33 +41,29 @@ const Appointment = ({
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-400 to-orange-600 rounded-3xl p-6 shadow-lg border border-orange-300 dark:border-orange-500/40 flex items-center space-x-5 text-white relative overflow-hidden group">
-          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-card opacity-10 rounded-full mix-blend-overlay group-hover:scale-110 transition-transform duration-500"></div>
-          <div className="absolute bottom-[-10%] left-[-10%] w-24 h-24 bg-card opacity-10 rounded-full mix-blend-overlay"></div>
-          <div className="w-14 h-14 bg-white/20 dark:bg-white/[0.06] backdrop-blur-sm text-white rounded-2xl flex items-center justify-center shrink-0 z-10 border border-white/20 shadow-inner">
+        <div className="bg-card rounded-3xl p-6 shadow-sm border border-line flex items-center space-x-5">
+          <div className="w-14 h-14 bg-surface2 text-muted rounded-2xl flex items-center justify-center shrink-0 border border-line">
             <FiClock className="text-2xl" />
           </div>
-          <div className="z-10">
-            <p className="text-sm text-orange-100 font-semibold tracking-wide mb-0.5">
+          <div>
+            <p className="text-sm text-muted font-semibold tracking-wide mb-0.5">
               Menunggu Konfirmasi
             </p>
-            <p className="text-3xl font-extrabold">
+            <p className="text-3xl font-extrabold text-ink">
               {appointments.filter((r) => r.status === "Pending").length}
             </p>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-3xl p-6 shadow-lg border border-emerald-400 flex items-center space-x-5 text-white relative overflow-hidden group">
-          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-card opacity-10 rounded-full mix-blend-overlay group-hover:scale-110 transition-transform duration-500"></div>
-          <div className="absolute bottom-[-10%] left-[-10%] w-24 h-24 bg-card opacity-10 rounded-full mix-blend-overlay"></div>
-          <div className="w-14 h-14 bg-white/20 dark:bg-white/[0.06] backdrop-blur-sm text-white rounded-2xl flex items-center justify-center shrink-0 z-10 border border-white/20 shadow-inner">
+        <div className="bg-card rounded-3xl p-6 shadow-sm border border-line flex items-center space-x-5">
+          <div className="w-14 h-14 bg-surface2 text-muted rounded-2xl flex items-center justify-center shrink-0 border border-line">
             <FiCheck className="text-2xl" />
           </div>
-          <div className="z-10">
-            <p className="text-sm text-emerald-100 font-semibold tracking-wide mb-0.5">
+          <div>
+            <p className="text-sm text-muted font-semibold tracking-wide mb-0.5">
               Selesai
             </p>
-            <p className="text-3xl font-extrabold">
+            <p className="text-3xl font-extrabold text-ink">
               {appointments.filter((r) => r.status === "Diterima").length}
             </p>
           </div>
@@ -84,7 +82,7 @@ const Appointment = ({
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative shrink-0">
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+              <FiSearch className="pointer-events-none absolute inset-y-0 left-4 my-auto text-muted" />
               <input
                 type="text"
                 placeholder="Cari nama / email..."
@@ -94,7 +92,7 @@ const Appointment = ({
               />
             </div>
             <div className="relative shrink-0">
-              <FiFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+              <FiFilter className="pointer-events-none absolute inset-y-0 left-4 my-auto text-muted" />
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
@@ -105,7 +103,7 @@ const Appointment = ({
                 <option value="Diterima">Diterima</option>
                 <option value="Ditolak">Ditolak</option>
               </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted text-xs">
+              <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-muted text-xs">
                 ▼
               </div>
             </div>
@@ -170,7 +168,7 @@ const Appointment = ({
                   <tr
                     key={item.id}
                     onClick={() => setSelectedAppointment(item)}
-                    className="odd:bg-card even:bg-surface2 hover:!bg-[#F1F6F3] dark:hover:!bg-white/[0.035] dark:bg-green-500/10 hover:shadow-md dark:hover:shadow-none transition-all duration-300 group border-l-4 border-transparent hover:!border-[#16804B] dark:hover:!border-green-600 cursor-pointer"
+                    className="group hover:bg-surface2 transition-colors cursor-pointer"
                   >
                     <td className="px-6 py-5">
                       <div className="font-extrabold text-ink text-base">
@@ -208,44 +206,69 @@ const Appointment = ({
                       </span>
                     </td>
                     <td
-                      className="px-6 py-5 text-right space-x-2"
+                      className="px-6 py-5 text-right"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {item.status === "Pending" && (
-                        <>
-                          <button
-                            className="text-white bg-green-600 hover:bg-green-700 px-3 py-2 rounded-xl font-bold text-xs transition duration-300 shadow-sm hover:shadow-sm transform hover:-translate-y-0.5"
-                            onClick={() =>
-                              updateStatusAppointment(item.id, "Diterima")
-                            }
-                            title="Terima"
-                          >
-                            <FiCheck className="inline-block w-4 h-4" />
-                          </button>
-                          <button
-                            className="text-white bg-red-600 hover:bg-red-700 px-3 py-2 rounded-xl font-bold text-xs transition duration-300 shadow-sm hover:shadow-sm transform hover:-translate-y-0.5"
-                            onClick={() =>
-                              updateStatusAppointment(item.id, "Ditolak")
-                            }
-                            title="Tolak"
-                          >
-                            <FiX className="inline-block w-4 h-4" />
-                          </button>
-                        </>
-                      )}
-                      <button
-                        className="text-red-500 hover:text-white hover:bg-red-600 dark:hover:bg-red-600/80 bg-red-50 dark:bg-red-500/15 p-2 rounded-xl transition duration-300 shadow-sm border border-red-50 dark:border-red-500/30 hover:border-red-600 dark:hover:border-red-600/60 transform hover:-translate-y-0.5"
-                        title="Hapus"
-                        onClick={() =>
-                          setDeleteModal({
-                            show: true,
-                            id: item.id,
-                            type: "appointment",
-                          })
-                        }
-                      >
-                        <FiTrash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex justify-end">
+                        <ActionMenu
+                          terbuka={menuTerbuka === item.id}
+                          onToggle={() =>
+                            setMenuTerbuka((cur) =>
+                              cur === item.id ? null : item.id,
+                            )
+                          }
+                          onTutup={() => setMenuTerbuka(null)}
+                          items={
+                            item.status === "Pending"
+                              ? [
+                                  {
+                                    label: "Terima",
+                                    icon: <FiCheck size={15} />,
+                                    onClick: () =>
+                                      updateStatusAppointment(
+                                        item.id,
+                                        "Diterima",
+                                      ),
+                                  },
+                                  {
+                                    label: "Tolak",
+                                    icon: <FiX size={15} />,
+                                    danger: true,
+                                    onClick: () =>
+                                      updateStatusAppointment(
+                                        item.id,
+                                        "Ditolak",
+                                      ),
+                                  },
+                                  { type: "divider" },
+                                  {
+                                    label: "Hapus",
+                                    icon: <FiTrash2 size={15} />,
+                                    danger: true,
+                                    onClick: () =>
+                                      setDeleteModal({
+                                        show: true,
+                                        id: item.id,
+                                        type: "appointment",
+                                      }),
+                                  },
+                                ]
+                              : [
+                                  {
+                                    label: "Hapus",
+                                    icon: <FiTrash2 size={15} />,
+                                    danger: true,
+                                    onClick: () =>
+                                      setDeleteModal({
+                                        show: true,
+                                        id: item.id,
+                                        type: "appointment",
+                                      }),
+                                  },
+                                ]
+                          }
+                        />
+                      </div>
                     </td>
                   </tr>
                 ));

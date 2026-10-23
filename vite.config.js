@@ -15,9 +15,43 @@ export default defineConfig({
       '/api': {
         target: 'http://127.0.0.1:5000',
         changeOrigin: true,
+      },
+      '/uploads': {
+        target: 'http://127.0.0.1:5000',
+        changeOrigin: true,
       }
     },
     host: true, // Listen on all local IPs
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        // Pisahkan library besar ke chunk sendiri supaya halaman publik tidak
+        // mengunduh chart/editor/peta jika tidak dibuka (cache juga lebih awet
+        // karena chunk vendor jarang berubah).
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("react-router")) return "vendor-router";
+          if (
+            id.includes("react-dom") ||
+            id.includes("/react/") ||
+            id.includes("scheduler")
+          )
+            return "vendor-react";
+          if (id.includes("recharts") || id.includes("d3-"))
+            return "vendor-charts";
+          if (id.includes("framer-motion")) return "vendor-motion";
+          if (id.includes("swiper")) return "vendor-swiper";
+          if (id.includes("react-quill") || id.includes("quill"))
+            return "vendor-editor";
+          if (id.includes("qrcode.react")) return "vendor-qr";
+          if (id.includes("browser-image-compression")) return "vendor-image";
+          if (id.includes("fslightbox")) return "vendor-lightbox";
+          if (id.includes("react-icons")) return "vendor-icons";
+          return "vendor";
+        },
+      },
+    },
   },
   plugins: [
     react(),
@@ -30,7 +64,10 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt', // tandai update tersedia; jangan auto-reload
       injectRegister: false, // registrasi dilakukan via useRegisterSW di UpdatePrompt
-      devOptions: { enabled: true }, // service worker aktif saat `npm run dev`
+      // Service worker HANYA di build produksi. Di dev ia meng-cache modul &
+      // respons /api secara agresif (StaleWhileRevalidate), sehingga perubahan
+      // kode/DB tidak terlihat sampai cache dibersihkan.
+      devOptions: { enabled: false, suppressWarnings: true },
       includeAssets: [
         'icon-192.png',
         'icon-512.png',

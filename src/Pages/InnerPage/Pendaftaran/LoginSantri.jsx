@@ -64,64 +64,64 @@ const LoginSantri = () => {
 
   return (
     <div className="min-h-screen bg-surface2 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-card p-10 rounded-[2rem] shadow-xl border border-line animate-fade-in-up">
+      <div className="max-w-md w-full bg-card p-8 sm:p-10 rounded-xl shadow-sm border border-line animate-fade-in-up">
         {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-4">
-            <span className="text-4xl">🔐</span>
-          </div>
-          <h2 className="text-3xl font-extrabold text-ink">
-            Login Santri
+        <div className="text-center mb-8">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-ink">
+            Masuk sebagai Santri
           </h2>
           <p className="mt-2 text-sm text-muted">
-            Masuk untuk mengecek status pendaftaran Anda.
+            Masuk untuk memeriksa status pendaftaran dan mengakses halaman santri
           </p>
         </div>
 
         {/* Notifikasi Error */}
         {errorMsg && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold border border-red-100 text-center animate-pulse">
+          <div className="mb-6 bg-red-50 text-red-700 px-4 py-3 rounded-lg text-sm font-semibold border border-red-100">
             {errorMsg}
           </div>
         )}
 
         {/* Form Login */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-5">
             <div>
-              <label className="block text-sm font-bold text-ink mb-2">
+              <label className="block text-sm font-semibold text-ink mb-2">
                 Username
               </label>
               <input
                 type="text"
                 required
-                className="appearance-none block w-full px-4 py-3 border border-line rounded-xl bg-surface2 text-ink focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-card transition-colors"
+                className="block w-full px-4 py-3 rounded-lg border border-line bg-surface2 text-ink focus:outline-none focus:ring-2 focus:ring-PrimaryColor-0 focus:bg-card transition-colors duration-150"
                 placeholder="Masukkan username yang didaftarkan"
                 value={formData.username}
                 onChange={(e) =>
                   setFormData({ ...formData, username: e.target.value })
                 }
+                autoComplete="username"
               />
             </div>
 
             <div className="relative">
-              <label className="block text-sm font-bold text-ink mb-2">
+              <label className="block text-sm font-semibold text-ink mb-2">
                 Password
               </label>
               <input
                 type={showPassword ? "text" : "password"}
                 required
-                className="appearance-none block w-full px-4 py-3 border border-line rounded-xl bg-surface2 text-ink focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-card transition-colors"
-                placeholder="••••••••"
+                className="block w-full px-4 py-3 pr-11 rounded-lg border border-line bg-surface2 text-ink focus:outline-none focus:ring-2 focus:ring-PrimaryColor-0 focus:bg-card transition-colors duration-150"
+                placeholder="Masukkan password"
                 value={formData.password}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
+                autoComplete="current-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-10 text-muted hover:text-green-600 transition-colors"
+                aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                className="absolute right-3 top-[38px] flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:text-PrimaryColor-0 hover:bg-green-50 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-PrimaryColor-0"
               >
                 {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
               </button>
@@ -131,11 +131,9 @@ const LoginSantri = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white ${
-              isLoading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
-            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors shadow-md`}
+            className="w-full flex justify-center items-center py-3 px-4 rounded-lg text-sm font-semibold text-white bg-PrimaryColor-0 hover:bg-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-PrimaryColor-0 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-150"
           >
-            {isLoading ? "Memeriksa..." : "Masuk ke Portal"}
+            {isLoading ? "Memeriksa..." : "Masuk"}
           </button>
         </form>
 
@@ -144,7 +142,7 @@ const LoginSantri = () => {
             Belum punya akun?{" "}
             <Link
               to="/pendaftaran"
-              className="font-bold text-green-600 hover:text-green-500 transition-colors"
+              className="font-semibold text-PrimaryColor-0 hover:text-green-700 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-PrimaryColor-0 focus-visible:ring-offset-1 rounded-sm"
             >
               Daftar Sekarang
             </Link>

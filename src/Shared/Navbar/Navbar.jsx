@@ -199,9 +199,9 @@ const Navbar = () => {
       title: "Ekosistem",
       path: "#",
       submenus: [
-        { title: "Kategori", path: "/koleksi-tanaman" },
+        { title: "Pertanian", path: "/koleksi-tanaman" },
         { title: "Peternakan", path: "/peternakan" },
-        { title: "Bisnis", path: "/bisnis" },
+        { title: "Pendidikan", path: "/kelas" },
       ],
     },
     { title: "Blog", path: "/blog_grid" },
@@ -215,15 +215,20 @@ const Navbar = () => {
         className={`safe-top w-full transition-all duration-300 bg-black/80 backdrop-blur-lg fixed top-0 left-0 z-[50] shadow-lg`}
       >
         <header className="header-section bg-transparent border-b border-white/10 relative">
-          <div className="Container relative" ref={searchRef}>
-            <div className="flex items-center justify-between h-[70px] lg:h-[90px] xl:h-[100px] px-0">
+          <div
+            className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-4 2xl:px-10 relative"
+            ref={searchRef}
+          >
+            <div className="flex items-center justify-between gap-8 2xl:gap-10 h-[72px] lg:h-[92px] 2xl:h-[106px]">
               {/* Website Logo */}
-              <div className="flex-shrink-0">
+              <div className="flex items-center justify-start min-w-0">
                 <Link to="/" className="flex items-center gap-2 sm:gap-3">
                   <img decoding="async"
                     loading="lazy"
                     draggable="false"
                     src={Logo}
+                    width="513"
+                    height="821"
                     className="object-contain h-[45px] sm:h-[50px] lg:h-[60px] xl:h-[70px] w-auto"
                     alt="Alfilaha Logo"
                   />
@@ -243,7 +248,7 @@ const Navbar = () => {
                 <button
                   aria-label="Search"
                   onClick={() => setIsSearchOpen(!isSearchOpen)}
-                  className={`flex items-center justify-center w-11 h-11 rounded-full bg-white/10 dark:bg-white/[0.08] hover:bg-white/20 dark:hover:bg-white/[0.16] transition-colors focus:outline-none ${isSearchOpen ? "text-[#0d806a]" : "text-white"}`}
+                    className={`flex items-center justify-center w-11 h-11 rounded-full bg-white/10 dark:bg-white/[0.08] hover:bg-white/20 dark:hover:bg-white/[0.16] transition-all duration-150 active:scale-95 focus:outline-none ${isSearchOpen ? "text-[#0d806a]" : "text-white"}`}
                 >
                   <IoSearch className="w-5 h-5" />
                 </button>
@@ -255,7 +260,7 @@ const Navbar = () => {
                     isDark ? "Aktifkan mode terang" : "Aktifkan mode gelap"
                   }
                   aria-pressed={isDark}
-                  className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 dark:bg-white/[0.08] hover:bg-white/20 dark:hover:bg-white/[0.16] transition-colors focus:outline-none text-white"
+                  className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 dark:bg-white/[0.08] hover:bg-white/20 dark:hover:bg-white/[0.16] transition-all duration-150 active:scale-95 focus:outline-none text-white"
                 >
                   {isDark ? (
                     <FiSun className="w-5 h-5" />
@@ -264,7 +269,7 @@ const Navbar = () => {
                   )}
                 </button>
                 <button
-                  className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 dark:bg-white/[0.08] hover:bg-white/20 dark:hover:bg-white/[0.16] transition-colors focus:outline-none"
+                  className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 dark:bg-white/[0.08] hover:bg-white/20 dark:hover:bg-white/[0.16] transition-all duration-150 active:scale-95 focus:outline-none"
                   onClick={toggleNavbar}
                   aria-label="Buka menu"
                   aria-expanded={isOpen}
@@ -274,17 +279,17 @@ const Navbar = () => {
               </div>
 
               {/* Desktop NavLinks */}
-              <div className="hidden lg:flex flex-1 justify-center items-center">
-                <ul className="flex items-center gap-3 xl:gap-5">
+              <div className="hidden xl:flex items-center">
+                <ul className="flex items-center gap-6 2xl:gap-9">
                   {navLinks.map((link, idx) => (
                     <li key={idx} className="group relative">
                       <NavLink
                         to={link.path}
                         className={({ isActive }) =>
-                          `flex items-center px-2.5 py-2 lg:px-3 lg:py-2 xl:px-3 xl:py-2 text-[13px] lg:text-[14px] xl:text-[16px] font-AlbertSans font-semibold transition-all duration-300 ${
+                          `flex items-center px-1 py-2.5 text-[15px] font-AlbertSans font-semibold transition-all duration-150 hover:text-[#0d806a] ${
                             isActive && link.path !== "#"
                               ? "text-[#0d806a]"
-                              : "text-white hover:text-[#0d806a]"
+                              : "text-white"
                           }`
                         }
                       >
@@ -301,11 +306,11 @@ const Navbar = () => {
                             {link.submenus.map((sub, sIdx) => (
                               <li
                                 key={sIdx}
-                                className="hover:bg-[#0d806a]/20 transition-colors duration-300"
+                                className="hover:bg-[#0d806a]/20 transition-colors duration-150 active:bg-[#0d806a]/30"
                               >
                                 <Link
                                   to={sub.path}
-                                  className="block px-4 py-2.5 lg:px-5 lg:py-3 text-sm text-white hover:text-[#0d806a] transition-all duration-300"
+                                  className="block px-4 py-2.5 lg:px-5 lg:py-3 text-sm text-white hover:text-[#0d806a] transition-all duration-150 active:scale-[0.995]"
                                 >
                                   {sub.title}
                                 </Link>
@@ -320,11 +325,11 @@ const Navbar = () => {
               </div>
 
               {/* Desktop Right Actions */}
-              <div className="hidden lg:flex items-center gap-3 xl:gap-4">
+              <div className="hidden xl:flex items-center gap-3 2xl:gap-5">
                 <button
                   aria-label="Search"
                   onClick={() => setIsSearchOpen(!isSearchOpen)}
-                  className={`text-white transition-colors hover:text-[#0d806a] ${isSearchOpen ? "text-[#0d806a]" : ""}`}
+                  className={`text-white transition-all duration-200 hover:text-[#0d806a] hover:-translate-y-0.5 active:scale-95 ${isSearchOpen ? "text-[#0d806a]" : ""}`}
                 >
                   <IoSearch className="text-xl xl:text-2xl" />
                 </button>
@@ -338,7 +343,7 @@ const Navbar = () => {
                   }
                   aria-pressed={isDark}
                   title={isDark ? "Mode terang" : "Mode gelap"}
-                  className="text-white transition-colors hover:text-[#0d806a] flex items-center justify-center"
+                  className="text-white transition-all duration-200 hover:text-[#0d806a] hover:-translate-y-0.5 active:scale-95 flex items-center justify-center"
                 >
                   {isDark ? (
                     <FiSun className="text-[20px] xl:text-[22px] transition-transform duration-300 hover:rotate-45" />
@@ -349,7 +354,7 @@ const Navbar = () => {
 
                 <Link
                   to={"/pesan-tempat"}
-                  className="whitespace-nowrap px-3 py-1.5 lg:px-3 lg:py-1.5 xl:px-5 xl:py-2.5 border-2 border-white/30 hover:border-[#0d806a] text-white hover:text-[#0d806a] rounded-full text-[12px] lg:text-[12px] xl:text-[14px] font-bold transition-all"
+                  className="whitespace-nowrap px-[18px] 2xl:px-5 py-2.5 border-2 border-white/30 hover:border-[#0d806a] text-white hover:text-[#0d806a] active:scale-95 hover:shadow-md rounded-full text-[13px] font-bold transition-all duration-150"
                 >
                   Pesan Tempat
                 </Link>
@@ -359,7 +364,7 @@ const Navbar = () => {
                   <div className="relative" ref={profileRef}>
                     <button
                       onClick={() => setProfileOpen((p) => !p)}
-                      className="flex items-center gap-2 px-3 py-1.5 lg:px-3 lg:py-1.5 xl:px-4 xl:py-2 bg-white/10 dark:bg-white/[0.08] hover:bg-white/20 dark:hover:bg-white/[0.16] text-white rounded-full font-bold transition-all border border-white/20 hover:border-white/40"
+                      className="flex items-center gap-2 px-[18px] 2xl:px-5 py-2 bg-white/10 dark:bg-white/[0.08] hover:bg-white/20 dark:hover:bg-white/[0.16] text-white rounded-full font-bold transition-all duration-200 border border-white/20 hover:border-white/40 hover:-translate-y-0.5 active:scale-95"
                     >
                       {/* Avatar inisial — huruf pertama username */}
                       <span className="w-6 h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 rounded-full bg-[#0d806a] flex items-center justify-center text-white text-xs lg:text-xs xl:text-sm font-extrabold flex-shrink-0">
@@ -367,7 +372,7 @@ const Navbar = () => {
                       </span>
                       <span
                         title={namaTampilan(santriData)}
-                        className="text-[12px] lg:text-[12px] xl:text-sm max-w-[60px] lg:max-w-[70px] xl:max-w-[90px] truncate hidden lg:block"
+                        className="text-[12px] lg:text-[12px] xl:text-sm max-w-[60px] lg:max-w-[70px] xl:max-w-[90px] truncate hidden 2xl:block"
                       >
                         {namaTampilan(santriData)}
                       </span>
@@ -503,13 +508,13 @@ const Navbar = () => {
                   <>
                     <Link
                       to={"/pendaftaran"}
-                      className="whitespace-nowrap px-3 py-1.5 lg:px-3 lg:py-1.5 xl:px-4 xl:py-2 border-2 border-white/30 hover:border-[#0d806a] text-white hover:text-[#0d806a] rounded-full text-[12px] lg:text-[12px] xl:text-[14px] font-bold transition-all"
+                      className="whitespace-nowrap px-[18px] 2xl:px-5 py-2.5 border-2 border-white/30 hover:border-[#0d806a] text-white hover:text-[#0d806a] rounded-full text-[13px] font-bold transition-all duration-150 active:scale-95 hover:shadow-md"
                     >
                       Pendaftaran
                     </Link>
                     <Link
                       to={"/donation_inner"}
-                      className="whitespace-nowrap px-3 py-1.5 lg:px-3 lg:py-1.5 xl:px-6 xl:py-3 bg-[#0d806a] hover:bg-[#0a6658] text-white rounded-full text-[12px] lg:text-[12px] xl:text-[14px] font-bold transition-all shadow-lg hover:-translate-y-1"
+                      className="whitespace-nowrap px-[18px] 2xl:px-5 py-2.5 bg-[#0d806a] hover:bg-[#0a6658] text-white rounded-full text-[13px] 2xl:text-sm font-bold transition-all duration-150 shadow-lg active:scale-95 hover:shadow-md"
                     >
                       Donasi
                     </Link>
@@ -568,6 +573,8 @@ const Navbar = () => {
               loading="lazy"
               draggable="false"
               src={Logo}
+              width="513"
+              height="821"
               className="object-contain h-[40px] w-auto"
               alt="Logo"
             />
@@ -598,7 +605,7 @@ const Navbar = () => {
                   <div className="flex flex-col">
                     <button
                       onClick={() => toggleDropdown(link.title)}
-                      className="flex items-center justify-between w-full py-3 text-white text-[15px] sm:text-[16px] font-AlbertSans font-medium transition-colors hover:text-[#0d806a]"
+                      className="flex items-center justify-between w-full py-3 px-2 -mx-2 rounded-lg text-white text-[15px] sm:text-[16px] font-AlbertSans font-medium transition-all duration-150 hover:text-[#0d806a] hover:bg-white/5 active:scale-[0.99]"
                       aria-expanded={openDropdown === link.title}
                     >
                       {link.title}
@@ -616,7 +623,7 @@ const Navbar = () => {
                           <li key={sIdx}>
                             <Link
                               to={sub.path}
-                              className="block py-2.5 text-white/70 hover:text-[#0d806a] text-[14px] font-AlbertSans transition-colors"
+                              className="block py-2.5 px-2 -mx-2 rounded-md text-white/70 hover:text-[#0d806a] hover:bg-white/5 active:scale-[0.995] text-[14px] font-AlbertSans transition-all duration-150"
                             >
                               {sub.title}
                             </Link>
@@ -626,10 +633,10 @@ const Navbar = () => {
                     </div>
                   </div>
                 ) : (
-                  <Link
-                    to={link.path}
-                    className="flex items-center w-full py-3 text-white text-[15px] sm:text-[16px] font-AlbertSans font-medium hover:text-[#0d806a] transition-colors"
-                  >
+                    <Link
+                      to={link.path}
+                      className="block py-3 px-2 -mx-2 rounded-lg text-white text-[15px] sm:text-[16px] font-AlbertSans font-medium transition-all duration-150 hover:text-[#0d806a] hover:bg-white/5 active:scale-[0.99]"
+                    >
                     {link.title}
                   </Link>
                 )}
@@ -640,7 +647,7 @@ const Navbar = () => {
           <div className="mt-8 pt-6 border-t border-white/10 flex flex-col gap-3">
             <Link
               to={"/pesan-tempat"}
-              className="flex justify-center w-full py-3.5 border-2 border-white/30 text-white rounded-full font-bold transition-colors hover:border-[#0d806a] hover:text-[#0d806a]"
+              className="flex justify-center w-full py-3.5 border-2 border-white/30 text-white rounded-full font-bold transition-all duration-150 hover:border-[#0d806a] hover:text-[#0d806a] hover:-translate-y-0.5 active:scale-[0.995] hover:shadow-md"
             >
               Pesan Tempat
             </Link>
@@ -684,7 +691,7 @@ const Navbar = () => {
                       setIsOpen(false);
                       navigate("/dashboard-santri");
                     }}
-                    className="flex items-center justify-center gap-2 w-full py-3 bg-white text-green-700 rounded-full font-bold transition-colors hover:bg-green-50 shadow"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-white text-green-700 rounded-full font-bold transition-all duration-150 hover:bg-green-50 shadow hover:-translate-y-0.5 active:scale-[0.995]"
                   >
                     <FiLayout size={16} /> Halaman Saya
                   </button>
@@ -697,7 +704,7 @@ const Navbar = () => {
                       setIsOpen(false);
                       navigate("/status-pendaftaran");
                     }}
-                    className="flex items-center justify-center gap-2 w-full py-3 bg-white text-blue-700 rounded-full font-bold transition-colors hover:bg-blue-50 shadow"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-white text-green-700 rounded-full font-bold transition-all duration-150 hover:bg-green-50 shadow hover:-translate-y-0.5 active:scale-[0.995]"
                   >
                     <FiUser size={16} /> Status Pendaftaran
                   </button>
@@ -707,7 +714,7 @@ const Navbar = () => {
                     setIsOpen(false);
                     handleLogout();
                   }}
-                  className="flex items-center justify-center gap-2 w-full py-3 bg-red-500/20 text-red-300 rounded-full font-bold hover:bg-red-500/30 transition-colors"
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold transition-all duration-150 shadow hover:-translate-y-0.5 active:scale-[0.995]"
                 >
                   <FiLogOut size={16} /> Keluar
                 </button>
@@ -716,13 +723,13 @@ const Navbar = () => {
               <>
                 <Link
                   to={"/pendaftaran"}
-                  className="flex justify-center w-full py-3.5 border-2 border-white/30 text-white rounded-full font-bold transition-colors hover:border-[#0d806a] hover:text-[#0d806a]"
+                  className="flex justify-center w-full py-3.5 border-2 border-white/30 text-white rounded-full font-bold transition-all duration-150 hover:border-[#0d806a] hover:text-[#0d806a] hover:-translate-y-0.5 active:scale-[0.995] hover:shadow-md"
                 >
                   Pendaftaran
                 </Link>
                 <Link
                   to={"/donation_inner"}
-                  className="flex justify-center w-full py-3.5 bg-[#0d806a] text-white rounded-full font-bold transition-colors hover:bg-[#0a6658] shadow-lg"
+                  className="flex justify-center w-full py-3.5 bg-[#0d806a] hover:bg-[#0a6658] text-white rounded-full font-bold transition-all duration-150 shadow-lg hover:-translate-y-0.5 active:scale-[0.995] hover:shadow-md"
                 >
                   Donasi
                 </Link>

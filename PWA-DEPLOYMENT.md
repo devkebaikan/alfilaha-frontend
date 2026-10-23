@@ -67,10 +67,24 @@ Service worker juga aktif saat `npm run dev` (`devOptions.enabled: true`).
    location = /sw.js {
      add_header Cache-Control "no-cache, max-age=0";
    }
+   # Aset Vite punya hash di nama file → aman di-cache selamanya.
+   location /assets/ {
+     add_header Cache-Control "public, max-age=31536000, immutable";
+   }
    location / {
      add_header Cache-Control "no-store, must-revalidate";
      try_files $uri $uri/ /index.html;
    }
+   ```
+
+   Aktifkan juga kompresi di nginx untuk JS/CSS/JSON:
+
+   ```nginx
+   gzip on;
+   gzip_comp_level 6;
+   gzip_min_length 1024;
+   gzip_types text/plain text/css application/javascript application/json
+              application/manifest+json image/svg+xml;
    ```
 
    Contoh **Express** (memakai folder `dist`):

@@ -43,7 +43,8 @@ const Home1 = () => {
         const url = import.meta.env.VITE_PUBLIC_API || "http://localhost:5000";
         const [resWisata, resBlogs] = await Promise.all([
           fetch(`${url}/api/paket`).catch(() => null),
-          fetch(`${url}/api/blogs`).catch(() => null),
+          // Hanya butuh 3 artikel terbaru & tanpa kolom `content` yang berat.
+          fetch(`${url}/api/blogs?limit=3&fields=list`).catch(() => null),
         ]);
 
         if (resWisata && resWisata.ok) setWisata(await resWisata.json());
@@ -63,7 +64,24 @@ const Home1 = () => {
       {/* 1. HERO SECTION */}
       <section className="relative h-[100svh] min-h-[500px] lg:min-h-[700px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <div className="w-full h-full bg-[url('/images/IMG_0615.JPG')] bg-cover bg-center animate-kenburns origin-center"></div>
+          <picture className="block w-full h-full animate-kenburns origin-center">
+            <source
+              media="(min-width: 1280px)"
+              srcSet="/images/IMG_0615-1920.jpg"
+              type="image/jpeg"
+            />
+            <img
+              src="/images/IMG_0615.JPG"
+              srcSet="/images/IMG_0615-640.jpg 640w, /images/IMG_0615.JPG 1024w"
+              sizes="100vw"
+              width="1024"
+              height="682"
+              alt="Latar kawasan pertanian Alfilaha"
+              decoding="async"
+              fetchPriority="high"
+              className="w-full h-full object-cover object-center"
+            />
+          </picture>
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80"></div>
         </div>
         <div className="relative z-10 text-center px-4 max-w-5xl mx-auto mt-16 md:mt-20">
@@ -653,11 +671,11 @@ const Home1 = () => {
                 </h5>
               </div>
               <h2 className="text-[28px] sm:text-[34px] md:text-[44px] font-bold text-HeadingColor-0 leading-[1.25]">
-                Kegiatan Alfilaha
+                Kegiatan AlfilahaKabar 
               </h2>
               <p className="text-TextColor-0 text-[16px] sm:text-[17px] mt-5 leading-[1.8] max-w-xl">
-                Catatan lapangan, proses belajar, dan cerita dari lahan yang
-                kami bagikan untuk umum.
+                Catatan lapangan, proses belajar, dan cerita dari lahan yang kami bagikan untuk umum. Dari perawatan kebun dan peternakan hingga kegiatan santri sehari-hari, 
+                setiap tulisan merekam pengalaman nyata agar bisa menjadi inspirasi dan bahan belajar bagi siapa pun.
               </p>
             </div>
             <Link to="/blog_grid">
@@ -715,6 +733,7 @@ const Home1 = () => {
                           ? blog.excerpt.replace(/<[^>]+>/g, "")
                           : blog.excerpt
                         : ""}
+                        
                     </p>
                     <div className="pt-6 border-t border-BorderColor2-0">
                       <Link

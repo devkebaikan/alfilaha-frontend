@@ -30,7 +30,7 @@ const PaketWisata = () => {
       className={`bg-card rounded-lg overflow-hidden transition-all duration-500 hover:shadow-xl ${
         paket.isPopular
           ? "border-2 border-PrimaryColor-0 relative"
-          : "border border-line"
+          : "border border-BorderColor2-0"
       }`}
     >
       {paket.isPopular && (
@@ -38,50 +38,52 @@ const PaketWisata = () => {
           Paling Populer
         </div>
       )}
-      <div className="p-5 sm:p-8">
+      <div className="p-8 flex flex-col h-full">
         <div
-          className="cursor-pointer group"
+          className="cursor-pointer group flex-1 flex flex-col"
           onClick={() => setSelectedDetail(paket)}
         >
           {paket.gambar && (
-            <div className="mb-5 sm:mb-6 rounded-xl overflow-hidden h-40 sm:h-48 w-full">
-              <img loading="lazy" decoding="async"
+            <div className="mb-6 -mx-8 -mt-8 overflow-hidden h-56 sm:h-64 w-[calc(100%+4rem)]">
+              <img
                 src={`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${paket.gambar}`}
                 alt={paket.nama_paket}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-            </div>
+            </div> 
           )}
-          <h3 className="font-AlbertSans font-bold text-xl sm:text-2xl text-HeadingColor-0 mb-3 sm:mb-4 group-hover:text-PrimaryColor-0 transition-colors">
+          <h3 className="font-AlbertSans font-bold text-2xl text-ink mb-4 group-hover:text-PrimaryColor-0 transition-colors">
             {paket.nama_paket}
           </h3>
-          <div className="flex items-baseline gap-2 mb-6 border-b border-line pb-6">
+          <div className="flex items-baseline gap-2 mb-6 border-b border-BorderColor2-0 pb-6">
             <span className="font-AlbertSans font-bold text-2xl sm:text-3xl text-PrimaryColor-0">
               {paket.harga}
             </span>
           </div>
-          <div className="mb-6">
+          <div className="mb-6 flex-1">
             <div
-              className="prose prose-sm text-TextColor-0 font-AlbertSans max-w-none line-clamp-3"
+              className="prose prose-sm text-muted font-AlbertSans max-w-none line-clamp-3 dark:prose-invert"
               dangerouslySetInnerHTML={{ __html: paket.deskripsi }}
             />
-            <span className="text-PrimaryColor-0 font-semibold text-sm mt-2 block group-hover:underline">
-              Klik untuk melihat detail lengkap
-            </span>
           </div>
+          <span className="text-PrimaryColor-0 font-semibold text-sm mt-auto block group-hover:underline">
+            Klik untuk melihat detail lengkap
+          </span>
         </div>
-        <Link to="/pesan-tempat" state={{ selectedPaket: paket.nama_paket }}>
-          <button
-            className={`w-full flex items-center justify-center gap-2 py-3 px-6 rounded-md transition-all duration-300 font-AlbertSans font-semibold ${
-              paket.isPopular
-                ? "bg-PrimaryColor-0 text-white hover:bg-opacity-90"
-                : "border-2 border-PrimaryColor-0 text-PrimaryColor-0 hover:bg-PrimaryColor-0 hover:text-white"
-            }`}
-          >
-            Pesan Sekarang
-            <FaArrowRightLong />
-          </button>
-        </Link>
+        <div className="mt-4">
+          <Link to="/pesan-tempat" state={{ selectedPaket: paket.nama_paket }}>
+            <button
+              className={`w-full flex items-center justify-center gap-2 py-3 px-6 rounded-md transition-all duration-300 font-AlbertSans font-semibold ${
+                paket.isPopular
+                  ? "bg-PrimaryColor-0 text-white hover:bg-opacity-90"
+                  : "border-2 border-PrimaryColor-0 text-PrimaryColor-0 hover:bg-PrimaryColor-0 hover:text-white"
+              }`}
+            >
+              Pesan Sekarang
+              <FaArrowRightLong />
+            </button>
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -99,7 +101,7 @@ const PaketWisata = () => {
         <div className="Container">
           <div className="text-center mb-16">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center justify-center gap-2">
-              <img decoding="async"
+              <img
                 loading="lazy"
                 src={subTitleShape}
                 draggable="false"
@@ -107,11 +109,11 @@ const PaketWisata = () => {
               />
               PAKET WISATA
             </h5>
-            <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.35] sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] px-1 sm:px-2 text-HeadingColor-0 mt-5">
+            <h1 className="font-AlbertSans font-bold text-[22px] leading-8 sm:text-[38px] sm:leading-[48px] md:text-[44px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-ink mt-5">
               Pesan Edukasi & <br className="hidden sm:block" />
               Wisata Umum
             </h1>
-            <p className="font-AlbertSans text-TextColor-0 text-[16px] sm:text-[17px] mt-5 sm:mt-6 leading-[1.8] max-w-3xl mx-auto px-1 sm:px-2">
+            <p className="font-AlbertSans text-muted mt-4 max-w-3xl mx-auto">
               Kami menyiapkan beragam paket, harus paket kegiatan yang bisa
               dibook atau diatur dengan kegiatan lain sesuai kebutuhan Anda.
               Silakan pilih mana yang paling pas untuk rombongan kita.
@@ -120,16 +122,16 @@ const PaketWisata = () => {
 
           {/* Daftar Paket Utama */}
           <div className="mb-10">
-            <h2 className="font-AlbertSans font-bold text-3xl text-HeadingColor-0 mb-8 text-center">
+            <h2 className="font-AlbertSans font-bold text-3xl text-ink mb-8 text-center">
               Pilihan Paket Tersedia
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {paketList.length > 0 ? (
                 paketList.map((paket) => (
                   <PricingCard key={paket.id} paket={paket} />
                 ))
               ) : (
-                <div className="col-span-full text-center text-muted py-10 font-bold">
+                <div className="col-span-full text-center text-gray-500 py-10 font-bold">
                   Belum ada paket wisata yang tersedia saat ini.
                 </div>
               )}
@@ -137,11 +139,11 @@ const PaketWisata = () => {
           </div>
 
           {/* Info Tambahan */}
-          <div className="mt-10 sm:mt-16 bg-gradient-to-br from-surface2 to-card p-5 sm:p-8 rounded-lg border border-line">
-            <h3 className="font-AlbertSans font-bold text-2xl text-HeadingColor-0 mb-4">
+          <div className="mt-16 bg-gradient-to-br from-surface2 to-card dark:from-slate-800/60 dark:to-slate-900/40 p-8 rounded-lg border border-BorderColor2-0">
+            <h3 className="font-AlbertSans font-bold text-2xl text-ink mb-4">
               Informasi Penting
             </h3>
-            <ul className="space-y-2 font-AlbertSans text-TextColor-0">
+            <ul className="space-y-2 font-AlbertSans text-muted">
               <li>• Harga dapat berubah sewaktu-waktu tanpa pemberitahuan</li>
               <li>
                 • Reservasi minimal H-7 untuk memastikan kesiapan fasilitas
@@ -163,20 +165,20 @@ const PaketWisata = () => {
 
           {/* CTA */}
           <div className="mt-12 text-center">
-            <p className="font-AlbertSans text-[16px] sm:text-lg text-TextColor-0 mb-6 leading-[1.8] max-w-xl mx-auto px-1 sm:px-2">
+            <p className="font-AlbertSans text-lg text-muted mb-6">
               Punya pertanyaan atau ingin paket custom?
             </p>
-            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 justify-center">
-              <Link to="/contact" className="w-full sm:w-auto">
-                <button className="primary-btn w-full justify-center !px-3 sm:!px-10 !py-3.5 sm:!py-[14px] !text-[14px] sm:!text-[17px] whitespace-nowrap">
-                  <span>Hubungi Kami</span>
-                  <FaArrowRightLong className="shrink-0 text-sm sm:text-base" />
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/contact">
+                <button className="primary-btn">
+                  Hubungi Kami
+                  <FaArrowRightLong />
                 </button>
               </Link>
-              <Link to="/pesan-toi" className="w-full sm:w-auto">
-                <button className="primary-btn2 w-full justify-center !border-PrimaryColor-0 !border !px-3 sm:!px-10 !py-3.5 sm:!py-4 !text-[14px] sm:!text-[17px] whitespace-nowrap">
-                  <span>Pesan Sekarang</span>
-                  <FaArrowRightLong className="shrink-0 text-sm sm:text-base" />
+              <Link to="/pesan-tempat">
+                <button className="primary-btn2 !border-PrimaryColor-0 !border">
+                  Pesan Sekarang
+                  <FaArrowRightLong />
                 </button>
               </Link>
             </div>
@@ -187,18 +189,18 @@ const PaketWisata = () => {
       {/* Modal Detail Paket */}
       {selectedDetail && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity">
-          <div className="bg-card rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+          <div className="bg-card rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative border border-line">
             {/* Close button */}
             <button
               onClick={() => setSelectedDetail(null)}
-              className="absolute top-4 right-4 w-10 h-10 bg-card rounded-full flex items-center justify-center text-muted hover:text-red-600 hover:bg-red-50 shadow-md z-10 transition-colors text-xl font-bold"
+              className="absolute top-4 right-4 w-10 h-10 bg-card rounded-full flex items-center justify-center text-muted hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 shadow-md z-10 transition-colors text-xl font-bold border border-line"
             >
               ✕
             </button>
 
             {/* Modal Image */}
             <div className="w-full h-64 md:h-80 relative">
-              <img loading="lazy" decoding="async"
+              <img
                 src={
                   selectedDetail.gambar
                     ? `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${selectedDetail.gambar}`
@@ -208,7 +210,7 @@ const PaketWisata = () => {
                 className="w-full h-full object-cover"
               />
               <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/80 to-transparent">
-                <h2 className="text-3xl font-bold text-white mb-2">
+                <h2 className="text-3xl font-bold text-white mb-2 drop-shadow-md">
                   {selectedDetail.nama_paket}
                 </h2>
                 <div className="inline-block bg-PrimaryColor-0 text-white px-5 py-1.5 rounded-full font-bold text-lg shadow-lg">
@@ -219,18 +221,18 @@ const PaketWisata = () => {
 
             {/* Modal Content */}
             <div className="p-8">
-              <h3 className="text-xl font-bold text-HeadingColor-0 mb-4 border-b pb-2">
+              <h3 className="text-xl font-bold text-ink mb-4 border-b pb-2 border-BorderColor2-0">
                 Detail Fasilitas & Kegiatan
               </h3>
               <div
-                className="prose prose-md text-TextColor-0 font-AlbertSans max-w-none mb-8"
+                className="prose prose-md text-muted font-AlbertSans max-w-none mb-8 dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: selectedDetail.deskripsi }}
               />
 
-              <div className="flex gap-4 pt-4 border-t border-line">
+              <div className="flex gap-4 pt-4 border-t border-BorderColor2-0">
                 <button
                   onClick={() => setSelectedDetail(null)}
-                  className="flex-1 py-3 px-6 rounded-xl border border-line text-ink font-semibold hover:bg-surface2 transition-colors"
+                  className="flex-1 py-3 px-6 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Tutup
                 </button>

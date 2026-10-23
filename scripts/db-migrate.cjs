@@ -199,6 +199,99 @@ async function createCoreTables() {
       poster VARCHAR(255),
       keterangan TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+    `CREATE TABLE IF NOT EXISTS kelas (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      nama VARCHAR(255) NOT NULL,
+      tahun_ajaran VARCHAR(100),
+      wali_kelas VARCHAR(255),
+      deskripsi TEXT,
+      foto VARCHAR(255),
+      jumlah_santri INT NOT NULL DEFAULT 0,
+      status ENUM('draft','dipublikasikan') DEFAULT 'draft',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+    `CREATE TABLE IF NOT EXISTS aktivitas_kelas (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      kelas_id INT NOT NULL,
+      jenis ENUM('fgd','kunjungan','klasikal') NOT NULL,
+      tanggal DATE NOT NULL,
+      judul VARCHAR(255) NOT NULL,
+      catatan TEXT,
+      foto VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      CONSTRAINT fk_aktivitas_kelas_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+    `CREATE TABLE IF NOT EXISTS user_peran (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      peran ENUM('guru','santri','petugas') NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_user_peran (user_id, peran),
+      CONSTRAINT fk_user_peran_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+    `CREATE TABLE IF NOT EXISTS penempatan_santri (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      santri_id INT NOT NULL,
+      kelas_id INT NOT NULL,
+      tahun_ajaran VARCHAR(50) NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_penempatan (santri_id, kelas_id, tahun_ajaran),
+      CONSTRAINT fk_penempatan_santri FOREIGN KEY (santri_id) REFERENCES users(id) ON DELETE CASCADE,
+      CONSTRAINT fk_penempatan_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+    `CREATE TABLE IF NOT EXISTS jadwal_pelajaran (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      kelas_id INT NOT NULL,
+      tahun_ajaran VARCHAR(50) NULL,
+      hari ENUM('Senin','Selasa','Rabu','Kamis','Jumat','Sabtu') NOT NULL,
+      jam_mulai TIME NOT NULL,
+      jam_selesai TIME NOT NULL,
+      mapel VARCHAR(150) NOT NULL,
+      guru_id INT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_jadwal_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE,
+      CONSTRAINT fk_jadwal_guru FOREIGN KEY (guru_id) REFERENCES users(id) ON DELETE SET NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+    `CREATE TABLE IF NOT EXISTS absensi_santri (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      santri_id INT NOT NULL,
+      kelas_id INT NOT NULL,
+      tanggal DATE NOT NULL,
+      status ENUM('hadir','izin') NOT NULL,
+      jawaban_sampai_selesai ENUM('ya','tidak') NULL,
+      foto VARCHAR(255) NULL,
+      deskripsi TEXT NULL,
+      waktu_server TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      dikoreksi_oleh INT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_abs_santri FOREIGN KEY (santri_id) REFERENCES users(id) ON DELETE CASCADE,
+      CONSTRAINT fk_abs_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE,
+      UNIQUE KEY uq_abs (santri_id, kelas_id, tanggal)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+    `CREATE TABLE IF NOT EXISTS riwayat_kelas (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      kelas_id INT NOT NULL,
+      tanggal DATE NOT NULL,
+      mapel VARCHAR(150) NULL,
+      catatan TEXT NULL,
+      foto VARCHAR(255) NULL,
+      dibatalkan TINYINT(1) DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_riw_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+
+    `CREATE TABLE IF NOT EXISTS tahun_ajaran (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      tahun VARCHAR(20) NOT NULL,
+      aktif TINYINT(1) DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_tahun_ajaran (tahun)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
   ];
 
@@ -219,6 +312,11 @@ async function createCoreTables() {
   await addColumn('users', 'updated_at', 'TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
   await addColumn('program_pendaftaran', 'poster', 'VARCHAR(255) NULL');
   await addColumn('program_pendaftaran', 'keterangan', 'TEXT NULL');
+  await addColumn('kelas', 'jumlah_santri', 'INT NOT NULL DEFAULT 0');
+  await addColumn('kelas', 'tahun_ajaran', 'VARCHAR(100) NULL');
+  await addColumn('kelas', 'wali_kelas', 'VARCHAR(255) NULL');
+  await addColumn('kelas', 'deskripsi', 'TEXT NULL');
+  await addColumn('kelas', 'foto', 'VARCHAR(255) NULL');
 }
 
 async function createScheduleTables() {
@@ -334,6 +432,17 @@ async function createRelationTables() {
       PRIMARY KEY (aktivitas_id, santri_id),
       FOREIGN KEY (aktivitas_id) REFERENCES activity_schedules(id) ON DELETE CASCADE,
       FOREIGN KEY (santri_id) REFERENCES pendaftar_santri(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+    `CREATE TABLE IF NOT EXISTS jadwal_kelas (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      aktivitas_id INT NOT NULL,
+      kelas_id INT NOT NULL,
+      aksi VARCHAR(50) NOT NULL,
+      UNIQUE KEY uq_jadwal_kelas_aksi (aktivitas_id, kelas_id, aksi),
+      KEY idx_jk_aktivitas (aktivitas_id),
+      KEY idx_jk_kelas (kelas_id),
+      FOREIGN KEY (aktivitas_id) REFERENCES activity_schedules(id) ON DELETE CASCADE,
+      FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
   ];
 
@@ -353,6 +462,7 @@ async function createRelationTables() {
     await run('ALTER TABLE aktivitas_tanaman ADD UNIQUE KEY uq_aktivitas_tanaman_aksi (aktivitas_id, tanaman_id, aksi)');
   }
   await addColumn('tanaman', 'lokasi_id', 'INT NULL');
+  await addColumn('tanaman', 'nama_donatur', 'VARCHAR(255) NULL');
   await ensureForeignKey('tanaman', 'lokasi_id', 'lokasi', 'id');
 }
 
@@ -380,7 +490,7 @@ async function createCareTables() {
   await addColumn('log_perawatan', 'role_perawat', 'VARCHAR(50) NULL');
   await addColumn('log_perawatan', 'gambar', 'VARCHAR(255) NULL');
   await addColumn('log_perawatan', 'jadwal_id', 'INT NULL');
-  await addColumn('log_perawatan', 'laporan_singkat', 'TEXT NULL');
+  await addColumn('log_perawatan', 'laporan_s ingkat', 'TEXT NULL');
   if ((await columnInfo('log_perawatan', 'santri_id'))?.IS_NULLABLE === 'NO') {
     await run('ALTER TABLE log_perawatan MODIFY COLUMN santri_id INT NULL');
   }
@@ -436,8 +546,7 @@ async function createLivestockTables() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (jenis_ternak_id) REFERENCES jenis_ternak(id) ON DELETE CASCADE,
-      FOREIGN KEY (lokasi_id) REFERENCES lokasi(id) ON DELETE SET NULL,
-      UNIQUE KEY uq_ternak_jenis (jenis_ternak_id)
+      FOREIGN KEY (lokasi_id) REFERENCES lokasi(id) ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
     `CREATE TABLE IF NOT EXISTS log_perawatan_ternak (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -504,6 +613,60 @@ async function createLivestockTables() {
 
   await addColumn('ternak', 'nama_tampilan', 'VARCHAR(255) NULL');
   await addColumn('ternak', 'status_publikasi', "ENUM('draft', 'dipublikasikan') NOT NULL DEFAULT 'draft'");
+  await alignTernakIdentityConstraint();
+}
+
+// Satu jenislifting BISA punya banyak baris `ternak` (mis. dua sapi di lokasi
+// berbeda). Constraint lama `uq_ternak_jenis` tidak boleh kembali dibuat.
+// Pengganti: cegah duplikat yang benar-benar identik —
+// jenis + nama_tampilan + lokasi. Perbandingan nama case-insensitive,
+// lokasi NULL diperlakukan sama dengan lokasi NULL.
+async function alignTernakIdentityConstraint() {
+  // InnoDB memakai indeks ini untuk supporting FK `ternak_ibfk_1`
+  // (jenis_ternak_id → jenis_ternak.id). Karena itu index pengganti
+  // non-unique harus dibuat DULU, baru constraint unik lama boleh di-drop.
+  if (!(await hasIndex('ternak', 'idx_ternak_jenis'))) {
+    await run('ALTER TABLE `ternak` ADD INDEX idx_ternak_jenis (jenis_ternak_id)');
+  }
+  if (await hasIndex('ternak', 'uq_ternak_jenis')) {
+    await run('ALTER TABLE `ternak` DROP INDEX uq_ternak_jenis');
+  }
+
+  const dup = await run(
+    `SELECT jenis_ternak_id, LOWER(TRIM(COALESCE(nama_tampilan, ''))) AS nama_key,
+            COALESCE(lokasi_id, 0) AS lokasi_key, COUNT(*) AS jumlah
+       FROM ternak
+      GROUP BY jenis_ternak_id, LOWER(TRIM(COALESCE(nama_tampilan, ''))), COALESCE(lokasi_id, 0)
+     HAVING COUNT(*) > 1`
+  );
+  if (dup.length) {
+    throw new Error(
+      'Ada baris `ternak` yang identik (jenis + nama + lokasi sama); migrasi dihentikan tanpa menghapus data.'
+    );
+  }
+
+  const kolom = await indexColumns('ternak', 'uq_ternak_identitas');
+  const target = ['jenis_ternak_id', 'nama_tampilan_key', 'lokasi_key'];
+  const sama =
+    kolom.length === target.length && target.every((c, i) => kolom[i] === c);
+  if (sama) return;
+  if (kolom.length) {
+    await run('ALTER TABLE `ternak` DROP INDEX uq_ternak_identitas');
+  }
+
+  if (!(await columnInfo('ternak', 'nama_tampilan_key'))) {
+    await run(
+      "ALTER TABLE `ternak` ADD COLUMN nama_tampilan_key VARCHAR(255) GENERATED ALWAYS AS (LOWER(TRIM(COALESCE(nama_tampilan, '')))) STORED"
+    );
+  }
+  if (!(await columnInfo('ternak', 'lokasi_key'))) {
+    await run(
+      'ALTER TABLE `ternak` ADD COLUMN lokasi_key INT GENERATED ALWAYS AS (COALESCE(lokasi_id, 0)) STORED'
+    );
+  }
+  await run(
+    'ALTER TABLE `ternak` ADD UNIQUE KEY uq_ternak_identitas (jenis_ternak_id, nama_tampilan_key, lokasi_key)'
+  );
 }
 
 async function seedBaseline() {
@@ -539,6 +702,7 @@ async function seedBaseline() {
     );
   }
   await run("INSERT IGNORE INTO kategori (nama, aktif) VALUES ('Peternakan', 1)");
+  await run("INSERT IGNORE INTO kategori (nama, aktif) VALUES ('Pendidikan', 1)");
   for (const nama of ['Sapi', 'Ayam', 'Kambing']) {
     await run(
       `INSERT INTO lokasi (nama, keterangan, aktif)
@@ -557,7 +721,8 @@ async function seedBaseline() {
 async function verify() {
   const required = [
     'users', 'program_pendaftaran', 'activity_schedules', 'activity_tasks', 'kategori', 'lokasi',
-    'kegiatan_lokasi', 'aktivitas_tanaman', 'ternak', 'jenis_ternak', 'master_aksi_ternak'
+    'kegiatan_lokasi', 'aktivitas_tanaman', 'jadwal_kelas', 'ternak', 'jenis_ternak', 'master_aksi_ternak',
+    'kelas', 'aktivitas_kelas'
   ];
   for (const table of required) {
     if (!(await tableExists(table))) throw new Error(`Tabel wajib belum tersedia: ${table}`);

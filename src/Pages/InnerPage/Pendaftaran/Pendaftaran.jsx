@@ -411,7 +411,7 @@ const Pendaftaran = () => {
                               handleChange({
                                 target: {
                                   name: "program_id",
-                                  value: program.id,
+                                  value: isSelected ? "" : program.id,
                                 },
                               })
                             }
@@ -491,7 +491,7 @@ const Pendaftaran = () => {
                                       handleChange({
                                         target: {
                                           name: "program_id",
-                                          value: program.id,
+                                          value: isSelected ? "" : program.id,
                                         },
                                       });
                                   }}
@@ -675,7 +675,7 @@ const Pendaftaran = () => {
                           Nomor WhatsApp <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">
+                          <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted">
                             <FiPhone />
                           </span>
                           <input
@@ -698,7 +698,7 @@ const Pendaftaran = () => {
                           Email Pribadi
                         </label>
                         <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">
+                          <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted">
                             <FiMail />
                           </span>
                           <input
@@ -743,7 +743,7 @@ const Pendaftaran = () => {
                         Username <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">
+                        <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted">
                           <FiUser />
                         </span>
                         <input
@@ -767,7 +767,7 @@ const Pendaftaran = () => {
                         Password <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">
+                        <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted">
                           <FiLock />
                         </span>
                         <input
@@ -781,7 +781,7 @@ const Pendaftaran = () => {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-[#16804B] dark:text-[#4ADE80] outline-none"
+                          className="absolute inset-y-0 right-4 flex items-center text-muted hover:text-[#16804B] dark:text-[#4ADE80] outline-none"
                         >
                           {showPassword ? (
                             <FiEyeOff size={20} />
@@ -814,7 +814,7 @@ const Pendaftaran = () => {
                         <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">
+                        <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted">
                           <FiLock />
                         </span>
                         <input
@@ -830,7 +830,7 @@ const Pendaftaran = () => {
                           onClick={() =>
                             setShowConfirmPassword(!showConfirmPassword)
                           }
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-[#16804B] dark:text-[#4ADE80] outline-none"
+                          className="absolute inset-y-0 right-4 flex items-center text-muted hover:text-[#16804B] dark:text-[#4ADE80] outline-none"
                         >
                           {showConfirmPassword ? (
                             <FiEyeOff size={20} />

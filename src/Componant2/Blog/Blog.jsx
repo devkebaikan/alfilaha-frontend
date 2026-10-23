@@ -14,7 +14,7 @@ const blogData = [
     blogThumb: blogThumb,
     thumbContent: "Lingkungan",
     blogDate: "24 Mar, 2024",
-    blogUrl: "/blog_details",
+    blogUrl: "/blog_grid",
     blogTitle: "10 Tips Daur Ulang Terbaik untuk Lingkungan",
     blogDesc:
       "Temukan berbagai informasi dan edukasi menarik seputar kelestarian alam.",
@@ -27,7 +27,7 @@ const blogData = [
     blogThumb: blogThumb2,
     thumbContent: "Lingkungan",
     blogDate: "24 Mar, 2024",
-    blogUrl: "/blog_details",
+    blogUrl: "/blog_grid",
     blogTitle: "Bagaimana Setiap Individu Bisa Membawa Perubahan",
     blogDesc:
       "Temukan berbagai informasi dan edukasi menarik seputar kelestarian alam.",
@@ -40,7 +40,7 @@ const blogData = [
     blogThumb: blogThumb3,
     thumbContent: "Lingkungan",
     blogDate: "24 Mar, 2024",
-    blogUrl: "/blog_details",
+    blogUrl: "/blog_grid",
     blogTitle: "Inovasi Baru dalam Teknologi Energi Terbarukan",
     blogDesc:
       "Temukan berbagai informasi dan edukasi menarik seputar kelestarian alam.",

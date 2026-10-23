@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, memo, lazy, Suspense } from "react";
+import { createPortal } from "react-dom";
 import "react-quill/dist/quill.snow.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { adminFetch } from "../../adminAuth";
@@ -21,30 +22,46 @@ import {
   FiBell,
   FiFileText,
   FiCheckCircle,
+  FiChevronLeft,
+  FiBookOpen,
   FiSun,
   FiMoon,
 } from "react-icons/fi";
 import { useTheme } from "../../Context/ThemeContext.jsx";
 import { useNotifikasi } from "../../Context/NotifikasiContext.jsx";
-import Beranda from "./Tabs/Beranda/Beranda";
-import BlogGrid from "./Tabs/BlogGrid/BlogGrid";
-import Event from "./Tabs/Event/Event";
-import PaketWisata from "./Tabs/PaketWisata/PaketWisata";
-import Reservasi from "./Tabs/Reservasi/Reservasi";
-import BlogForm from "./Tabs/BlogForm/BlogForm";
-import EventForm from "./Tabs/EventForm/EventForm";
-import WisataForm from "./Tabs/WisataForm/WisataForm";
-import GaleriManager from "./Tabs/Galeri/GaleriManager";
-import Appointment from "./Tabs/Appointment/Appointment";
-import PendaftaranManager from "./Tabs/PendaftaranManager/PendaftaranManager";
-import LayananManager from "./Tabs/Layanan/LayananManager";
-import LayananForm from "./Tabs/Layanan/LayananForm";
-import TanamanManager from "./Tabs/TanamanManager/TanamanManager";
-import PeternakanManager from "./Tabs/PeternakanManager/PeternakanManager";
-
-import UserManager from "./Tabs/UserManager/UserManager";
-import JadwalManager from "./Tabs/JadwalManager/JadwalManager";
-import LokasiManager from "./Tabs/LokasiManager/LokasiManager";
+// Tiap tab dimuat lazy: hanya tab yang benar-benar dibuka yang diunduh,
+// sehingga bundel awal admin (dan library berat seperti chart/editor) tetap
+// ringan. Semua dibungkus satu <Suspense> di area konten.
+const Beranda = lazy(() => import("./Tabs/Beranda/Beranda"));
+const BlogGrid = lazy(() => import("./Tabs/BlogGrid/BlogGrid"));
+const Event = lazy(() => import("./Tabs/Event/Event"));
+const PaketWisata = lazy(() => import("./Tabs/PaketWisata/PaketWisata"));
+const Reservasi = lazy(() => import("./Tabs/Reservasi/Reservasi"));
+const BlogForm = lazy(() => import("./Tabs/BlogForm/BlogForm"));
+const EventForm = lazy(() => import("./Tabs/EventForm/EventForm"));
+const WisataForm = lazy(() => import("./Tabs/WisataForm/WisataForm"));
+const GaleriManager = lazy(() => import("./Tabs/Galeri/GaleriManager"));
+const Appointment = lazy(() => import("./Tabs/Appointment/Appointment"));
+const PendaftaranManager = lazy(
+  () => import("./Tabs/PendaftaranManager/PendaftaranManager"),
+);
+const LayananManager = lazy(() => import("./Tabs/Layanan/LayananManager"));
+const LayananForm = lazy(() => import("./Tabs/Layanan/LayananForm"));
+const TanamanManager = lazy(
+  () => import("./Tabs/TanamanManager/TanamanManager"),
+);
+const PeternakanManager = lazy(
+  () => import("./Tabs/PeternakanManager/PeternakanManager"),
+);
+const KelasManager = lazy(
+  () => import("./Tabs/KelasManager/KelasManager"),
+);
+const TahunAjaranManager = lazy(
+  () => import("./Tabs/TahunAjaran/TahunAjaranManager"),
+);
+const UserManager = lazy(() => import("./Tabs/UserManager/UserManager"));
+const JadwalManager = lazy(() => import("./Tabs/JadwalManager/JadwalManager"));
+const LokasiManager = lazy(() => import("./Tabs/LokasiManager/LokasiManager"));
 
 const NAMA_TAB = {
   beranda: "Dashboard",
@@ -61,6 +78,7 @@ const NAMA_TAB = {
   pendaftaran: "Pendaftaran Santri",
   tanaman: "Tanaman",
   peternakan: "Peternakan",
+  kelas: "Kelas",
   jadwal: "Jadwal",
   lokasi: "Lokasi",
   users: "Akun Internal",
@@ -74,6 +92,412 @@ const WAKTU_PESAN = {
   warning: { ikon: FiAlertTriangle, wadah: "bg-amber-100 dark:bg-amber-500/20", warna: "text-amber-700 dark:text-amber-300" },
   info: { ikon: FiBell, wadah: "bg-sky-100 dark:bg-sky-500/20", warna: "text-sky-700 dark:text-sky-300" },
 };
+
+const SIDEBAR_LG = 992; // breakpoint `lg` (lihat tailwind.config.js)
+
+/**
+ * Satu baris menu sidebar admin. Saat sidebar dalam mode ikon (collapsed),
+ * label & lencana disembunyikan dan nama menu muncul sebagai tooltip yang
+ * dirender lewat portal supaya tidak terpotong oleh overflow sidebar.
+ */
+const SidebarItem = ({
+  Icon,
+  label,
+  onClick,
+  active = false,
+  badge,
+  badgeClass = "bg-orange-500",
+  collapsed = false,
+  bottom = false,
+  tone = "",
+  trailing = null,
+}) => {
+  const btnRef = useRef(null);
+  const [tip, setTip] = useState(null);
+
+  const showTip = () => {
+    if (!collapsed || !btnRef.current) return;
+    if (typeof window !== "undefined" && window.innerWidth < SIDEBAR_LG) return;
+    const r = btnRef.current.getBoundingClientRect();
+    setTip({ top: r.top + r.height / 2, left: r.right + 12 });
+  };
+  const hideTip = () => setTip(null);
+
+  const baseClass = bottom ? "admin-bottom-btn" : "admin-menu-item";
+  const colorClass = bottom
+    ? tone
+    : active
+      ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
+      : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium";
+  const iconClass = bottom
+    ? "text-current"
+    : active
+      ? "bg-green-500 text-white shadow-md"
+      : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:group-hover:bg-white/[0.12] group-hover:text-white";
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={onClick}
+        onMouseEnter={showTip}
+        onMouseLeave={hideTip}
+        onFocus={showTip}
+        onBlur={hideTip}
+        aria-current={active ? "page" : undefined}
+        className={`${baseClass} ${colorClass} group focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400/70 transition-colors duration-300`}
+      >
+        <span
+          className={`admin-menu-icon rounded-xl transition-colors duration-300 ${iconClass}`}
+        >
+          <Icon size={20} />
+        </span>
+        <span className="admin-menu-label">
+          <span className="admin-menu-text text-sm md:text-base tracking-wide">
+            {label}
+          </span>
+          {trailing}
+          {badge != null && badge > 0 && (
+            <span className={`admin-badge ${badgeClass}`}>{badge}</span>
+          )}
+        </span>
+      </button>
+
+      {collapsed &&
+        tip &&
+        createPortal(
+          <div
+            className="admin-tooltip"
+            role="tooltip"
+            style={{ top: tip.top, left: tip.left }}
+          >
+            {label}
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+};
+
+/**
+ * Sidebar admin (brand + daftar menu + tombol bawah).
+ *
+ * Sengaja dipisah sebagai komponen `memo` yang mengelola state sendiri
+ * (mode ikon `collapsed`, submenu Galeri, dan preferensi tersimpan). Dengan
+ * begitu, membuka/menutup sidebar TIDAK memicu render ulang konten tab di
+ * sebelahnya (tabel/chart berat) — animasi lebar jadi mulus dan hemat.
+ */
+const AdminSidebar = memo(function AdminSidebar({
+  activeTab,
+  onTabChange,
+  onLogout,
+  reservasiBadge = 0,
+  appointmentBadge = 0,
+  isSidebarOpen = false,
+  onMobileClose,
+}) {
+  const { isDark, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+
+  // Mode ikon (collapsed) khusus desktop; preferensi terakhir disimpan.
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem("alfilaha_admin_sidebar_collapsed") === "true";
+    } catch {
+      // localStorage bisa diblokir (mode privat) — abaikan.
+      return false;
+    }
+  });
+  const [isGaleriOpen, setIsGaleriOpen] = useState(false); // Submenu Galeri
+
+  const simpanPreferensiSidebar = (value) => {
+    try {
+      localStorage.setItem("alfilaha_admin_sidebar_collapsed", String(value));
+    } catch {
+      // Gagal menyimpan bukan masalah fatal — abaikan.
+    }
+  };
+
+  const toggleSidebarCollapsed = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      simpanPreferensiSidebar(next);
+      return next;
+    });
+  };
+
+  // Submenu (Galeri) saat mode ikon: buka sidebar dulu, baru tampilkan anak.
+  const bukaGaleri = () => {
+    if (isSidebarCollapsed) {
+      setIsSidebarCollapsed(false);
+      simpanPreferensiSidebar(false);
+      setIsGaleriOpen(true);
+    } else {
+      setIsGaleriOpen((v) => !v);
+    }
+  };
+
+  return (
+    <>
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-green-950/80 z-40 lg:hidden backdrop-blur-sm transition-opacity"
+          onClick={onMobileClose}
+        ></div>
+      )}
+      <aside
+        className={`admin-sidebar ${
+          isSidebarCollapsed ? "is-collapsed" : ""
+        } fixed lg:relative top-0 left-0 h-screen bg-gradient-to-b from-green-950 to-emerald-950 flex flex-col shadow-2xl z-50 overflow-hidden lg:overflow-visible ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
+        {/* BRAND / LOGO + TOMBOL BUKA-TUTUP */}
+        <div className="admin-brand">
+          <div className="admin-brand-full">
+            <img
+              decoding="async"
+              loading="lazy"
+              src="/images/logo.png"
+              width="1241"
+              height="529"
+              alt="Alfilaha Eco Pesantren"
+              className="h-12 w-auto max-w-[160px] object-contain drop-shadow-lg"
+            />
+            <p className="text-green-300 text-[10px] uppercase tracking-[0.2em] font-bold">
+              Admin Workspace
+            </p>
+          </div>
+          <div className="admin-brand-icon" aria-hidden="true">
+            <img
+              decoding="async"
+              loading="lazy"
+              src="/images/iconalfilaha.png"
+              width="650"
+              height="651"
+              alt=""
+              className="h-10 w-10 object-contain drop-shadow-lg"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={toggleSidebarCollapsed}
+            aria-label={isSidebarCollapsed ? "Buka sidebar" : "Tutup sidebar"}
+            title={isSidebarCollapsed ? "Buka sidebar" : "Tutup sidebar"}
+            aria-expanded={!isSidebarCollapsed}
+            aria-controls="admin-sidebar-nav"
+            className="admin-toggle-btn hidden lg:grid place-items-center absolute top-1/2 -translate-y-1/2 -right-3 z-[60] w-7 h-7 rounded-full bg-emerald-950 text-green-100 border border-white/20 shadow-lg hover:bg-green-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400"
+          >
+            <FiChevronLeft className="admin-toggle-arrow w-4 h-4" />
+          </button>
+        </div>
+
+        {/* DAFTAR MENU */}
+        <nav
+          id="admin-sidebar-nav"
+          className="admin-nav sidebar-scroll-hidden flex-1 space-y-2 overflow-y-auto overflow-x-hidden"
+        >
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiHome}
+            label="Beranda"
+            active={activeTab === "beranda"}
+            onClick={() => onTabChange("beranda")}
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiMap}
+            label="Eduwisata"
+            active={activeTab === "wisata"}
+            onClick={() => onTabChange("wisata")}
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiCheckCircle}
+            label="Layanan Kami"
+            active={activeTab === "layanan"}
+            onClick={() => onTabChange("layanan")}
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiMap}
+            label="Manajemen Object"
+            active={activeTab === "tanaman"}
+            onClick={() => onTabChange("tanaman")}
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiCheckCircle}
+            label="Manajemen Peternakan"
+            active={activeTab === "peternakan"}
+            onClick={() => onTabChange("peternakan")}
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiBookOpen}
+            label="Manajemen Kelas"
+            active={activeTab === "kelas"}
+            onClick={() => onTabChange("kelas")}
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiCalendar}
+            label="Jadwal Pelajaran"
+            active={activeTab === "tahun-ajaran"}
+            onClick={() => onTabChange("tahun-ajaran")}
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiCalendar}
+            label="Jadwal Aktivitas"
+            active={activeTab === "jadwal"}
+            onClick={() => onTabChange("jadwal")}
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiMap}
+            label="Lokasi & Area"
+            active={activeTab === "lokasi"}
+            onClick={() => onTabChange("lokasi")}
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiUsers}
+            label="Manajemen Akun"
+            active={activeTab === "users"}
+            onClick={() => onTabChange("users")}
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiBell}
+            label="Reservasi"
+            active={activeTab === "reservasi"}
+            onClick={() => onTabChange("reservasi")}
+            badge={reservasiBadge}
+            badgeClass="bg-orange-500"
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiMessageSquare}
+            label="Pesan Masuk"
+            active={activeTab === "appointment"}
+            onClick={() => onTabChange("appointment")}
+            badge={appointmentBadge}
+            badgeClass="bg-rose-500"
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiFileText}
+            label="Artikel"
+            active={activeTab === "blog-grid" || activeTab === "blog-form"}
+            onClick={() => onTabChange("blog-grid")}
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiCalendar}
+            label="Event"
+            active={activeTab === "event"}
+            onClick={() => onTabChange("event")}
+          />
+          <SidebarItem
+            collapsed={isSidebarCollapsed}
+            Icon={FiUsers}
+            label="Pendaftaran"
+            active={activeTab === "pendaftaran"}
+            onClick={() => onTabChange("pendaftaran")}
+          />
+
+          <div className="pt-3 mt-3 border-t border-white/10">
+            <SidebarItem
+              collapsed={isSidebarCollapsed}
+              Icon={FiGrid}
+              label="Galeri"
+              active={activeTab.startsWith("galeri-")}
+              onClick={bukaGaleri}
+              trailing={
+                <span
+                  className={`admin-submenu-arrow text-green-200/60 ${
+                    isGaleriOpen ? "rotate-180 text-white" : ""
+                  }`}
+                >
+                  ▼
+                </span>
+              }
+            />
+            {isGaleriOpen && !isSidebarCollapsed && (
+              <div className="mt-2 pl-16 space-y-1">
+                {[
+                  "Semua",
+                  "Lahan Pertanian",
+                  "Kegiatan Santri",
+                  "Edukasi",
+                  "Panen",
+                  "Camping",
+                  "Kegiatan Masyarakat",
+                ].map((cat) => {
+                  const slug =
+                    cat === "Semua"
+                      ? "galeri-semua"
+                      : `galeri-${cat.toLowerCase().replace(/ /g, "-")}`;
+                  return (
+                    <button
+                      key={slug}
+                      type="button"
+                      onClick={() => onTabChange(slug)}
+                      className={`block w-full text-left py-2.5 px-4 rounded-xl text-sm transition-colors truncate ${
+                        activeTab === slug
+                          ? "bg-green-500/20 text-green-300 font-bold"
+                          : "text-green-100/60 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </nav>
+
+        {/* TOMBOL BAWAH */}
+        <div className="admin-bottom-nav shrink-0 border-t border-white/10 space-y-2 bg-green-950/30">
+          <SidebarItem
+            bottom
+            collapsed={isSidebarCollapsed}
+            Icon={FiArrowLeft}
+            label="Website Utama"
+            tone="bg-white/5 dark:bg-white/[0.06] hover:bg-white/10 dark:hover:bg-white/[0.12] text-green-100/70 hover:text-white border border-white/10"
+            onClick={() => navigate("/")}
+          />
+          <SidebarItem
+            bottom
+            collapsed={isSidebarCollapsed}
+            Icon={isDark ? FiSun : FiMoon}
+            label={isDark ? "Mode Terang" : "Mode Gelap"}
+            tone="bg-white/5 dark:bg-white/[0.06] hover:bg-white/10 dark:hover:bg-white/[0.12] text-green-100/70 hover:text-white border border-white/10"
+            onClick={toggleTheme}
+          />
+          <SidebarItem
+            bottom
+            collapsed={isSidebarCollapsed}
+            Icon={FiLogOut}
+            label="Keluar"
+            tone="bg-rose-500/10 text-rose-400 hover:text-white hover:bg-rose-500 border border-rose-400/20 hover:border-rose-500"
+            onClick={onLogout}
+          />
+        </div>
+      </aside>
+    </>
+  );
+});
+
+// Fallback ringan saat chunk tab admin sedang diunduh.
+const TabFallback = () => (
+  <div className="flex items-center justify-center py-24">
+    <div className="animate-spin h-8 w-8 border-4 border-green-500 rounded-full border-t-transparent" />
+  </div>
+);
 
 const AlfilahaAdmin = () => {
   const navigate = useNavigate();
@@ -105,11 +529,66 @@ const AlfilahaAdmin = () => {
     }
   }, [tab]);
 
-  // Beri tahu pusat notifikasi tab admin yang sedang aktif
+  // Notifikasi panel lonceng HANYA berisi peristiwa dari luar panel admin:
+  // data yang masuk dari website publik dan tugas yang selesai dikerjakan
+  // Santri. Aksi admin sendiri (kirim tugas, tambah/ubah data) cukup tampil
+  // sebagai toast — kalau ikut dicatat, daftar notifikasi cepat menumpuk.
+  // Satu poller ringan ke /api/notifikasi/masuk mengurus keempat sumber
+  // sekaligus supaya tidak ada angka yang terhitung dua kali.
   useEffect(() => {
-    if (isLoggedIn) notif.setAdminTab(activeTab);
+    if (!isLoggedIn) return;
+    let batal = false;
+
+    const cekMasuk = async () => {
+      try {
+        const response = await adminFetch(
+          `${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/api/notifikasi/masuk`,
+          { cache: "no-store" },
+        );
+        if (!response.ok) return;
+        const data = await response.json();
+        if (batal) return;
+        notif.pantauPesanMasuk({
+          key: "reservasi",
+          tab: "reservasi",
+          nama: "Ada reservasi baru dari website.",
+          satuan: "reservasi",
+          total: data.reservasi,
+        });
+        notif.pantauPesanMasuk({
+          key: "appointment",
+          tab: "appointment",
+          nama: "Ada pesan baru dari website.",
+          satuan: "pesan",
+          total: data.appointment,
+        });
+        notif.pantauPesanMasuk({
+          key: "pendaftar",
+          tab: "pendaftaran",
+          nama: "Ada pendaftar santri baru.",
+          satuan: "pendaftar",
+          total: data.pendaftar,
+        });
+        notif.pantauPesanMasuk({
+          key: "tugas_selesai",
+          tab: "jadwal",
+          nama: "Ada tugas yang selesai dikerjakan Santri.",
+          satuan: "tugas selesai",
+          total: data.tugas_selesai,
+        });
+      } catch (error) {
+        // Backend belum siap — coba lagi pada interval berikutnya.
+      }
+    };
+
+    cekMasuk();
+    const timer = setInterval(cekMasuk, 15000);
+    return () => {
+      batal = true;
+      clearInterval(timer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, isLoggedIn]);
+  }, [isLoggedIn]);
 
   // If not logged in and accessing a specific tab, redirect to /admin
   useEffect(() => {
@@ -123,6 +602,7 @@ const AlfilahaAdmin = () => {
     if (window.innerWidth < 1024) setIsSidebarOpen(false); // Close sidebar on mobile after clicking
   };
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
 
@@ -160,7 +640,6 @@ const AlfilahaAdmin = () => {
   });
 
   const [galeri, setGaleri] = useState([]);
-  const [isGaleriOpen, setIsGaleriOpen] = useState(false); // Sidebar Galeri Dropdown
 
   const fetchGaleri = async () => {
     try {
@@ -206,14 +685,6 @@ const AlfilahaAdmin = () => {
       if (!response.ok) throw new Error("Gagal mengambil data appointments");
       const data = await response.json();
       setAppointments(data);
-      if (isLoggedIn)
-        notif.pantauPesanMasuk({
-          key: "appointment",
-          tab: "appointment",
-          nama: "Ada pesan konsultasi baru dari website.",
-          satuan: "pesan masuk",
-          total: data.length,
-        });
     } catch (error) {
       console.error("Backend MySQL offline:", error);
     }
@@ -227,14 +698,6 @@ const AlfilahaAdmin = () => {
       if (!response.ok) throw new Error("Gagal mengambil data MySQL");
       const data = await response.json();
       setReservasi(data);
-      if (isLoggedIn)
-        notif.pantauPesanMasuk({
-          key: "reservasi",
-          tab: "reservasi",
-          nama: "Ada reservasi baru dari website.",
-          satuan: "reservasi",
-          total: data.length,
-        });
     } catch (error) {
       console.error("Backend MySQL offline:", error);
     }
@@ -632,10 +1095,11 @@ const AlfilahaAdmin = () => {
     setLogoutModal(true);
   };
 
-  // `tanpaSimpan: true` → toast tetap muncul, tapi tidak masuk ke riwayat lonceng
-  const showToast = (msg, tanpaSimpan = false) => {
+  // Toast umpan balik aksi admin — tidak pernah masuk ke pusat notifikasi
+  // (lonceng hanya untuk peristiwa dari luar panel admin).
+  const showToast = (msg) => {
     const gagal = /gagal|terputus|koneksi|error|tidak bisa/i.test(msg || "");
-    notif[gagal ? "error" : "success"](msg, { simpan: !tanpaSimpan });
+    notif[gagal ? "error" : "success"](msg);
   };
 
   // ==========================================
@@ -643,7 +1107,7 @@ const AlfilahaAdmin = () => {
   // ==========================================
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-green-950 via-green-900 to-emerald-900">
+      <div className="admin-shell min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-green-950 via-green-900 to-emerald-900">
         {/* Subtle animated background shapes */}
         <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-green-500/20 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[120px] pointer-events-none"></div>
@@ -792,364 +1256,17 @@ const AlfilahaAdmin = () => {
   // RENDER DASHBOARD SCREEN
   // ==========================================
   return (
-    <div className="min-h-screen bg-surface2 flex font-sans text-ink selection:bg-green-200">
+    <div className="admin-shell min-h-screen bg-surface2 flex font-sans text-ink selection:bg-green-200">
       {/* SIDEBAR & MOBILE OVERLAY */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-green-950/80 z-40 lg:hidden backdrop-blur-sm transition-opacity"
-          onClick={() => setIsSidebarOpen(false)}
-        ></div>
-      )}
-      <aside
-        className={`fixed lg:static top-0 left-0 h-screen w-72 bg-gradient-to-b from-green-950 to-emerald-950 flex flex-col shadow-2xl z-50 transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
-      >
-        <div className="p-8 border-b border-white/10 flex flex-col items-center justify-center text-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-2xl"></div>
-          <img decoding="async"
-            loading="lazy"
-            src="/images/logo.png"
-            alt="Alfilaha Logo"
-            className="h-14 mb-3 object-contain drop-shadow-lg relative z-10"
-          />
-          <p className="text-green-300 text-[10px] uppercase tracking-[0.2em] font-bold relative z-10">
-            Admin Workspace
-          </p>
-        </div>
-
-        <nav className="flex-1 p-5 space-y-2 overflow-y-auto">
-          <button
-            onClick={() => handleTabChange("beranda")}
-            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "beranda"
-                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "beranda" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-            >
-              <FiHome size={20} />
-            </div>
-            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Beranda
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("wisata")}
-            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "wisata"
-                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "wisata" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-            >
-              <FiMap size={20} />
-            </div>
-            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Eduwisata
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("layanan")}
-            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "layanan"
-                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "layanan" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-            >
-              <FiCheckCircle size={20} />
-            </div>
-            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Layanan Kami
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("tanaman")}
-            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "tanaman"
-                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "tanaman" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-            >
-              <FiMap size={20} />
-            </div>
-            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Manajemen Tanaman
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("peternakan")}
-            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "peternakan"
-                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "peternakan" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-            >
-              <FiCheckCircle size={20} />
-            </div>
-            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Manajemen Peternakan
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("jadwal")}
-            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "jadwal"
-                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "jadwal" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-            >
-              <FiCalendar size={20} />
-            </div>
-            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Jadwal Aktivitas
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("lokasi")}
-            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "lokasi"
-                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "lokasi" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-            >
-              <FiMap size={20} />
-            </div>
-            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Lokasi & Area
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("users")}
-            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "users"
-                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "users" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-            >
-              <FiUsers size={20} />
-            </div>
-            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Manajemen Akun
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("reservasi")}
-            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "reservasi"
-                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "reservasi" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-            >
-              <FiBell size={20} />
-            </div>
-            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Reservasi
-            </span>
-            {reservasi.filter((r) => r.status === "Pending").length > 0 && (
-              <span className="ml-auto bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
-                {reservasi.filter((r) => r.status === "Pending").length}
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={() => handleTabChange("appointment")}
-            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "appointment"
-                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "appointment" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-            >
-              <FiMessageSquare size={20} />
-            </div>
-            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Pesan Masuk
-            </span>
-            {appointments.filter((r) => r.status === "Pending").length > 0 && (
-              <span className="ml-auto bg-rose-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
-                {appointments.filter((r) => r.status === "Pending").length}
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={() => handleTabChange("blog-grid")}
-            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "blog-grid" || activeTab === "blog-form"
-                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "blog-grid" || activeTab === "blog-form" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-            >
-              <FiFileText size={20} />
-            </div>
-            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Artikel
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("event")}
-            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "event"
-                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "event" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-            >
-              <FiCalendar size={20} />
-            </div>
-            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Event
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("pendaftaran")}
-            className={`w-full flex items-center space-x-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-              activeTab === "pendaftaran"
-                ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab === "pendaftaran" ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-            >
-              <FiUsers size={20} />
-            </div>
-            <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-              Pendaftaran
-            </span>
-          </button>
-
-          <div className="pt-3 mt-3 border-t border-white/10">
-            <button
-              onClick={() => setIsGaleriOpen(!isGaleriOpen)}
-              className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-                activeTab.startsWith("galeri-")
-                  ? "bg-white/10 dark:bg-white/[0.06] text-white font-bold shadow-lg ring-1 ring-white/20"
-                  : "text-green-100/70 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white font-medium"
-              }`}
-            >
-              <div className="flex items-center space-x-4 overflow-hidden flex-1">
-                <div
-                  className={`p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0 transition-colors ${activeTab.startsWith("galeri-") ? "bg-green-500 text-white shadow-md" : "bg-white/5 dark:bg-white/[0.06] text-green-200/70 group-hover:bg-white/10 dark:bg-white/[0.06] group-hover:text-white"}`}
-                >
-                  <FiGrid size={20} />
-                </div>
-                <span className="text-sm md:text-base tracking-wide whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1">
-                  Galeri
-                </span>
-              </div>
-              <span
-                className={`transform transition-transform shrink-0 ml-2 ${isGaleriOpen ? "rotate-180 text-white" : "text-green-200/50"}`}
-              >
-                ▼
-              </span>
-            </button>
-            {isGaleriOpen && (
-              <div className="mt-2 pl-14 space-y-1">
-                {[
-                  "Semua",
-                  "Lahan Pertanian",
-                  "Kegiatan Santri",
-                  "Edukasi",
-                  "Panen",
-                  "Camping",
-                  "Kegiatan Masyarakat",
-                ].map((cat) => {
-                  const slug =
-                    cat === "Semua"
-                      ? "galeri-semua"
-                      : `galeri-${cat.toLowerCase().replace(/ /g, "-")}`;
-                  return (
-                    <button
-                      key={slug}
-                      onClick={() => handleTabChange(slug)}
-                      className={`block w-full text-left py-2.5 px-4 rounded-xl text-sm transition-all truncate ${
-                        activeTab === slug
-                          ? "bg-green-500/20 text-green-300 font-bold"
-                          : "text-green-100/60 hover:bg-white/5 dark:bg-white/[0.06] hover:text-white"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </nav>
-
-        <div className="p-6 border-t border-white/10 space-y-3 bg-green-950/30">
-          <button
-            onClick={() => navigate("/")}
-            className="w-full flex items-center justify-center space-x-2 py-3.5 text-sm font-bold text-green-100/70 hover:text-white transition-colors bg-white/5 dark:bg-white/[0.06] hover:bg-white/10 dark:bg-white/[0.06] rounded-xl border border-white/10"
-          >
-            <FiArrowLeft />
-            <span>Website Utama</span>
-          </button>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={
-              isDark ? "Aktifkan mode terang" : "Aktifkan mode gelap"
-            }
-            aria-pressed={isDark}
-            title={isDark ? "Mode terang" : "Mode gelap"}
-            className="w-full flex items-center justify-center space-x-2 py-3.5 text-sm font-bold text-green-100/70 hover:text-white transition-colors bg-white/5 dark:bg-white/[0.06] hover:bg-white/10 dark:hover:bg-white/[0.12] rounded-xl border border-white/10"
-          >
-            {isDark ? <FiSun /> : <FiMoon />}
-            <span>{isDark ? "Mode Terang" : "Mode Gelap"}</span>
-          </button>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center space-x-2 py-3.5 text-sm font-bold text-rose-400 hover:text-white transition-colors hover:bg-rose-500 rounded-xl border border-rose-400/20 hover:border-rose-500 bg-rose-500/10"
-          >
-            <FiLogOut />
-            <span>Keluar</span>
-          </button>
-        </div>
-      </aside>
+      <AdminSidebar
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        onLogout={handleLogout}
+        reservasiBadge={reservasi.filter((r) => r.status === "Pending").length}
+        appointmentBadge={appointments.filter((r) => r.status === "Pending").length}
+        isSidebarOpen={isSidebarOpen}
+        onMobileClose={() => setIsSidebarOpen(false)}
+      />
 
       {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F4F7F6] dark:bg-[#0B1210]">
@@ -1159,7 +1276,7 @@ const AlfilahaAdmin = () => {
             <button
               onClick={() => setIsSidebarOpen(true)}
               className="lg:hidden p-2 text-muted hover:bg-green-50 dark:hover:bg-green-500/15 hover:text-green-600 dark:text-green-300 rounded-xl mr-3 transition-colors"
-            >
+            > 
               <FiMenu className="w-6 h-6" />
             </button>
             <div>
@@ -1174,8 +1291,10 @@ const AlfilahaAdmin = () => {
                   "Manajemen Artikel"}
                 {activeTab === "event" && "Manajemen Event"}
                 {activeTab === "pendaftaran" && "Pendaftaran Santri"}
-                {activeTab === "tanaman" && "Manajemen Tanaman"}
+                {activeTab === "tanaman" && "Manajemen Object"}
                 {activeTab === "peternakan" && "Manajemen Peternakan"}
+                {activeTab === "kelas" && "Manajemen Kelas"}
+                {activeTab === "tahun-ajaran" && "Jadwal Pelajaran"}
 
                 {activeTab === "jadwal" && "Jadwal Aktivitas Pondok"}
                 {activeTab === "lokasi" && "Manajemen Lokasi & Area"}
@@ -1279,12 +1398,12 @@ const AlfilahaAdmin = () => {
                             Belum ada notifikasi
                           </p>
                           <p className="text-xs text-muted mt-1">
-                            Aktivitas tambah / ubah / hapus di panel admin akan
-                            muncul di sini.
+                            Reservasi, pesan, pendaftaran, dan tugas yang selesai
+                            dikerjakan Santri akan muncul di sini.
                           </p>
                         </div>
                       ) : (
-                        notif.adminPesan.slice(0, 40).map((p) => {
+                        notif.adminPesan.slice(0, 30).map((p) => {
                           const gaya = WAKTU_PESAN[p.tipe] || WAKTU_PESAN.info;
                           const Ikon = gaya.ikon;
                           const waktu = p.waktu
@@ -1324,6 +1443,11 @@ const AlfilahaAdmin = () => {
                                   <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">
                                     {namaTab(p.tab)}
                                   </span>
+                                  {p.jumlah > 1 && (
+                                    <span className="inline-flex items-center text-[10px] font-black bg-red-500 text-white px-2 py-0.5 rounded-full">
+                                      {p.jumlah}×
+                                    </span>
+                                  )}
                                   <span className="text-[11px] text-muted font-medium">
                                     {rel}
                                   </span>
@@ -1361,8 +1485,11 @@ const AlfilahaAdmin = () => {
         {/* CONTENT AREA */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-10">
           <div className="max-w-7xl mx-auto">
+            <Suspense fallback={<TabFallback />}>
             {activeTab === "tanaman" && <TanamanManager />}
             {activeTab === "peternakan" && <PeternakanManager />}
+            {activeTab === "kelas" && <KelasManager />}
+            {activeTab === "tahun-ajaran" && <TahunAjaranManager />}
             {activeTab === "jadwal" && <JadwalManager />}
             {activeTab === "lokasi" && <LokasiManager />}
             {activeTab === "users" && <UserManager />}
@@ -1498,6 +1625,7 @@ const AlfilahaAdmin = () => {
                 setDeleteModal={setDeleteModal}
               />
             )}
+            </Suspense>
           </div>
         </div>
       </main>

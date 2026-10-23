@@ -1,55 +1,155 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import Main from "../Main/Main";
 import Main2 from "../Main/Main2";
 import Main3 from "../Main/Main3";
 import Main4 from "../Main/Main4";
-import Home1 from "../Pages/Home1/Home1";
-import Home2 from "../Pages/Home2/Home2";
-import Home3 from "../Pages/Home3/Home3";
-import ErrorPage from "../Shared/ErrorPage/ErrorPage";
-import Home4 from "../Pages/Home4/Home4";
-import Home5 from "../Pages/Home5/Home5";
-import AboutInner from "../Pages/InnerPage/AboutInner/AboutInner";
-import ServiceInner from "../Pages/InnerPage/ServiceInner/ServiceInner";
-import ServiceDetails from "../Pages/InnerPage/ServiceDetails/ServiceDetails";
-import DynamicServiceDetails from "../Pages/InnerPage/ServiceDetails/DynamicServiceDetails";
-import ContactInner from "../Pages/InnerPage/ContactInner/ContactInner";
-import BlogList from "../Pages/InnerPage/BlogList/BlogList";
-import BlogDetails from "../Pages/InnerPage/BlogDetails/BlogDetails";
-import BlogGrid from "../Pages/InnerPage/BlogGrid/BlogGrid";
-import ProjectInner from "../Pages/InnerPage/ProjectInner/ProjectInner";
-import TeamInner from "../Pages/InnerPage/TeamInner/TeamInner";
-import PricingInner from "../Pages/InnerPage/PricingInner/PricingInner";
-import DonationInner from "../Pages/InnerPage/DonationInner/DonationInner";
-import ServiceDetails2 from "../Pages/InnerPage/ServiceDetails/ServiceDetails2";
-import ServiceDetails3 from "../Pages/InnerPage/ServiceDetails/ServiceDetails3";
-import ServiceDetails4 from "../Pages/InnerPage/ServiceDetails/ServiceDetails4";
-import ServiceDetails5 from "../Pages/InnerPage/ServiceDetails/ServiceDetails5";
-import ServiceDetails6 from "../Pages/InnerPage/ServiceDetails/ServiceDetails6";
-import AppointmentInner from "../Pages/InnerPage/Appointment/AppointmentInner";
-import ProjectDetails from "../Pages/InnerPage/ProjectDetails/ProjectDetails";
-import FaqInner from "../Pages/InnerPage/Faq/Accordion/FaqInner";
 import Main5 from "../Main/Main5";
-import TestimonialInner from "../Pages/InnerPage/TestimonialInner/TestimonialInner";
-import EventInner from "../Pages/InnerPage/EventInner/EventInner";
-import EventDetails from "../Pages/InnerPage/EventDetails/EventDetails";
-import PesanTempat from "../Pages/InnerPage/PesanTempat/PesanTempatBaru";
-import CekTanaman from "../Pages/InnerPage/CekTanaman/CekTanaman";
-import KubusAlfilaha from "../Pages/InnerPage/KubusAlfilaha/KubusAlfilaha";
-import PaketWisata from "../Pages/InnerPage/PaketWisata/PaketWisata";
-import GaleriFull from "../Pages/InnerPage/GaleriFull/GaleriFull";
-import AlfilahaAdmin from "../Pages/AlfilahaAdmin/AlfilahaAdmin";
-import Search from "../Pages/InnerPage/Search/Search";
-import Pendaftaran from "../Pages/InnerPage/Pendaftaran/Pendaftaran";
-import StatusPendaftaran from "../Pages/InnerPage/Pendaftaran/StatusPendaftaran";
-import LoginSantri from "../Pages/InnerPage/Pendaftaran/LoginSantri";
-import TanamanDetail from "../Pages/InnerPage/Tanaman/TanamanDetail";
-import KoleksiTanaman from "../Pages/InnerPage/Tanaman/KoleksiTanaman";
-import KoleksiTernak from "../Pages/InnerPage/Peternakan/KoleksiTernak";
-import TernakDetail from "../Pages/InnerPage/Peternakan/TernakDetail";
-import RegisterInternal from "../Pages/InnerPage/Auth/RegisterInternal";
-import LoginInternal from "../Pages/InnerPage/Auth/LoginInternal";
-import DashboardSantri from "../Pages/InnerPage/DashboardSantri/DashboardSantri";
+import ErrorPage from "../Shared/ErrorPage/ErrorPage";
+
+// Semua halaman dimuat lazy (code-split) supaya bundel awal tetap ringan dan
+// tiap halaman hanya diunduh saat benar-benar dibuka. Layout (Main*) tetap
+// eager karena kecil dan dipakai sebagai kerangka.
+const Home1 = lazy(() => import("../Pages/Home1/Home1"));
+const Home2 = lazy(() => import("../Pages/Home2/Home2"));
+const Home3 = lazy(() => import("../Pages/Home3/Home3"));
+const Home4 = lazy(() => import("../Pages/Home4/Home4"));
+const Home5 = lazy(() => import("../Pages/Home5/Home5"));
+const AboutInner = lazy(
+  () => import("../Pages/InnerPage/AboutInner/AboutInner"),
+);
+const ServiceInner = lazy(
+  () => import("../Pages/InnerPage/ServiceInner/ServiceInner"),
+);
+const ServiceDetails = lazy(
+  () => import("../Pages/InnerPage/ServiceDetails/ServiceDetails"),
+);
+const DynamicServiceDetails = lazy(
+  () => import("../Pages/InnerPage/ServiceDetails/DynamicServiceDetails"),
+);
+const ContactInner = lazy(
+  () => import("../Pages/InnerPage/ContactInner/ContactInner"),
+);
+const BlogList = lazy(() => import("../Pages/InnerPage/BlogList/BlogList"));
+const BlogDetails = lazy(
+  () => import("../Pages/InnerPage/BlogDetails/BlogDetails"),
+);
+const BlogGrid = lazy(() => import("../Pages/InnerPage/BlogGrid/BlogGrid"));
+const ProjectInner = lazy(
+  () => import("../Pages/InnerPage/ProjectInner/ProjectInner"),
+);
+const TeamInner = lazy(() => import("../Pages/InnerPage/TeamInner/TeamInner"));
+const PricingInner = lazy(
+  () => import("../Pages/InnerPage/PricingInner/PricingInner"),
+);
+const DonationInner = lazy(
+  () => import("../Pages/InnerPage/DonationInner/DonationInner"),
+);
+const ServiceDetails2 = lazy(
+  () => import("../Pages/InnerPage/ServiceDetails/ServiceDetails2"),
+);
+const ServiceDetails3 = lazy(
+  () => import("../Pages/InnerPage/ServiceDetails/ServiceDetails3"),
+);
+const ServiceDetails4 = lazy(
+  () => import("../Pages/InnerPage/ServiceDetails/ServiceDetails4"),
+);
+const ServiceDetails5 = lazy(
+  () => import("../Pages/InnerPage/ServiceDetails/ServiceDetails5"),
+);
+const ServiceDetails6 = lazy(
+  () => import("../Pages/InnerPage/ServiceDetails/ServiceDetails6"),
+);
+const AppointmentInner = lazy(
+  () => import("../Pages/InnerPage/Appointment/AppointmentInner"),
+);
+const ProjectDetails = lazy(
+  () => import("../Pages/InnerPage/ProjectDetails/ProjectDetails"),
+);
+const FaqInner = lazy(
+  () => import("../Pages/InnerPage/Faq/Accordion/FaqInner"),
+);
+const TestimonialInner = lazy(
+  () => import("../Pages/InnerPage/TestimonialInner/TestimonialInner"),
+);
+const EventInner = lazy(
+  () => import("../Pages/InnerPage/EventInner/EventInner"),
+);
+const EventDetails = lazy(
+  () => import("../Pages/InnerPage/EventDetails/EventDetails"),
+);
+const PesanTempat = lazy(
+  () => import("../Pages/InnerPage/PesanTempat/PesanTempatBaru"),
+);
+const CekTanaman = lazy(
+  () => import("../Pages/InnerPage/CekTanaman/CekTanaman"),
+);
+const KubusAlfilaha = lazy(
+  () => import("../Pages/InnerPage/KubusAlfilaha/KubusAlfilaha"),
+);
+const PaketWisata = lazy(
+  () => import("../Pages/InnerPage/PaketWisata/PaketWisata"),
+);
+const GaleriFull = lazy(
+  () => import("../Pages/InnerPage/GaleriFull/GaleriFull"),
+);
+const AlfilahaAdmin = lazy(
+  () => import("../Pages/AlfilahaAdmin/AlfilahaAdmin"),
+);
+const Search = lazy(() => import("../Pages/InnerPage/Search/Search"));
+const Pendaftaran = lazy(
+  () => import("../Pages/InnerPage/Pendaftaran/Pendaftaran"),
+);
+const StatusPendaftaran = lazy(
+  () => import("../Pages/InnerPage/Pendaftaran/StatusPendaftaran"),
+);
+const LoginSantri = lazy(
+  () => import("../Pages/InnerPage/Pendaftaran/LoginSantri"),
+);
+const TanamanDetail = lazy(
+  () => import("../Pages/InnerPage/Tanaman/TanamanDetail"),
+);
+const KoleksiTanaman = lazy(
+  () => import("../Pages/InnerPage/Tanaman/KoleksiTanaman"),
+);
+const TanamanRiwayat = lazy(
+  () => import("../Pages/InnerPage/Tanaman/TanamanRiwayat"),
+);
+const KoleksiTernak = lazy(
+  () => import("../Pages/InnerPage/Peternakan/KoleksiTernak"),
+);
+const TernakDetail = lazy(
+  () => import("../Pages/InnerPage/Peternakan/TernakDetail"),
+);
+const TernakRiwayat = lazy(
+  () => import("../Pages/InnerPage/Peternakan/TernakRiwayat"),
+);
+const KoleksiKelas = lazy(
+  () => import("../Pages/InnerPage/Kelas/KoleksiKelas"),
+);
+const KelasDetail = lazy(() => import("../Pages/InnerPage/Kelas/KelasDetail"));
+const RegisterInternal = lazy(
+  () => import("../Pages/InnerPage/Auth/RegisterInternal"),
+);
+const LoginInternal = lazy(
+  () => import("../Pages/InnerPage/Auth/LoginInternal"),
+);
+const DashboardSantri = lazy(
+  () => import("../Pages/InnerPage/DashboardSantri/DashboardSantri"),
+);
+
+// Fallback ringan saat chunk halaman sedang diunduh.
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin h-10 w-10 border-4 border-green-500 rounded-full border-t-transparent" />
+  </div>
+);
+
+const page = (Komponen) => (
+  <Suspense fallback={<LoadingFallback />}>
+    <Komponen />
+  </Suspense>
+);
 
 const router = createBrowserRouter([
   {
@@ -59,167 +159,183 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Home1 />,
+        element: page(Home1),
       },
       {
         path: "/homeTest",
-        element: <Home2 />,
+        element: page(Home2),
       },
       {
         path: "/about",
-        element: <AboutInner />,
+        element: page(AboutInner),
       },
       {
         path: "/service",
-        element: <ServiceInner />,
+        element: page(ServiceInner),
       },
       {
         path: "/service/:id",
-        element: <DynamicServiceDetails />,
+        element: page(DynamicServiceDetails),
       },
       {
         path: "/service_details",
-        element: <ServiceDetails />,
+        element: page(ServiceDetails),
       },
       {
         path: "/service_details2",
-        element: <ServiceDetails2 />,
+        element: page(ServiceDetails2),
       },
       {
         path: "/service_details3",
-        element: <ServiceDetails3 />,
+        element: page(ServiceDetails3),
       },
       {
         path: "/service_details4",
-        element: <ServiceDetails4 />,
+        element: page(ServiceDetails4),
       },
       {
         path: "/service_details5",
-        element: <ServiceDetails5 />,
+        element: page(ServiceDetails5),
       },
       {
         path: "/service_details6",
-        element: <ServiceDetails6 />,
+        element: page(ServiceDetails6),
       },
       {
         path: "/project",
-        element: <ProjectInner />,
+        element: page(ProjectInner),
       },
       {
         path: "/project_details",
-        element: <ProjectDetails />,
+        element: page(ProjectDetails),
       },
       {
         path: "/donation_inner",
-        element: <DonationInner />,
+        element: page(DonationInner),
       },
       {
         path: "/team_inner",
-        element: <TeamInner />,
+        element: page(TeamInner),
       },
       {
         path: "/pricing_inner",
-        element: <PricingInner />,
+        element: page(PricingInner),
       },
       {
         path: "/faq_inner",
-        element: <FaqInner />,
+        element: page(FaqInner),
       },
       {
         path: "/blog_grid",
-        element: <BlogGrid />,
+        element: page(BlogGrid),
       },
       {
         path: "/blog_list",
-        element: <BlogList />,
+        element: page(BlogList),
       },
       {
         path: "/blog_details/:id",
-        element: <BlogDetails />,
+        element: page(BlogDetails),
       },
       {
         path: "/appointment",
-        element: <AppointmentInner />,
+        element: page(AppointmentInner),
       },
       {
         path: "/testimonial",
-        element: <TestimonialInner />,
+        element: page(TestimonialInner),
       },
       {
         path: "/contact",
-        element: <ContactInner />,
+        element: page(ContactInner),
       },
       {
         path: "/event",
-        element: <EventInner />,
+        element: page(EventInner),
       },
       {
         path: "/event_details/:id",
-        element: <EventDetails />,
+        element: page(EventDetails),
       },
       {
         path: "/pesan-tempat",
-        element: <PesanTempat />,
+        element: page(PesanTempat),
       },
       {
         path: "/cek-tanaman",
-        element: <CekTanaman />,
+        element: page(CekTanaman),
       },
       {
         path: "/kubus-alfilaha",
-        element: <KubusAlfilaha />,
+        element: page(KubusAlfilaha),
       },
       {
         path: "/paket-wisata",
-        element: <PaketWisata />,
+        element: page(PaketWisata),
       },
       {
         path: "/galeri",
-        element: <GaleriFull />,
+        element: page(GaleriFull),
       },
       {
         path: "/search",
-        element: <Search />,
+        element: page(Search),
       },
       {
         path: "/pendaftaran",
-        element: <Pendaftaran />,
+        element: page(Pendaftaran),
       },
       {
         path: "/status-pendaftaran",
-        element: <StatusPendaftaran />,
+        element: page(StatusPendaftaran),
       },
       {
         path: "/login-santri",
-        element: <LoginSantri />,
+        element: page(LoginSantri),
       },
       {
         path: "/tanaman/:id",
-        element: <TanamanDetail />,
+        element: page(TanamanDetail),
+      },
+      {
+        path: "/tanaman/:id/riwayat",
+        element: page(TanamanRiwayat),
       },
       {
         path: "/koleksi-tanaman",
-        element: <KoleksiTanaman />,
+        element: page(KoleksiTanaman),
       },
       {
         path: "/peternakan/:jenis",
-        element: <TernakDetail />,
+        element: page(TernakDetail),
+      },
+      {
+        path: "/peternakan/:jenis/riwayat",
+        element: page(TernakRiwayat),
       },
       {
         path: "/peternakan",
-        element: <KoleksiTernak />,
+        element: page(KoleksiTernak),
+      },
+      {
+        path: "/kelas",
+        element: page(KoleksiKelas),
+      },
+      {
+        path: "/kelas/:id",
+        element: page(KelasDetail),
       },
       {
         path: "/register-petani",
-        element: <RegisterInternal />,
+        element: page(RegisterInternal),
       },
       {
         path: "/login-perawatan",
-        element: <LoginInternal />,
+        element: page(LoginInternal),
       },
       {
         path: "/dashboard-santri",
-        element: <DashboardSantri />,
+        element: page(DashboardSantri),
       },
     ],
   },
@@ -230,7 +346,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/home2",
-        element: <Home2 />,
+        element: page(Home2),
       },
     ],
   },
@@ -241,7 +357,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/home3",
-        element: <Home3 />,
+        element: page(Home3),
       },
     ],
   },
@@ -252,7 +368,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/home4",
-        element: <Home4 />,
+        element: page(Home4),
       },
     ],
   },
@@ -263,17 +379,17 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/home5",
-        element: <Home5 />,
+        element: page(Home5),
       },
     ],
   },
   {
     path: "/admin",
-    element: <AlfilahaAdmin />,
+    element: page(AlfilahaAdmin),
   },
   {
     path: "/admin/:tab",
-    element: <AlfilahaAdmin />,
+    element: page(AlfilahaAdmin),
   },
 ]);
 

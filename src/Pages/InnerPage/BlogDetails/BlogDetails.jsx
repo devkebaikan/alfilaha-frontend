@@ -269,7 +269,7 @@ const BlogDetails = () => {
                 />
                 <button
                   type="submit"
-                  className=" text-xl text-white rounded h-[56px] w-[56px] bg-PrimaryColor-0 transition-all duration-500 flex items-center justify-center hover:hue-rotate-[360deg] absolute right-7 top-1/2 -translate-y-1/2"
+                  className=" text-xl text-white rounded h-[56px] w-[56px] bg-PrimaryColor-0 transition-all duration-500 flex items-center justify-center hover:hue-rotate-[360deg] absolute right-7 inset-y-0 my-auto"
                 >
                   <IoSearch />
                 </button>

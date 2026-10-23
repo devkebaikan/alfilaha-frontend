@@ -8,6 +8,22 @@ import {
   FiTag,
 } from "react-icons/fi";
 
+const getExcerpt = (description, max = 85) => {
+  const text = (
+    description && description.replace
+      ? description.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim()
+      : description || ""
+  ).toString();
+  if (!text) return "Tidak ada deskripsi yang tersedia untuk event ini.";
+  if (text.length <= max) return text;
+  const chunk = text.slice(0, max);
+  const sentenceEnd = chunk.lastIndexOf(". ");
+  const commaEnd = chunk.lastIndexOf(", ");
+  const wordEnd = chunk.lastIndexOf(" ");
+  const cutPoint = Math.max(sentenceEnd, commaEnd, wordEnd);
+  return `${chunk.slice(0, cutPoint > 40 ? cutPoint : max).trim()}…`;
+};
+
 const Event = ({ events, onAdd, onEdit, onDelete }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
 
@@ -24,9 +40,9 @@ const Event = ({ events, onAdd, onEdit, onDelete }) => {
         </div>
         <button
           onClick={() => onAdd()}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5 whitespace-nowrap"
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5 whitespace-nowrap flex items-center gap-2"
         >
-          Tambah Event
+          + Tambah Event
         </button>
       </div>
       <div className="p-8">
@@ -72,12 +88,8 @@ const Event = ({ events, onAdd, onEdit, onDelete }) => {
                   <h3 className="font-bold text-xl text-ink mb-3 group-hover:text-green-600 dark:text-green-300 transition-colors line-clamp-2">
                     {item.title}
                   </h3>
-                  <p className="text-muted text-sm mb-6 line-clamp-3 flex-1">
-                    {item.description
-                      ? typeof item.description === "string"
-                        ? item.description.replace(/<[^>]+>/g, "")
-                        : item.description
-                      : "Tidak ada deskripsi yang tersedia untuk event ini."}
+<p className="text-muted text-sm mb-6 line-clamp-2 flex-1">
+                    {getExcerpt(item.description)}
                   </p>
                   <div
                     className="flex items-center justify-between pt-4 border-t border-line mt-auto"
@@ -115,7 +127,7 @@ const Event = ({ events, onAdd, onEdit, onDelete }) => {
             onClick={() => setSelectedEvent(null)}
           ></div>
 
-          <div className="bg-card rounded-[32px] w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl relative z-10 flex flex-col animate-fade-in-up">
+          <div className="bg-card rounded-[32px] w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl relative z-10 flex flex-col animate-fade-in-up">
             <div className="px-8 py-6 border-b border-line flex justify-between items-center bg-card relative overflow-hidden">
               <div className="absolute right-0 top-0 w-40 h-40 bg-[#DCFCE7] dark:bg-[#12331F] rounded-full blur-3xl opacity-50 translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
               <div className="relative z-10">
@@ -135,49 +147,43 @@ const Event = ({ events, onAdd, onEdit, onDelete }) => {
             </div>
 
             <div className="overflow-y-auto p-8 custom-scrollbar">
-              <div className="flex flex-col md:flex-row gap-8 mb-8">
-                <div className="w-full md:w-1/3 shrink-0">
-                  <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-surface2 border border-line shadow-inner">
-                    {selectedEvent.image ? (
-                      <img loading="lazy" decoding="async"
-                        src={`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${selectedEvent.image}`}
-                        alt={selectedEvent.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted bg-surface2">
-                        <FiActivity size={48} className="opacity-20" />
-                      </div>
-                    )}
+              <div className="rounded-2xl overflow-hidden bg-surface2 border border-line shadow-inner h-52 sm:h-64 mb-6 relative">
+                {selectedEvent.image ? (
+                  <img loading="lazy" decoding="async"
+                    src={`${import.meta.env.VITE_PUBLIC_API || "http://localhost:5000"}/uploads/${selectedEvent.image}`}
+                    alt={selectedEvent.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted bg-surface2">
+                    <FiActivity size={48} className="opacity-20" />
                   </div>
-                </div>
-                <div className="w-full md:w-2/3">
-                  <h4 className="text-2xl font-bold text-[#263238] dark:text-[#E2E8E6] mb-3">
-                    {selectedEvent.title}
-                  </h4>
-                  <div className="flex flex-wrap items-center gap-3 mt-1 text-sm font-bold mb-4">
-                    <span className="px-3 py-1 rounded-full bg-[#DCFCE7] dark:bg-[#12331F] text-[#14532D] dark:text-[#6EE7A0] border border-green-200 dark:border-green-500/30 flex items-center gap-1">
-                      <FiTag /> {selectedEvent.category}
-                    </span>
-                    <span className="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30 flex items-center gap-1">
-                      <FiCalendar />{" "}
-                      {selectedEvent.date &&
-                      selectedEvent.date.includes("-") &&
-                      selectedEvent.date.split("-")[0].length === 4
-                        ? `${new Date(selectedEvent.date).getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][new Date(selectedEvent.date).getMonth()]} ${new Date(selectedEvent.date).getFullYear()}`
-                        : selectedEvent.date}
-                    </span>
-                  </div>
-
-                  <div className="bg-surface2 border border-line p-4 rounded-xl text-sm font-medium text-ink leading-relaxed overflow-hidden">
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: selectedEvent.description,
-                      }}
-                    />
-                  </div>
-                </div>
+                )}
               </div>
+
+              <h4 className="text-2xl font-bold text-[#263238] dark:text-[#E2E8E6] mb-3">
+                {selectedEvent.title}
+              </h4>
+              <div className="flex flex-wrap items-center gap-3 mt-1 text-sm font-bold mb-6">
+                <span className="px-3 py-1 rounded-full bg-[#DCFCE7] dark:bg-[#12331F] text-[#14532D] dark:text-[#6EE7A0] border border-green-200 dark:border-green-500/30 flex items-center gap-1">
+                  <FiTag /> {selectedEvent.category}
+                </span>
+                <span className="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30 flex items-center gap-1">
+                  <FiCalendar />{" "}
+                  {selectedEvent.date &&
+                  selectedEvent.date.includes("-") &&
+                  selectedEvent.date.split("-")[0].length === 4
+                    ? `${new Date(selectedEvent.date).getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][new Date(selectedEvent.date).getMonth()]} ${new Date(selectedEvent.date).getFullYear()}`
+                    : selectedEvent.date}
+                </span>
+              </div>
+
+              <div
+                className="prose prose-lg max-w-none text-justify leading-relaxed"
+                dangerouslySetInnerHTML={{
+                  __html: selectedEvent.description,
+                }}
+              />
             </div>
 
             <div className="px-8 py-5 border-t border-line bg-surface2 flex justify-end gap-3">

@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
+const compression = require('compression');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
@@ -16,6 +17,10 @@ require('dotenv').config();
 // exif), resize max sisi 1600px (TANPA memperbesar -- warna/tampilan utuh),
 // re-encode kualitas 80 agar ringan; dibuat juga salinan thumbnail ±400px.
 // File non-gambar (PDF dll) disimpan apa adanya.
+// Penanda versi build — dipanggil lewat /api/test supaya gampang memastikan
+// proses backend yang jalan sudah memakai kode terbaru (bukan versi lama di memori).
+const BUILD_ID = new Date().toISOString();
+
 const DIR_UPLOAD = './uploads';
 const MAX_SISI = 1600;
 const KUALITAS = 80;
@@ -134,7 +139,48 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept']
 }));
+// Kompresi gzip/brotli untuk respons API (JSON gambar/list). Frontend `dist`
+// disajikan oleh nginx/CDN, jadi middleware ini fokus meringankan payload API.
+app.use(compression());
 app.use(express.json());
+
+// ── Cache memori ringan untuk endpoint publik (blogs/galeri/paket) ─────────
+// Mencegah query DB berulang saat pengguna pindah-pindah halaman. TTL pendek
+// agar data tetap segar; cache otomatis dibersihkan setiap ada perubahan data
+// (request non-GET) supaya admin selalu melihat data terbaru.
+const __cache = new Map();
+const TTL_PUBLIK_MS = 30 * 1000;
+const cachePublik =
+  (ttlMs = TTL_PUBLIK_MS) =>
+  (req, res, next) => {
+    const key = req.originalUrl;
+    const hit = __cache.get(key);
+    if (hit && Date.now() - hit.t < ttlMs) {
+      res.setHeader('X-Cache', 'HIT');
+      return res.json(hit.data);
+    }
+    const kirimJson = res.json.bind(res);
+    res.json = (data) => {
+      if (res.statusCode < 400) __cache.set(key, { t: Date.now(), data });
+      return kirimJson(data);
+    };
+    next();
+  };
+const bersihkanCache = (prefix) => {
+  for (const k of __cache.keys()) if (k.startsWith(prefix)) __cache.delete(k);
+};
+app.use((req, res, next) => {
+  if (req.method !== 'GET') {
+    res.on('finish', () => {
+      if (res.statusCode >= 400) return;
+      if (req.path.startsWith('/api/blogs')) bersihkanCache('/api/blogs');
+      if (req.path.startsWith('/api/galeri')) bersihkanCache('/api/galeri');
+      if (req.path.startsWith('/api/paket')) bersihkanCache('/api/paket');
+    });
+  }
+  next();
+});
+
 app.use('/uploads', express.static('uploads', {
   maxAge: '30d',
   setHeaders: (res, filePath) => {
@@ -144,11 +190,16 @@ app.use('/uploads', express.static('uploads', {
   }
 }));
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'db_alfilaha'
+  database: process.env.DB_NAME || 'db_alfilaha',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0
 });
 
 const runQuery = (sql, params = []) => new Promise((resolve, reject) => {
@@ -182,7 +233,72 @@ if (RUN_LEGACY_DATABASE_BOOTSTRAP) {
     `CREATE TABLE IF NOT EXISTS tanaman (id INT AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(255) NOT NULL, jenis VARCHAR(100), lokasi VARCHAR(255), deskripsi TEXT, gambar VARCHAR(255), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`,
     `CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) NOT NULL UNIQUE, password VARCHAR(255) NOT NULL, nama_lengkap VARCHAR(100), role VARCHAR(50) DEFAULT 'user')`,
     `CREATE TABLE IF NOT EXISTS log_perawatan (id INT AUTO_INCREMENT PRIMARY KEY, tanaman_id INT NOT NULL, santri_id INT NULL, jenis_tindakan ENUM('siram', 'pupuk', 'panen') NOT NULL, nama_perawat VARCHAR(255), role_perawat VARCHAR(50), waktu_tindakan TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (tanaman_id) REFERENCES tanaman(id) ON DELETE CASCADE, FOREIGN KEY (santri_id) REFERENCES pendaftar_santri(id) ON DELETE SET NULL)`,
-    `CREATE TABLE IF NOT EXISTS foto_perkembangan (id INT AUTO_INCREMENT PRIMARY KEY, tanaman_id INT NOT NULL, santri_id INT NOT NULL, gambar VARCHAR(255) NOT NULL, waktu_upload TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (tanaman_id) REFERENCES tanaman(id) ON DELETE CASCADE, FOREIGN KEY (santri_id) REFERENCES pendaftar_santri(id) ON DELETE CASCADE)`
+    `CREATE TABLE IF NOT EXISTS foto_perkembangan (id INT AUTO_INCREMENT PRIMARY KEY, tanaman_id INT NOT NULL, santri_id INT NOT NULL, gambar VARCHAR(255) NOT NULL, waktu_upload TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (tanaman_id) REFERENCES tanaman(id) ON DELETE CASCADE, FOREIGN KEY (santri_id) REFERENCES pendaftar_santri(id) ON DELETE CASCADE)`,
+    `CREATE TABLE IF NOT EXISTS kelas (id INT AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(255) NOT NULL, tahun_ajaran VARCHAR(100), wali_kelas VARCHAR(255), deskripsi TEXT, foto VARCHAR(255), jumlah_santri INT NOT NULL DEFAULT 0, status ENUM('draft','dipublikasikan') DEFAULT 'draft', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)`,
+    `CREATE TABLE IF NOT EXISTS aktivitas_kelas (id INT AUTO_INCREMENT PRIMARY KEY, kelas_id INT NOT NULL, jenis VARCHAR(50) NOT NULL, tanggal DATE NOT NULL, judul VARCHAR(255) NOT NULL, catatan TEXT, foto VARCHAR(255), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE)`,
+    `CREATE TABLE IF NOT EXISTS jenis_aktivitas_pendidikan (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      nama VARCHAR(100) NOT NULL UNIQUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+,
+
+    `CREATE TABLE IF NOT EXISTS penempatan_santri (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      santri_id INT NOT NULL,
+      kelas_id INT NOT NULL,
+      tahun_ajaran VARCHAR(50) NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_penempatan (santri_id, kelas_id, tahun_ajaran),
+      CONSTRAINT fk_penempatan_santri FOREIGN KEY (santri_id) REFERENCES users(id) ON DELETE CASCADE,
+      CONSTRAINT fk_penempatan_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+    `CREATE TABLE IF NOT EXISTS jadwal_pelajaran (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      kelas_id INT NOT NULL,
+      tahun_ajaran VARCHAR(50) NULL,
+      hari ENUM('Senin','Selasa','Rabu','Kamis','Jumat','Sabtu') NOT NULL,
+      jam_mulai TIME NOT NULL,
+      jam_selesai TIME NOT NULL,
+      mapel VARCHAR(150) NOT NULL,
+      guru_id INT NULL,
+      pola_perulangan ENUM('sekali','setiap_hari','mingguan') DEFAULT 'sekali',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_jadwal_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE,
+      CONSTRAINT fk_jadwal_guru FOREIGN KEY (guru_id) REFERENCES users(id) ON DELETE SET NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+    `CREATE TABLE IF NOT EXISTS absensi_santri (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      santri_id INT NOT NULL,
+      kelas_id INT NOT NULL,
+      tanggal DATE NOT NULL,
+      status ENUM('hadir','izin') NOT NULL,
+      jawaban_sampai_selesai ENUM('ya','tidak') NULL,
+      foto VARCHAR(255) NULL,
+      deskripsi TEXT NULL,
+      waktu_server TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      dikoreksi_oleh INT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_abs_santri FOREIGN KEY (santri_id) REFERENCES users(id) ON DELETE CASCADE,
+      CONSTRAINT fk_abs_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE,
+      UNIQUE KEY uq_abs (santri_id, kelas_id, tanggal)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+    `CREATE TABLE IF NOT EXISTS riwayat_kelas (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      kelas_id INT NOT NULL,
+      tanggal DATE NOT NULL,
+      mapel VARCHAR(150) NULL,
+      catatan TEXT NULL,
+      foto VARCHAR(255) NULL,
+      dibatalkan TINYINT(1) DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_riw_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+
+    `CREATE TABLE IF NOT EXISTS user_peran (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, peran ENUM("guru","santri","petugas") NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY uq_user_peran (user_id, peran), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)`,
+    `CREATE TABLE IF NOT EXISTS tahun_ajaran (id INT AUTO_INCREMENT PRIMARY KEY, tahun VARCHAR(20) NOT NULL, aktif TINYINT(1) DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, UNIQUE KEY uq_tahun_ajaran (tahun))`
   ];
   
   tables.forEach(q => db.query(q, (err) => { if (err) console.error(err); }));
@@ -190,6 +306,14 @@ if (RUN_LEGACY_DATABASE_BOOTSTRAP) {
   // Update paket_wisata table if needed
   db.query("ALTER TABLE paket_wisata ADD COLUMN gambar VARCHAR(255)", (err) => {
     // Ignore error if column already exists
+  });
+
+  // Tambah kolom lokasi pada tabel kelas (nama lokasi + relasi ke tabel lokasi)
+  db.query("ALTER TABLE kelas ADD COLUMN IF NOT EXISTS nama_lokasi VARCHAR(255) NULL", (e1) => {
+    if (e1) console.error('[Migrasi] tambah kelas.nama_lokasi gagal:', e1.message);
+  });
+  db.query("ALTER TABLE kelas ADD COLUMN IF NOT EXISTS lokasi_id INT NULL", (e2) => {
+    if (e2) console.error('[Migrasi] tambah kelas.lokasi_id gagal:', e2.message);
   });
 
   // ── AUTO-MIGRASI schema (idempotent, aman dijalankan ulang) ─────────────
@@ -330,6 +454,14 @@ if (RUN_LEGACY_DATABASE_BOOTSTRAP) {
       });
     }
   });
+  db.query("SHOW COLUMNS FROM log_perawatan LIKE 'gambar'", (errG, rowsG) => {
+    if (errG) return;
+    if (!rowsG || rowsG.length === 0) {
+      db.query("ALTER TABLE log_perawatan ADD COLUMN gambar VARCHAR(255) NULL", (e) => {
+        if (!e) console.log('[Migrasi] log_perawatan: gambar ditambah ✅');
+      });
+    }
+  });
 
   // admin_users: pastikan kolom nama_lengkap & role ada
   db.query("SHOW COLUMNS FROM admin_users LIKE 'nama_lengkap'", (err, rows) => {
@@ -373,7 +505,7 @@ if (RUN_LEGACY_DATABASE_BOOTSTRAP) {
 app.get('/api/test', async (req, res) => {
   try {
     await runQuery('SELECT 1 AS ready');
-    res.json({ status: 'ok', database: 'ready' });
+    res.json({ status: 'ok', database: 'ready', build: BUILD_ID });
   } catch (error) {
     res.status(503).json({ status: 'error', database: 'unavailable', error: error.message });
   }
@@ -695,6 +827,19 @@ app.put('/api/pendaftar_santri/:id/status', authenticateAdminToken, (req, res) =
     (error, result) => {
       if (error) return res.status(500).json({ message: 'Gagal memperbarui status pendaftar.' });
       if (!result.affectedRows) return res.status(404).json({ message: 'Pendaftar tidak ditemukan.' });
+      if (status === 'Diterima') {
+        db.query('SELECT username FROM pendaftar_santri WHERE id = ?', [id], (e, r) => {
+          if (!e && r && r.length) {
+            const username = r[0].username;
+            db.query('SELECT id FROM users WHERE username = ?', [username], (e2, r2) => {
+              if (!e2 && r2 && r2.length) {
+                const userId = r2[0].id;
+                db.query('INSERT IGNORE INTO user_peran (user_id, peran) VALUES (?, "santri")', [userId]);
+              }
+            });
+          }
+        });
+      }
       return res.json({ message: 'Berhasil' });
     }
   );
@@ -733,8 +878,15 @@ const removeUpload = (filename) => {
   }
 };
 
-app.get('/api/galeri', (req, res) => {
-  db.query("SELECT * FROM galeri ORDER BY id DESC", (err, results) => {
+app.get('/api/galeri', cachePublik(), (req, res) => {
+  const limit = parseInt(req.query.limit, 10);
+  const params = [];
+  let sql = "SELECT * FROM galeri ORDER BY id DESC";
+  if (Number.isInteger(limit) && limit > 0) {
+    sql += " LIMIT ?";
+    params.push(Math.min(limit, 500));
+  }
+  db.query(sql, params, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
@@ -841,8 +993,16 @@ app.delete('/api/reservasi/:id', authenticateAdminToken, (req, res) => {
 });
 
 // PAKET WISATA
-app.get('/api/paket', (req, res) => {
-  db.query("SELECT * FROM paket_wisata", (err, results) => {
+app.get('/api/paket', cachePublik(), (req, res) => {
+  const limit = parseInt(req.query.limit, 10);
+  const params = [];
+  let sql = "SELECT * FROM paket_wisata";
+  if (Number.isInteger(limit) && limit > 0) {
+    sql += " LIMIT ?";
+    params.push(Math.min(limit, 200));
+  }
+  db.query(sql, params, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
 });
@@ -905,8 +1065,21 @@ app.delete('/api/events/:id', authenticateAdminToken, (req, res) => {
 });
 
 // BLOGS
-app.get('/api/blogs', (req, res) => {
-  db.query("SELECT * FROM blogs ORDER BY id DESC", (err, results) => {
+app.get('/api/blogs', cachePublik(), (req, res) => {
+  // `?fields=list` mengembalikan kolom ringan (tanpa `content` LONGTEXT) untuk
+  // daftar/beranda; detail tetap memakai kolom penuh (default). `?limit=N`
+  // membatasi jumlah baris sesuka pemanggil (mis. beranda hanya butuh 3).
+  const fieldsList = String(req.query.fields || '').toLowerCase() === 'list';
+  const kolom = fieldsList ? "id, title, date, excerpt, image" : "*";
+  const params = [];
+  let sql = `SELECT ${kolom} FROM blogs ORDER BY id DESC`;
+  const limit = parseInt(req.query.limit, 10);
+  if (Number.isInteger(limit) && limit > 0) {
+    sql += " LIMIT ?";
+    params.push(Math.min(limit, 100));
+  }
+  db.query(sql, params, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
 });
@@ -1007,57 +1180,320 @@ app.delete('/api/appointments/:id', authenticateAdminToken, (req, res) => {
 // bisa ditambahkan tabel aksi_perawatan; untuk sekarang dipakai 3 aksi default ini.
 const AKSI_PERAWATAN = ['siram', 'pupuk', 'panen'];
 
+// Statistik perawatan per tanaman, dihitung dari `log_perawatan` (SATU sumber
+// riwayat: laporan manual dari halaman detail Tanaman, maupun laporan tugas
+// santri yang otomatis masuk saat `PATCH /api/tugas/:id/selesai`). Tidak ada
+// angka statis — semua angka berasal dari database.
+//
+// Menghasilkan: total_siram/total_pupuk/total_panen + terakhir_* (tanggal aksi terakhir).
+const SELECT_STATISTIK_PERAWATAN = `
+  COALESCE(sp.total_siram, 0)  AS total_siram,
+  sp.terakhir_siram           AS terakhir_siram,
+  COALESCE(sp.total_pupuk, 0)  AS total_pupuk,
+  sp.terakhir_pupuk           AS terakhir_pupuk,
+  COALESCE(sp.total_panen, 0)  AS total_panen,
+  sp.terakhir_panen           AS terakhir_panen
+`;
+
+// Subquery agregasi 1x1 per tanaman, dipakai oleh daftar & detail.
+const JOIN_STATISTIK_PERAWATAN = `
+  LEFT JOIN (
+    SELECT tanaman_id,
+      SUM(CASE WHEN jenis_tindakan = 'siram' THEN 1 ELSE 0 END) AS total_siram,
+      MAX(CASE WHEN jenis_tindakan = 'siram' THEN waktu_tindakan END) AS terakhir_siram,
+      SUM(CASE WHEN jenis_tindakan = 'pupuk' THEN 1 ELSE 0 END) AS total_pupuk,
+      MAX(CASE WHEN jenis_tindakan = 'pupuk' THEN waktu_tindakan END) AS terakhir_pupuk,
+      SUM(CASE WHEN jenis_tindakan = 'panen' THEN 1 ELSE 0 END) AS total_panen,
+      MAX(CASE WHEN jenis_tindakan = 'panen' THEN waktu_tindakan END) AS terakhir_panen
+    FROM log_perawatan
+    GROUP BY tanaman_id
+  ) sp ON sp.tanaman_id = t.id
+`;
+
+// SUM() di MySQL menghasilkan DECIMAL (dikirim sebagai string oleh driver),
+// jadi dibulatkan ke integer di sini agar frontend tidak perlu parse ulang.
+function normalisasiStatistikPerawatan(row) {
+  if (!row) return row;
+  return {
+    ...row,
+    total_siram: Number(row.total_siram) || 0,
+    total_pupuk: Number(row.total_pupuk) || 0,
+    total_panen: Number(row.total_panen) || 0,
+    terakhir_siram: row.terakhir_siram || null,
+    terakhir_pupuk: row.terakhir_pupuk || null,
+    terakhir_panen: row.terakhir_panen || null,
+  };
+}
+
 app.get('/api/tanaman', (req, res) => {
   db.query(
-    "SELECT t.*, l.nama AS nama_lokasi FROM tanaman t LEFT JOIN lokasi l ON l.id = t.lokasi_id ORDER BY t.id DESC",
+    `SELECT t.*, l.nama AS nama_lokasi, ${SELECT_STATISTIK_PERAWATAN}
+       FROM tanaman t
+       LEFT JOIN lokasi l ON l.id = t.lokasi_id
+       ${JOIN_STATISTIK_PERAWATAN}
+      ORDER BY t.id DESC`,
     (err, results) => {
       if (err) return res.status(500).json({ error: err.message });
-      res.json(results);
+      res.json(results.map(normalisasiStatistikPerawatan));
     }
   );
 });
 app.get('/api/tanaman/:id', (req, res) => {
-  db.query("SELECT * FROM tanaman WHERE id = ?", [req.params.id], (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (results.length === 0) return res.status(404).json({ message: "Not found" });
-    res.json(results[0]);
-  });
+  db.query(
+    `SELECT t.*, l.nama AS nama_lokasi, ${SELECT_STATISTIK_PERAWATAN}
+       FROM tanaman t
+       LEFT JOIN lokasi l ON l.id = t.lokasi_id
+       ${JOIN_STATISTIK_PERAWATAN}
+      WHERE t.id = ?`,
+    [req.params.id],
+    (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (results.length === 0) return res.status(404).json({ message: "Not found" });
+      res.json(normalisasiStatistikPerawatan(results[0]));
+    }
+  );
 });
-// Daftar aksi perawatan yang tersedia untuk sebuah tanaman (default global)
+// Daftar aksi perawatan yang tersedia untuk sebuah tanaman.
+// Sumber utama: katalog `master_aksi_tanaman` (bisa dikelola admin per tanaman).
+// Fallback ke 3 aksi default bila katalog kosong (mis. data lama).
 app.get('/api/tanaman/:id/aksi', (req, res) => {
-  db.query("SELECT id FROM tanaman WHERE id = ?", [req.params.id], (err, rows) => {
+  const tanamanId = parseInt(String(req.params.id).trim(), 10);
+  if (!Number.isFinite(tanamanId) || tanamanId <= 0) {
+    return res.status(400).json({ error: 'ID tanaman tidak valid.' });
+  }
+  db.query("SELECT id FROM tanaman WHERE id = ?", [tanamanId], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!rows.length) return res.status(404).json({ message: "Tanaman tidak ditemukan" });
-    res.json({ aksi: AKSI_PERAWATAN });
+    db.query(
+      `SELECT id, nama_aksi, urutan, aktif
+         FROM master_aksi_tanaman
+        WHERE tanaman_id = ?
+        ORDER BY urutan ASC, id ASC`,
+      [tanamanId],
+      (err2, aksiRows) => {
+        if (err2) return res.status(500).json({ error: err2.message });
+        const detail = (aksiRows || []).map((r) => ({
+          id: r.id,
+          nama_aksi: r.nama_aksi,
+          urutan: r.urutan,
+          aktif: Number(r.aktif) === 1 ? 1 : 0,
+        }));
+        const aktif = detail
+          .filter((a) => a.aktif === 1)
+          .map((a) => a.nama_aksi);
+        res.json({
+          aksi: aktif.length ? aktif : AKSI_PERAWATAN,
+          aksi_detail: detail,
+        });
+      }
+    );
   });
 });
+
+// POST /api/admin/tanaman/:id/aksi — tambah aksi perawatan untuk SATU tanaman.
+// Body: { nama_aksi, urutan? }. Aksi disimpan lowercase (idempoten dgn log_perawatan).
+app.post('/api/admin/tanaman/:id/aksi', authenticateAdminToken, (req, res) => {
+  const id = parseInt(String(req.params.id).trim(), 10);
+  if (!Number.isFinite(id) || id <= 0) {
+    return res.status(400).json({ error: 'ID tanaman tidak valid.' });
+  }
+  const namaAksi = String(req.body.nama_aksi || '').trim().toLowerCase();
+  if (!namaAksi) return res.status(400).json({ error: 'Nama aksi wajib diisi.' });
+  if (namaAksi.length > 100) return res.status(400).json({ error: 'Nama aksi terlalu panjang (maksimal 100 karakter).' });
+
+  db.query('SELECT id FROM tanaman WHERE id = ?', [id], (errT, tRows) => {
+    if (errT) return res.status(500).json({ error: errT.message });
+    if (!tRows.length) return res.status(404).json({ message: 'Tanaman tidak ditemukan.' });
+    const insertRow = (urutan) => {
+      db.query(
+        'INSERT INTO master_aksi_tanaman (tanaman_id, nama_aksi, urutan, aktif) VALUES (?, ?, ?, 1)',
+        [id, namaAksi, urutan],
+        (errIns) => {
+          if (errIns) {
+            if (errIns.code === 'ER_DUP_ENTRY') {
+              return res.status(400).json({ error: `Aksi "${namaAksi}" sudah ada untuk tanaman ini.` });
+            }
+            return res.status(500).json({ error: errIns.message });
+          }
+          res.json({ message: 'Aksi perawatan berhasil ditambahkan.' });
+        }
+      );
+    };
+    const urutanRaw = String(req.body.urutan ?? '').trim();
+    if (urutanRaw !== '') {
+      const u = parseInt(urutanRaw, 10);
+      if (!Number.isFinite(u) || u < 0) return res.status(400).json({ error: 'Urutan harus angka ≥ 0.' });
+      return insertRow(u);
+    }
+    db.query(
+      'SELECT COALESCE(MAX(urutan), 0) + 10 AS next_urutan FROM master_aksi_tanaman WHERE tanaman_id = ?',
+      [id],
+      (errU, uRows) => {
+        if (errU) return res.status(500).json({ error: errU.message });
+        insertRow(uRows[0].next_urutan);
+      }
+    );
+  });
+});
+
+// PUT /api/admin/tanaman/:id/aksi/:aksiId — ubah nama/urutan/aktif. Bila nama
+// diubah, riwayat (log_perawatan) & pilihan jadwal (aktivitas_tanaman) untuk
+// tanaman itu ikut di-rename agar konsisten.
+app.put('/api/admin/tanaman/:id/aksi/:aksiId', authenticateAdminToken, (req, res) => {
+  const id = parseInt(String(req.params.id).trim(), 10);
+  const aksiId = parseInt(String(req.params.aksiId).trim(), 10);
+  if (!Number.isFinite(id) || id <= 0 || !Number.isFinite(aksiId) || aksiId <= 0) {
+    return res.status(400).json({ error: 'ID tidak valid.' });
+  }
+  db.query(
+    'SELECT nama_aksi FROM master_aksi_tanaman WHERE id = ? AND tanaman_id = ?',
+    [aksiId, id],
+    (errC, cRows) => {
+      if (errC) return res.status(500).json({ error: errC.message });
+      if (!cRows || !cRows.length) return res.status(404).json({ message: 'Aksi perawatan tidak ditemukan untuk tanaman ini.' });
+      const lama = cRows[0].nama_aksi;
+      const field = {};
+      if (req.body.nama_aksi != null) {
+        const v = String(req.body.nama_aksi).trim().toLowerCase();
+        if (!v) return res.status(400).json({ error: 'Nama aksi tidak boleh kosong.' });
+        if (v.length > 100) return res.status(400).json({ error: 'Nama aksi terlalu panjang (maksimal 100 karakter).' });
+        field.nama_aksi = v;
+      }
+      if (req.body.urutan !== undefined) {
+        const v = parseInt(String(req.body.urutan).trim(), 10);
+        if (!Number.isFinite(v) || v < 0) return res.status(400).json({ error: 'Urutan harus angka ≥ 0.' });
+        field.urutan = v;
+      }
+      if (req.body.aktif !== undefined) {
+        field.aktif = req.body.aktif ? 1 : 0;
+      }
+      if (!Object.keys(field).length) {
+        return res.status(400).json({ error: 'Tidak ada field yang diubah.' });
+      }
+      const setCols = Object.keys(field).map((k) => `${k} = ?`).join(', ');
+      db.query(
+        `UPDATE master_aksi_tanaman SET ${setCols} WHERE id = ? AND tanaman_id = ?`,
+        [...Object.values(field), aksiId, id],
+        (errU) => {
+          if (errU) {
+            if (errU.code === 'ER_DUP_ENTRY') {
+              return res.status(400).json({ error: 'Aksi dengan nama tersebut sudah ada untuk tanaman ini.' });
+            }
+            return res.status(500).json({ error: errU.message });
+          }
+          const baru = field.nama_aksi;
+          if (!baru || baru === lama) return res.json({ message: 'Aksi perawatan berhasil diperbarui.' });
+          db.query('UPDATE aktivitas_tanaman SET aksi = ? WHERE tanaman_id = ? AND aksi = ?', [baru, id, lama], (errA) => {
+            if (errA) console.error('[tanaman aksi] rename aktivitas_tanaman gagal:', errA.message);
+            db.query('UPDATE log_perawatan SET jenis_tindakan = ? WHERE tanaman_id = ? AND jenis_tindakan = ?', [baru, id, lama], (errL) => {
+              if (errL) console.error('[tanaman aksi] rename log_perawatan gagal:', errL.message);
+              res.json({ message: 'Aksi perawatan berhasil diperbarui.' });
+            });
+          });
+        }
+      );
+    }
+  );
+});
+
+// DELETE /api/admin/tanaman/:id/aksi/:aksiId — hapus aksi. DITOLAK bila sudah ada
+// riwayat (log_perawatan); sarankan nonaktifkan. Baris pivot jadwal ikut dibersihkan.
+app.delete('/api/admin/tanaman/:id/aksi/:aksiId', authenticateAdminToken, (req, res) => {
+  const id = parseInt(String(req.params.id).trim(), 10);
+  const aksiId = parseInt(String(req.params.aksiId).trim(), 10);
+  if (!Number.isFinite(id) || id <= 0 || !Number.isFinite(aksiId) || aksiId <= 0) {
+    return res.status(400).json({ error: 'ID tidak valid.' });
+  }
+  db.query(
+    'SELECT nama_aksi FROM master_aksi_tanaman WHERE id = ? AND tanaman_id = ?',
+    [aksiId, id],
+    (errC, cRows) => {
+      if (errC) return res.status(500).json({ error: errC.message });
+      if (!cRows || !cRows.length) return res.status(404).json({ message: 'Aksi perawatan tidak ditemukan untuk tanaman ini.' });
+      const nama = cRows[0].nama_aksi;
+      db.query(
+        'SELECT COUNT(*) AS n FROM log_perawatan WHERE tanaman_id = ? AND jenis_tindakan = ?',
+        [id, nama],
+        (errL, lRows) => {
+          if (errL) return res.status(500).json({ error: errL.message });
+          const n = Number(lRows?.[0]?.n || 0);
+          if (n > 0) {
+            return res.status(409).json({
+              error: `Aksi tidak bisa dihapus karena sudah ada ${n} catatan perawatan. Nonaktifkan aksi ini saja agar tidak tampil, riwayat tetap aman.`,
+            });
+          }
+          db.query('DELETE FROM aktivitas_tanaman WHERE tanaman_id = ? AND aksi = ?', [id, nama], (errP) => {
+            if (errP) console.error('[tanaman aksi] hapus pivot gagal:', errP.message);
+            db.query('DELETE FROM master_aksi_tanaman WHERE id = ? AND tanaman_id = ?', [aksiId, id], (errD) => {
+              if (errD) return res.status(500).json({ error: errD.message });
+              res.json({ message: 'Aksi perawatan berhasil dihapus.' });
+            });
+          });
+        }
+      );
+    }
+  );
+});
+// Kolom tambahan tanaman yang diisi dari form admin (Manajemen Object).
+const TEKS_TANAMAN = ['usia', 'jadwal_siram', 'jadwal_pupuk', 'jadwal_panen', 'kebutuhan_air', 'terakhir_dipupuk', 'nama_donatur'];
+const ambilTeksTanaman = (body) =>
+  TEKS_TANAMAN.map((k) => {
+    const v = body[k];
+    if (v === undefined || v === null) return null;
+    const s = String(v).trim();
+    return s === '' ? null : s;
+  });
+
 app.post('/api/tanaman', authenticateAdminToken, upload.single('gambar'), (req, res) => {
   const { nama, jenis, lokasi, lokasi_id, deskripsi } = req.body;
   const gambar = req.file ? req.file.filename : null;
   const lid = lokasi_id ? parseInt(String(lokasi_id).trim(), 10) : null;
-  db.query("INSERT INTO tanaman (nama, jenis, lokasi, lokasi_id, deskripsi, gambar) VALUES (?, ?, ?, ?, ?, ?)",
-    [nama, jenis, lokasi, Number.isFinite(lid) ? lid : null, deskripsi, gambar], (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: "Berhasil", id: results.insertId });
-  });
+  const teks = ambilTeksTanaman(req.body);
+  const kolomTeks = TEKS_TANAMAN.join(', ');
+  const placeholderTeks = TEKS_TANAMAN.map(() => '?').join(', ');
+  db.query(
+    `INSERT INTO tanaman (nama, jenis, lokasi, lokasi_id, deskripsi, gambar, ${kolomTeks}) VALUES (?, ?, ?, ?, ?, ?, ${placeholderTeks})`,
+    [nama, jenis, lokasi, Number.isFinite(lid) ? lid : null, deskripsi, gambar, ...teks],
+    (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+      const newId = results.insertId;
+      let urutan = 10;
+      for (const aksiDefault of AKSI_PERAWATAN) {
+        db.query(
+          'INSERT IGNORE INTO master_aksi_tanaman (tanaman_id, nama_aksi, urutan) VALUES (?, ?, ?)',
+          [newId, aksiDefault, urutan]
+        );
+        urutan += 10;
+      }
+      res.json({ message: "Berhasil", id: newId });
+    }
+  );
 });
 app.put('/api/tanaman/:id', authenticateAdminToken, upload.single('gambar'), (req, res) => {
   const { nama, jenis, lokasi, lokasi_id, deskripsi } = req.body;
   const lid = lokasi_id ? parseInt(String(lokasi_id).trim(), 10) : null;
   const lokasiIdFixed = Number.isFinite(lid) ? lid : null;
-  if (req.file) {
-    db.query("UPDATE tanaman SET nama=?, jenis=?, lokasi=?, lokasi_id=?, deskripsi=?, gambar=? WHERE id=?",
-      [nama, jenis, lokasi, lokasiIdFixed, deskripsi, req.file.filename, req.params.id], (err) => {
+  const teks = ambilTeksTanaman(req.body);
+  const setTeks = TEKS_TANAMAN.map((k) => `${k} = ?`).join(', ');
+  const setGambar = req.file ? ', gambar = ?' : '';
+  const nilai = [
+    nama,
+    jenis,
+    lokasi,
+    lokasiIdFixed,
+    deskripsi,
+    ...(req.file ? [req.file.filename] : []),
+    ...teks,
+    req.params.id,
+  ];
+  db.query(
+    `UPDATE tanaman SET nama = ?, jenis = ?, lokasi = ?, lokasi_id = ?, deskripsi = ?${setGambar}, ${setTeks} WHERE id = ?`,
+    nilai,
+    (err) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ message: "Berhasil" });
-    });
-  } else {
-    db.query("UPDATE tanaman SET nama=?, jenis=?, lokasi=?, lokasi_id=?, deskripsi=? WHERE id=?",
-      [nama, jenis, lokasi, lokasiIdFixed, deskripsi, req.params.id], (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ message: "Berhasil" });
-    });
-  }
+    }
+  );
 });
 app.delete('/api/tanaman/:id', authenticateAdminToken, (req, res) => {
   db.query("DELETE FROM tanaman WHERE id = ?", [req.params.id], (err) => {
@@ -1075,17 +1511,43 @@ const JAM_PENANDA = {
   'Beri Pakan Sore': '± 17.00',
 };
 
-function resolusiJenisTernak(jenisSlug, cb) {
-  if (!jenisSlug) return cb('Jenis ternak diperlukan');
+// Resolve a public livestock entry from a route param.
+// Param can be:
+//   - a numeric `ternak.id`  → the exact entry (multiple entries per jenis are allowed)
+//   - a jenis slug (legacy)  → first published entry of that jenis
+// Legacy slug support keeps old links such as /peternakan/sapi working.
+function resolusiTernak(param, cb) {
+  if (!param) return cb('Jenis ternak diperlukan');
+  const key = String(param).trim();
+  if (/^\d+$/.test(key)) {
+    return db.query(
+      `SELECT jt.id, jt.nama, jt.kategori,
+              t.id AS ternak_id, t.nama_tampilan, t.status_publikasi, t.total, t.total_mati,
+              t.lokasi_id, t.foto, t.deskripsi, t.created_at, t.updated_at,
+              l.nama AS lokasi
+         FROM ternak t
+         JOIN jenis_ternak jt ON jt.id = t.jenis_ternak_id
+         LEFT JOIN lokasi l ON l.id = t.lokasi_id
+        WHERE t.id = ? AND jt.aktif = 1`,
+      [parseInt(key, 10)],
+      (err, rows) => {
+        if (err) return cb(null, err);
+        if (!rows || !rows.length) return cb(null, null);
+        cb(rows[0]);
+      }
+    );
+  }
   db.query(
     `SELECT jt.id, jt.nama, jt.kategori,
-            t.id AS ternak_id, t.nama_tampilan, t.status_publikasi, t.total, t.total_mati, t.lokasi_id, t.foto, t.deskripsi,
+            t.id AS ternak_id, t.nama_tampilan, t.status_publikasi, t.total, t.total_mati,
+            t.lokasi_id, t.foto, t.deskripsi, t.created_at, t.updated_at,
             l.nama AS lokasi
-       FROM jenis_ternak jt
-       JOIN ternak t ON t.jenis_ternak_id = jt.id
+       FROM ternak t
+       JOIN jenis_ternak jt ON jt.id = t.jenis_ternak_id
        LEFT JOIN lokasi l ON l.id = t.lokasi_id
-      WHERE LOWER(jt.nama) = LOWER(?)`,
-    [String(jenisSlug).trim()],
+      WHERE LOWER(jt.nama) = LOWER(?) AND jt.aktif = 1
+      ORDER BY t.status_publikasi = 'dipublikasikan' DESC, t.id ASC`,
+    [key],
     (err, rows) => {
       if (err) return cb(null, err);
       if (!rows || !rows.length) return cb(null, null);
@@ -1097,16 +1559,17 @@ function resolusiJenisTernak(jenisSlug, cb) {
 // GET /api/ternak — daftar ternak yang DIPUBLIKASIKAN (halaman index Koleksi Ternak)
 app.get('/api/ternak', (req, res) => {
   db.query(
-    `SELECT t.id, t.jenis_ternak_id, t.status_publikasi, t.total, t.total_mati, t.foto, t.deskripsi,
-            jt.nama AS nama, COALESCE(NULLIF(t.nama_tampilan,''), jt.nama) AS nama_tampilan,
-            jt.nama AS jenis, jt.kategori, jt.keterangan,
-            l.nama AS lokasi, l.id AS lokasi_id,
-            (SELECT COUNT(*) FROM master_aksi_ternak m WHERE m.jenis_ternak_id = jt.id AND m.aktif = 1) AS jumlah_aksi
+     `SELECT t.id, t.jenis_ternak_id, t.status_publikasi, t.total, t.total_mati, t.foto, t.deskripsi,
+             t.created_at, t.updated_at,
+             jt.nama AS nama, COALESCE(NULLIF(t.nama_tampilan,''), jt.nama) AS nama_tampilan,
+             jt.nama AS jenis, jt.kategori, jt.keterangan,
+             l.nama AS lokasi, l.id AS lokasi_id,
+             (SELECT COUNT(*) FROM master_aksi_ternak m WHERE m.jenis_ternak_id = jt.id AND m.aktif = 1) AS jumlah_aksi
        FROM ternak t
        JOIN jenis_ternak jt ON jt.id = t.jenis_ternak_id
        LEFT JOIN lokasi l ON l.id = t.lokasi_id
       WHERE jt.aktif = 1 AND t.status_publikasi = 'dipublikasikan'
-      ORDER BY jt.id ASC`,
+      ORDER BY jt.id ASC, t.id ASC`,
     (err, results) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json(results);
@@ -1117,7 +1580,7 @@ app.get('/api/ternak', (req, res) => {
 // GET /api/ternak/:jenis — detail satu jenis (statistik + daftar aksi perawatan).
 // Hanya bisa diakses publik kalau status_publikasi = 'dipublikasikan'; draft → 404.
 app.get('/api/ternak/:jenis', (req, res) => {
-  resolusiJenisTernak(req.params.jenis, (row, err) => {
+  resolusiTernak(req.params.jenis, (row, err) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(404).json({ message: 'Jenis ternak tidak ditemukan' });
     if (row.status_publikasi !== 'dipublikasikan') {
@@ -1126,11 +1589,17 @@ app.get('/api/ternak/:jenis', (req, res) => {
     db.query(
       `SELECT m.id, m.nama_aksi, m.sub_aksi, m.butuh_input_angka, m.label_input, m.urutan,
               m.batas_harian,
-              (SELECT COUNT(*) FROM log_perawatan_ternak lp
-                 WHERE lp.ternak_id = ? AND lp.master_aksi_id = m.id) AS jumlah,
-              (SELECT COUNT(*) FROM log_perawatan_ternak lh
-                 WHERE lh.ternak_id = ? AND lh.master_aksi_id = m.id
-                   AND lh.created_at >= CURDATE()) AS jumlah_hari_ini
+              (SELECT CASE WHEN m.butuh_input_angka = 1
+                             THEN COALESCE(SUM(lp.nilai_angka), 0)
+                             ELSE COUNT(*) END
+                 FROM log_perawatan_ternak lp
+                WHERE lp.ternak_id = ? AND lp.master_aksi_id = m.id) AS jumlah,
+              (SELECT CASE WHEN m.butuh_input_angka = 1
+                             THEN COALESCE(SUM(lh.nilai_angka), 0)
+                             ELSE COUNT(*) END
+                 FROM log_perawatan_ternak lh
+                WHERE lh.ternak_id = ? AND lh.master_aksi_id = m.id
+                  AND lh.created_at >= CURDATE()) AS jumlah_hari_ini
          FROM master_aksi_ternak m
         WHERE m.jenis_ternak_id = ? AND m.aktif = 1
         ORDER BY m.urutan ASC, m.id ASC`,
@@ -1158,35 +1627,88 @@ app.get('/api/ternak/:jenis', (req, res) => {
 // GET /api/ternak/:jenis/riwayat — riwayat perawatan (publik, tanpa login).
 // Konsisten dgn detail: draft → 404.
 app.get('/api/ternak/:jenis/riwayat', (req, res) => {
-  resolusiJenisTernak(req.params.jenis, (row, err) => {
+  resolusiTernak(req.params.jenis, (row, err) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(404).json({ message: 'Jenis ternak tidak ditemukan' });
     if (row.status_publikasi !== 'dipublikasikan') {
       return res.status(404).json({ message: 'Jenis ternak tidak ditemukan' });
     }
-    db.query(
-      `SELECT lpr.id, lpr.catatan, lpr.foto, lpr.nilai_angka, lpr.created_at,
-              lpr.nama_perawat, lpr.role_perawat, lpr.jadwal_id, lpr.aktivitas_id,
-              m.nama_aksi, m.sub_aksi, m.butuh_input_angka, m.label_input,
-              s.nama AS nama_santri,
-              sch.nama_aktivitas AS nama_aktivitas
-         FROM log_perawatan_ternak lpr
-         JOIN master_aksi_ternak m ON m.id = lpr.master_aksi_id
-         LEFT JOIN pendaftar_santri s ON s.id = lpr.diinput_oleh
-         LEFT JOIN activity_schedules sch ON sch.id = lpr.aktivitas_id
-        WHERE lpr.ternak_id = ?
-        ORDER BY lpr.created_at DESC
-        LIMIT 200`,
-      [row.ternak_id],
-      (err2, logs) => {
+
+    // Pagination (?page&limit), pencarian (?q), filter aksi (?aksi).
+    // Bila `limit` tidak dikirim → perilaku lama (array, dibatasi 200) agar
+    // pemakaian lama tetap jalan.
+    const paginasi = req.query.limit !== undefined;
+    const where = ['lpr.ternak_id = ?'];
+    const params = [row.ternak_id];
+
+    const q = String(req.query.q || '').trim();
+    if (q) {
+      where.push('(sch.nama_aktivitas LIKE ? OR lpr.nama_perawat LIKE ? OR s.nama LIKE ? OR lpr.catatan LIKE ? OR m.nama_aksi LIKE ?)');
+      const like = `%${q}%`;
+      params.push(like, like, like, like, like);
+    }
+    const aksi = String(req.query.aksi || '').trim();
+    if (aksi && aksi.toLowerCase() !== 'semua') {
+      where.push("(m.nama_aksi = ? OR TRIM(CONCAT(m.nama_aksi, IFNULL(CONCAT(' (', m.sub_aksi, ')'), ''))) = ?)");
+      params.push(aksi, aksi);
+    }
+    const whereSql = `WHERE ${where.join(' AND ')}`;
+
+    const selectSql = `
+      SELECT lpr.id, lpr.catatan, lpr.foto, lpr.nilai_angka, lpr.created_at,
+             lpr.nama_perawat, lpr.role_perawat, lpr.jadwal_id, lpr.aktivitas_id,
+             lpr.diinput_oleh,
+             m.nama_aksi, m.sub_aksi, m.butuh_input_angka, m.label_input,
+             s.nama AS nama_santri,
+             sch.nama_aktivitas AS nama_aktivitas
+        FROM log_perawatan_ternak lpr
+        JOIN master_aksi_ternak m ON m.id = lpr.master_aksi_id
+        LEFT JOIN pendaftar_santri s ON s.id = lpr.diinput_oleh
+        LEFT JOIN activity_schedules sch ON sch.id = lpr.aktivitas_id
+        ${whereSql}
+       ORDER BY lpr.created_at DESC
+    `;
+
+    const petakan = (logs) => (logs || []).map((log) => ({
+      ...log,
+      label: log.sub_aksi ? `${log.nama_aksi} (${log.sub_aksi})` : log.nama_aksi,
+      jenis_tindakan: (log.nama_aksi || '').toLowerCase(),
+    }));
+
+    if (!paginasi) {
+      return db.query(`${selectSql} LIMIT 200`, params, (err2, logs) => {
         if (err2) return res.status(500).json({ error: err2.message });
-        res.json((logs || []).map((log) => ({
-          ...log,
-          label: log.sub_aksi ? `${log.nama_aksi} (${log.sub_aksi})` : log.nama_aksi,
-          jenis_tindakan: (log.nama_aksi || '').toLowerCase(),
-        })));
-      }
-    );
+        res.json(petakan(logs));
+      });
+    }
+
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 5));
+    const offset = (page - 1) * limit;
+
+    const countSql = `
+      SELECT COUNT(*) AS total
+        FROM log_perawatan_ternak lpr
+        JOIN master_aksi_ternak m ON m.id = lpr.master_aksi_id
+        LEFT JOIN pendaftar_santri s ON s.id = lpr.diinput_oleh
+        LEFT JOIN activity_schedules sch ON sch.id = lpr.aktivitas_id
+       ${whereSql}
+    `;
+
+    db.query(countSql, params, (errC, rowsC) => {
+      if (errC) return res.status(500).json({ error: errC.message });
+      const total = rowsC && rowsC[0] ? Number(rowsC[0].total) : 0;
+      db.query(`${selectSql} LIMIT ? OFFSET ?`, [...params, limit, offset], (err2, logs) => {
+        if (err2) return res.status(500).json({ error: err2.message });
+        res.json({
+          items: petakan(logs),
+          total,
+          page,
+          limit,
+          hasMore: offset + (logs ? logs.length : 0) < total,
+        });
+      });
+    });
   });
 });
 
@@ -1207,7 +1729,7 @@ app.post('/api/ternak/:jenis/aksi', uploadFoto.single('foto'), authenticateSantr
     });
   }
   const { master_aksi_id, catatan, nilai_angka, jadwal_id, aktivitas_id } = req.body;
-  resolusiJenisTernak(req.params.jenis, (row, err) => {
+  resolusiTernak(req.params.jenis, (row, err) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(404).json({ message: 'Jenis ternak tidak ditemukan' });
     if (row.status_publikasi !== 'dipublikasikan') {
@@ -1377,10 +1899,93 @@ app.get('/api/admin/jenis-ternak', authenticateAdminToken, (req, res) => {
   );
 });
 
-// POST /api/admin/ternak — tambah ternak BARU (INSERT nyata ke tabel `ternak`).
-// Satu baris per jenis_ternak (UNIQUE uq_ternak_jenis → 409 bila jenis sudah
-// ada). Jenis diterima sebagai TEKS manual dan dicocokkan case-insensitive ke
-// jenis_ternak (Sapi/Ayam/Kambing) agar daftar aksi perawatan otomatis benar.
+// ── Helper master jenis ternak (dipakai POST & PUT admin) ───────────────────
+// Daftar aksi perawatan umum untuk jenis yang baru dibuat, supaya halaman
+// detail publik tidak kosong tanpa tombol aksi.
+const AKSI_UMUM_TERNAK = [
+  ['Beri Pakan Pagi', null, 10],
+  ['Beri Pakan Sore', null, 20],
+  ['Beri Minum/Air', null, 30],
+  ['Bersihkan Kandang', 'Pagi', 40],
+  ['Bersihkan Kandang', 'Sore', 50],
+];
+
+function seedAksiUmumTernak(jenisId, cb) {
+  let i = 0;
+  const next = () => {
+    if (i >= AKSI_UMUM_TERNAK.length) return cb(null);
+    const [nama, sub, urutan] = AKSI_UMUM_TERNAK[i++];
+    db.query(
+      `INSERT INTO master_aksi_ternak (jenis_ternak_id, nama_aksi, sub_aksi, urutan)
+       SELECT ?, ?, ?, ?
+        WHERE NOT EXISTS (
+          SELECT 1 FROM master_aksi_ternak
+           WHERE jenis_ternak_id = ? AND nama_aksi = ? AND COALESCE(sub_aksi, '') = COALESCE(?, '')
+        )`,
+      [jenisId, nama, sub, urutan, jenisId, nama, sub],
+      (e) => (e ? cb(e) : next())
+    );
+  };
+  next();
+}
+
+function buatJenisTernakBaru(nama, cb) {
+  db.query(
+    'INSERT INTO jenis_ternak (nama, kategori, keterangan) VALUES (?, ?, ?)',
+    [nama, 'individu', `Jenis baru ditambahkan admin (${nama})`],
+    (errIns, resIns) => {
+      if (errIns) {
+        if (errIns.code === 'ER_DUP_ENTRY') {
+          return db.query(
+            'SELECT id, nama FROM jenis_ternak WHERE LOWER(nama) = LOWER(?) LIMIT 1',
+            [nama],
+            (e2, r2) => (e2 ? cb(e2) : cb(null, r2 && r2[0]))
+          );
+        }
+        return cb(errIns);
+      }
+      const newId = resIns.insertId;
+      seedAksiUmumTernak(newId, (e3) => cb(e3, { id: newId, nama, baru: true }));
+    }
+  );
+}
+
+// Resolusi jenis dari id (prioritas) atau teks nama. Jenis yang belum pernah
+// ada akan dibuat otomatis + daftar aksi umum. cb(err) atau cb(null, jenis).
+function resolveJenisTernak({ jenisIdRaw, jenisText }, cb) {
+  if (Number.isFinite(jenisIdRaw) && jenisIdRaw > 0) {
+    return db.query(
+      'SELECT id, nama FROM jenis_ternak WHERE id = ? AND aktif = 1',
+      [jenisIdRaw],
+      (errJ, jRows) => {
+        if (errJ) return cb(errJ);
+        if (!jRows || !jRows.length) return cb(new Error('Jenis hewan tidak dikenali.'));
+        cb(null, { ...jRows[0], baru: false });
+      }
+    );
+  }
+  db.query(
+    'SELECT id, nama FROM jenis_ternak WHERE LOWER(nama) = LOWER(?) AND aktif = 1 LIMIT 1',
+    [jenisText],
+    (errJ, jRows) => {
+      if (errJ) return cb(errJ);
+      if (jRows && jRows.length) return cb(null, { ...jRows[0], baru: false });
+      buatJenisTernakBaru(jenisText, (errBuat, jt) => {
+        if (errBuat) return cb(errBuat);
+        if (!jt) return cb(new Error('Jenis hewan tidak dikenali.'));
+        cb(null, jt);
+      });
+    }
+  );
+}
+
+// POST /api/admin/ternak — tambah SATU baris `ternak` baru.
+// Satu jenis BISA punya banyak baris (mis. dua sapi berbeda lokasi/nama).
+// Jenis diterima sebagai TEKS manual: dicocokkan case-insensitive ke
+// jenis_ternak; bila belum ada, jenis tersebut dibuat otomatis lengkap
+// dengan daftar aksi perawatan umum.
+// Duplikat hanya ditolak bila jenis + nama tampilan + lokasi benar-benar sama
+// (UNIQUE uq_ternak_identitas).
 // Lokasi boleh lewat id (dropdown) atau nama teks manual. Foto opsional.
 app.post('/api/admin/ternak', authenticateAdminToken, uploadFoto.single('foto'), (req, res) => {
   const jenisText = String(req.body.jenis_ternak || '').trim().replace(/\s+/g, ' ');
@@ -1393,6 +1998,12 @@ app.post('/api/admin/ternak', authenticateAdminToken, uploadFoto.single('foto'),
     ? String(req.body.status_publikasi).trim()
     : 'draft';
   const namaTampilan = String(req.body.nama_tampilan || '').trim();
+  if (!namaTampilan) {
+    return res.status(400).json({ error: 'Nama tampilan wajib diisi.' });
+  }
+  if (!jenisText && !Number.isFinite(jenisIdRaw)) {
+    return res.status(400).json({ error: 'Jenis ternak wajib diisi.' });
+  }
   const deskripsi = String(req.body.deskripsi || '').trim();
   const lokasiRaw = String(req.body.lokasi_id || '').trim();
 
@@ -1421,57 +2032,124 @@ app.post('/api/admin/ternak', authenticateAdminToken, uploadFoto.single('foto'),
     });
   };
 
+  // Daftar aksi perawatan umum untuk jenis baru (mis. Bebek, Kelinci).
+  // Tanpa ini, halaman detail publik tidak akan punya tombol apa pun.
+  const AKSI_UMUM = [
+    ['Beri Pakan Pagi', null, 10],
+    ['Beri Pakan Sore', null, 20],
+    ['Beri Minum/Air', null, 30],
+    ['Bersihkan Kandang', 'Pagi', 40],
+    ['Bersihkan Kandang', 'Sore', 50],
+  ];
+
+  const seedAksiUmum = (jenisId, cb) => {
+    let i = 0;
+    const next = () => {
+      if (i >= AKSI_UMUM.length) return cb(null);
+      const [nama, sub, urutan] = AKSI_UMUM[i++];
+      db.query(
+        `INSERT INTO master_aksi_ternak (jenis_ternak_id, nama_aksi, sub_aksi, urutan)
+         SELECT ?, ?, ?, ?
+          WHERE NOT EXISTS (
+            SELECT 1 FROM master_aksi_ternak
+             WHERE jenis_ternak_id = ? AND nama_aksi = ? AND COALESCE(sub_aksi, '') = COALESCE(?, '')
+          )`,
+        [jenisId, nama, sub, urutan, jenisId, nama, sub],
+        (e) => (e ? cb(e) : next())
+      );
+    };
+    next();
+  };
+
+  const buatJenisBaru = (nama, cb) => {
+    db.query(
+      'INSERT INTO jenis_ternak (nama, kategori, keterangan) VALUES (?, ?, ?)',
+      [nama, 'individu', `Jenis baru ditambahkan admin (${nama})`],
+      (errIns, resIns) => {
+        if (errIns) {
+          if (errIns.code === 'ER_DUP_ENTRY') {
+            // Another request created it first; reuse that row.
+            return db.query(
+              'SELECT id, nama FROM jenis_ternak WHERE LOWER(nama) = LOWER(?) LIMIT 1',
+              [nama],
+              (e2, r2) => (e2 ? cb(e2) : cb(r2 && r2[0]))
+            );
+          }
+          return cb(errIns);
+        }
+        const newId = resIns.insertId;
+        seedAksiUmum(newId, (e3) => cb(e3, { id: newId, nama, baru: true }));
+      }
+    );
+  };
+
   const cariJenis = (cb) => {
     if (Number.isFinite(jenisIdRaw) && jenisIdRaw > 0) {
       return db.query('SELECT id, nama FROM jenis_ternak WHERE id = ? AND aktif = 1', [jenisIdRaw], (errJ, jRows) => {
         if (errJ) return res.status(500).json({ error: errJ.message });
-        if (!jRows || !jRows.length) return res.status(400).json({ error: 'Jenis ternak tidak dikenali. Gunakan salah satu: Sapi, Ayam, atau Kambing.' });
-        cb(jRows[0]);
+        if (!jRows || !jRows.length) return res.status(400).json({ error: 'Jenis hewan tidak dikenali.' });
+        cb({ ...jRows[0], baru: false });
       });
-    }
-    if (!jenisText) {
-      return res.status(400).json({ error: 'Jenis ternak wajib diisi. Gunakan salah satu: Sapi, Ayam, atau Kambing.' });
     }
     db.query(
       'SELECT id, nama FROM jenis_ternak WHERE LOWER(nama) = LOWER(?) AND aktif = 1 LIMIT 1',
       [jenisText],
       (errJ, jRows) => {
         if (errJ) return res.status(500).json({ error: errJ.message });
-        if (!jRows || !jRows.length) {
-          return res.status(400).json({ error: 'Jenis ternak tidak dikenali. Gunakan salah satu: Sapi, Ayam, atau Kambing.' });
-        }
-        cb(jRows[0]);
+        if (jRows && jRows.length) return cb({ ...jRows[0], baru: false });
+        // Jenis belum pernah ada → buat otomatis + aksi perawatan umum.
+        buatJenisBaru(jenisText, (errBuat, jt) => {
+          if (errBuat) return res.status(500).json({ error: `Gagal membuat jenis "${jenisText}": ${errBuat.message}` });
+          if (!jt) return res.status(400).json({ error: 'Jenis hewan tidak dikenali.' });
+          cb(jt);
+        });
       }
     );
   };
 
   cariJenis((jt) => {
-    db.query('SELECT id FROM ternak WHERE jenis_ternak_id = ?', [jt.id], (errDup, dupRows) => {
-      if (errDup) return res.status(500).json({ error: errDup.message });
-      if (dupRows && dupRows.length) {
-        return res.status(409).json({ error: `Jenis ternak ${jt.nama} sudah pernah ditambahkan.` });
-      }
-      prosesLokasi(jt, (lokasiId) => {
-        db.query(
-          `INSERT INTO ternak
-             (jenis_ternak_id, nama_tampilan, total, total_mati, lokasi_id, foto, status_publikasi, deskripsi)
-           VALUES (?, ?, ?, NULL, ?, ?, ?, ?)`,
-          [jt.id, namaTampilan || jt.nama, total, lokasiId, req.file ? req.file.filename : null,
-           status, deskripsi || null],
-          (errIns, hasil) => {
-            if (errIns && errIns.code === 'ER_DUP_ENTRY') {
-              return res.status(409).json({ error: `Jenis ternak ${jt.nama} sudah pernah ditambahkan.` });
-            }
-            if (errIns) return res.status(500).json({ error: errIns.message });
-            res.status(201).json({
-              message: `${namaTampilan || jt.nama} berhasil ditambahkan${
-                status === 'dipublikasikan' ? ' dan dipublikasikan' : ''
-              }.`,
-              id: hasil && hasil.insertId,
+    prosesLokasi(jt, (lokasiId) => {
+      // Hanya tolak duplikat yang BENAR-BENAR identik:
+      // jenis + nama tampilan + lokasi sama. Sapi kedua dengan nama/lokasi
+      // berbeda tetap boleh.
+      db.query(
+        `SELECT id FROM ternak
+          WHERE jenis_ternak_id = ?
+            AND LOWER(TRIM(COALESCE(nama_tampilan, ''))) = LOWER(TRIM(?))
+            AND ((lokasi_id IS NULL AND ? IS NULL) OR lokasi_id = ?)
+          LIMIT 1`,
+        [jt.id, namaTampilan, lokasiId, lokasiId],
+        (errDup, dupRows) => {
+          if (errDup) return res.status(500).json({ error: errDup.message });
+          if (dupRows && dupRows.length) {
+            return res.status(409).json({
+              error: `Data dengan jenis ${jt.nama}, nama "${namaTampilan}", dan lokasi yang sama sudah ada. Ubah nama tampilan atau pilih lokasi lain.`,
             });
           }
-        );
-      });
+          db.query(
+            `INSERT INTO ternak
+               (jenis_ternak_id, nama_tampilan, total, total_mati, lokasi_id, foto, status_publikasi, deskripsi)
+             VALUES (?, ?, ?, NULL, ?, ?, ?, ?)`,
+            [jt.id, namaTampilan, total, lokasiId, req.file ? req.file.filename : null,
+              status, deskripsi || null],
+            (errIns, hasil) => {
+              if (errIns && errIns.code === 'ER_DUP_ENTRY') {
+                return res.status(409).json({
+                  error: `Data identik sudah ada (jenis ${jt.nama}, nama "${namaTampilan}", lokasi sama).`,
+                });
+              }
+              if (errIns) return res.status(500).json({ error: errIns.message });
+              res.status(201).json({
+                message: `${namaTampilan} (${jt.nama}) berhasil ditambahkan${
+                  status === 'dipublikasikan' ? ' dan langsung tayang di halaman publik' : ''
+                }.`,
+                id: hasil && hasil.insertId,
+                jenis_baru: Boolean(jt.baru),
+              });
+            }
+          );
+        }
+      );
     });
   });
 });
@@ -1495,53 +2173,128 @@ app.put('/api/admin/ternak/:id', authenticateAdminToken, uploadFoto.single('foto
   const status = ['draft', 'dipublikasikan'].includes(String(req.body.status_publikasi || '').trim())
     ? String(req.body.status_publikasi).trim()
     : 'draft';
-  const simpan = () => {
-    if (req.file) {
-      db.query(
-        `UPDATE ternak t
-            JOIN jenis_ternak jt ON jt.id = t.jenis_ternak_id
-            SET t.nama_tampilan = COALESCE(NULLIF(?, ''), jt.nama),
-                t.lokasi_id = ?,
-                t.total = ?,
-                t.status_publikasi = ?,
-                t.foto = ?,
-                t.deskripsi = NULLIF(?, '')
-          WHERE t.id = ?`,
-        [namaTampilan, lokasiId, total, status, req.file.filename, deskripsi, id],
-        (err) => {
-          if (err) return res.status(500).json({ error: err.message });
-          res.json({ message: 'Data ternak berhasil diperbarui' });
-        }
-      );
-    } else {
-      db.query(
-        `UPDATE ternak t
-            JOIN jenis_ternak jt ON jt.id = t.jenis_ternak_id
-            SET t.nama_tampilan = COALESCE(NULLIF(?, ''), jt.nama),
-                t.lokasi_id = ?,
-                t.total = ?,
-                t.status_publikasi = ?,
-                t.deskripsi = NULLIF(?, '')
-          WHERE t.id = ?`,
-        [namaTampilan, lokasiId, total, status, deskripsi, id],
-        (err) => {
-          if (err) return res.status(500).json({ error: err.message });
-          res.json({ message: 'Data ternak berhasil diperbarui' });
-        }
-      );
-    }
-  };
-  if (lokasiId) {
+  // Jenis Object opsional: kalau dikirim, data dipindahkan ke jenis tersebut.
+  // Jenis yang belum ada akan dibuat otomatis (nama teks) beserta aksi umum.
+  const jenisText = String(req.body.jenis_ternak || '').trim().replace(/\s+/g, ' ');
+  const jenisIdRaw = parseInt(String(req.body.jenis_ternak_id || '').trim(), 10);
+  const ubahJenis = Boolean(jenisText) || (Number.isFinite(jenisIdRaw) && jenisIdRaw > 0);
+
+  const validasiLokasi = (cb) => {
+    if (!lokasiId) return cb();
     db.query('SELECT id FROM lokasi WHERE id = ? AND aktif = 1', [lokasiId], (errL, lRows) => {
       if (errL) return res.status(500).json({ error: errL.message });
       if (!lRows || !lRows.length) {
         return res.status(400).json({ error: 'Lokasi terpilih tidak valid.' });
       }
-      simpan();
+      cb();
     });
-  } else {
-    simpan();
+  };
+
+  const dapatkanFallbackNama = (cb) => {
+    if (ubahJenis) return cb(null, null);
+    db.query(
+      `SELECT jt.nama AS jnama
+         FROM ternak t
+         JOIN jenis_ternak jt ON jt.id = t.jenis_ternak_id
+        WHERE t.id = ?`,
+      [id],
+      (err, rows) => {
+        if (err) return cb(err);
+        cb(null, rows && rows[0] ? rows[0].jnama : '');
+      }
+    );
+  };
+
+  const jalankanUpdate = (jenisIdFinal, fallbackNamaFinal) => {
+    const cekDuplikat = (cb) => {
+      if (!ubahJenis) return cb();
+      db.query(
+        `SELECT id FROM ternak
+          WHERE jenis_ternak_id = ?
+            AND LOWER(TRIM(COALESCE(nama_tampilan, ''))) = LOWER(TRIM(?))
+            AND COALESCE(lokasi_id, 0) = COALESCE(?, 0)
+            AND id <> ?
+          LIMIT 1`,
+        [jenisIdFinal, namaTampilan, lokasiId, id],
+        (errDup, dupRows) => {
+          if (errDup) return res.status(500).json({ error: errDup.message });
+          if (dupRows && dupRows.length) {
+            return res.status(409).json({
+              error: `Data dengan jenis, nama "${namaTampilan}", dan lokasi yang sama sudah ada.`,
+            });
+          }
+          cb();
+        }
+      );
+    };
+
+    cekDuplikat(() => {
+      const namaFinal = namaTampilan || fallbackNamaFinal || '';
+      const potonganFoto = req.file ? ', t.foto = ?' : '';
+      const potonganJenis = ubahJenis ? ', t.jenis_ternak_id = ?' : '';
+      const params = [namaFinal, lokasiId, total, status];
+      if (req.file) params.push(req.file.filename);
+      params.push(deskripsi);
+      if (ubahJenis) params.push(jenisIdFinal);
+      params.push(id);
+      db.query(
+        `UPDATE ternak t
+            SET t.nama_tampilan = ?,
+                t.lokasi_id = ?,
+                t.total = ?,
+                t.status_publikasi = ?${potonganFoto},
+                t.deskripsi = NULLIF(?, '')${potonganJenis}
+          WHERE t.id = ?`,
+        params,
+        (err) => {
+          if (err) {
+            if (err.code === 'ER_DUP_ENTRY') {
+              return res.status(409).json({
+                error: 'Data dengan jenis, nama, dan lokasi yang sama sudah ada.',
+              });
+            }
+            return res.status(500).json({ error: err.message });
+          }
+          res.json({ message: 'Data ternak berhasil diperbarui' });
+        }
+      );
+    });
+  };
+
+  validasiLokasi(() => {
+    dapatkanFallbackNama((errFn, fallbackLama) => {
+      if (errFn) return res.status(500).json({ error: errFn.message });
+      if (ubahJenis) {
+        resolveJenisTernak({ jenisIdRaw, jenisText }, (errJ, jt) => {
+          if (errJ) return res.status(400).json({ error: errJ.message });
+          jalankanUpdate(jt.id, jt.nama || fallbackLama || '');
+        });
+      } else {
+        jalankanUpdate(null, fallbackLama || '');
+      }
+    });
+  });
+});
+
+// DELETE /api/admin/ternak/:id — hapus satu data ternak. Riwayat perawatan
+// (log_perawatan_ternak) dan aktivitas terjadwal (aktivitas_ternak) memakai FK
+// ON DELETE CASCADE, sehingga ikut terhapus permanen bersama baris ternaknya.
+// Konfirmasi ada di sisi frontend. Khusus admin.
+app.delete('/api/admin/ternak/:id', authenticateAdminToken, (req, res) => {
+  const id = parseInt(String(req.params.id).trim(), 10);
+  if (!Number.isFinite(id) || id <= 0) {
+    return res.status(400).json({ error: 'ID ternak tidak valid.' });
   }
+  db.query('SELECT id, nama_tampilan FROM ternak WHERE id = ?', [id], (errT, tRows) => {
+    if (errT) return res.status(500).json({ error: errT.message });
+    if (!tRows || !tRows.length) {
+      return res.status(404).json({ error: 'Data ternak tidak ditemukan.' });
+    }
+    db.query('DELETE FROM ternak WHERE id = ?', [id], (errD) => {
+      if (errD) return res.status(500).json({ error: errD.message });
+      res.json({ message: 'Data ternak beserta riwayat perawatannya berhasil dihapus.' });
+    });
+  });
 });
 
 // GET /api/admin/ternak/:id/aksi-rekap — rekap jumlah tiap aksi perawatan
@@ -1869,6 +2622,309 @@ app.delete('/api/admin/ternak/:id/aksi/:aksiId', authenticateAdminToken, (req, r
       );
     }
   );
+});
+
+// ── KELAS (Daftar Kelas + Riwayat Aktivitas) ─────────────────────────────────
+const JENIS_AKTIVITAS_KELAS = ['fgd', 'kunjungan', 'klasikal'];
+const STATUS_KELAS = ['draft', 'dipublikasikan'];
+
+// Jumlah santri per kelas: angka yang diisi admin (kolom `jumlah_santri`)
+// lebih dulu dipakai; bila masih 0, dihitung dari santri pendaftar yang
+// tercatat pada kelas tersebut. Semua angka berasal dari database — tanpa data dummy.
+const HITUNG_SANTRI_KELAS = `COALESCE(
+     NULLIF(k.jumlah_santri, 0),
+     (SELECT COUNT(*) FROM pendaftar_santri ps
+       WHERE LOWER(TRIM(COALESCE(ps.kelas, ''))) = LOWER(TRIM(k.nama))
+         AND LOWER(TRIM(COALESCE(ps.status_pendaftaran, ''))) = 'diterima')
+   ) AS jumlah_santri`;
+
+// GET /api/kelas — daftar kelas yang DIPUBLIKASIKAN (halaman publik /kelas)
+app.get('/api/kelas', (req, res) => {
+  db.query(
+    `SELECT k.id, k.nama, k.tahun_ajaran, k.wali_kelas, k.deskripsi, k.foto,
+            k.status, k.created_at, k.updated_at,
+            COALESCE(l.nama, k.nama_lokasi) AS nama_lokasi,
+            ${HITUNG_SANTRI_KELAS},
+            (SELECT COUNT(*) FROM aktivitas_kelas ak WHERE ak.kelas_id = k.id) AS jumlah_aktivitas
+       FROM kelas k
+       LEFT JOIN lokasi l ON l.id = k.lokasi_id
+      WHERE k.status = 'dipublikasikan'
+      ORDER BY k.id ASC`,
+    (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(results);
+    }
+  );
+});
+
+// GET /api/kelas/:id — detail satu kelas + riwayat aktivitas (terbaru di atas).
+// Draft/invalid → 404, konsisten dengan perilaku /api/ternak/:jenis.
+app.get('/api/kelas/:id', (req, res) => {
+  const id = parseInt(String(req.params.id).trim(), 10);
+  if (!Number.isFinite(id) || id <= 0) {
+    return res.status(400).json({ error: 'ID kelas tidak valid.' });
+  }
+  db.query(
+    `SELECT k.id, k.nama, k.tahun_ajaran, k.wali_kelas, k.deskripsi, k.foto,
+            k.status, k.created_at, k.updated_at,
+            COALESCE(l.nama, k.nama_lokasi) AS nama_lokasi,
+            ${HITUNG_SANTRI_KELAS}
+       FROM kelas k
+       LEFT JOIN lokasi l ON l.id = k.lokasi_id
+      WHERE k.id = ? AND k.status = 'dipublikasikan'`,
+    [id],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!rows || !rows.length) {
+        return res.status(404).json({ message: 'Kelas tidak ditemukan' });
+      }
+      db.query(
+        `SELECT id, kelas_id, jenis, tanggal, judul, catatan, foto,
+                created_at, updated_at
+           FROM aktivitas_kelas
+          WHERE kelas_id = ?
+          ORDER BY tanggal DESC, id DESC`,
+        [id],
+        (errA, aktivitas) => {
+          if (errA) return res.status(500).json({ error: errA.message });
+          const ringkasan = { fgd: 0, kunjungan: 0, klasikal: 0 };
+          (aktivitas || []).forEach((a) => {
+            if (ringkasan[a.jenis] !== undefined) ringkasan[a.jenis] += 1;
+          });
+          res.json({ ...rows[0], aktivitas: aktivitas || [], ringkasan });
+        }
+      );
+    }
+  );
+});
+
+// ── ADMIN KELAS ──────────────────────────────────────────────────────────────
+// GET /api/admin/kelas — SEMUA kelas (termasuk draft) + seluruh aktivitasnya.
+// Khusus admin (token admin_users via alfilaha_admin_token).
+app.get('/api/admin/kelas', authenticateAdminToken, (req, res) => {
+  db.query(
+    `SELECT k.id, k.nama, k.tahun_ajaran, k.wali_kelas, k.deskripsi, k.foto,
+            k.status, k.created_at, k.updated_at,
+            COALESCE(l.nama, k.nama_lokasi) AS nama_lokasi,
+            ${HITUNG_SANTRI_KELAS},
+            (SELECT COUNT(*) FROM aktivitas_kelas ak WHERE ak.kelas_id = k.id) AS jumlah_aktivitas
+       FROM kelas k
+       LEFT JOIN lokasi l ON l.id = k.lokasi_id
+      ORDER BY k.id DESC`,
+    (errK, kelas) => {
+      if (errK) return res.status(500).json({ error: errK.message });
+      db.query(
+        `SELECT id, kelas_id, jenis, tanggal, judul, catatan, foto,
+                created_at, updated_at
+           FROM aktivitas_kelas
+          ORDER BY tanggal DESC, id DESC`,
+        (errA, aktivitas) => {
+          if (errA) return res.status(500).json({ error: errA.message });
+          res.json({ kelas: kelas || [], aktivitas: aktivitas || [] });
+        }
+      );
+    }
+  );
+});
+
+// POST /api/admin/kelas — tambah kelas baru (foto opsional via multipart).
+app.post('/api/admin/kelas', authenticateAdminToken, uploadFoto.single('foto'), (req, res) => {
+  const nama = String(req.body.nama || '').trim();
+  if (!nama) return res.status(400).json({ error: 'Nama kelas wajib diisi.' });
+  const tahunAjaran = String(req.body.tahun_ajaran || '').trim();
+  const waliKelas = String(req.body.wali_kelas || '').trim();
+  const deskripsi = String(req.body.deskripsi || '').trim();
+  const jumlahSantri = parseInt(String(req.body.jumlah_santri ?? '0').trim(), 10);
+  if (!Number.isFinite(jumlahSantri) || jumlahSantri < 0) {
+    return res.status(400).json({ error: 'Jumlah santri harus berupa angka 0 atau lebih.' });
+  }
+  const status = STATUS_KELAS.includes(String(req.body.status || '').trim())
+    ? String(req.body.status).trim()
+    : 'draft';
+  const foto = req.file ? req.file.filename : null;
+
+  const lokasiRaw = String(req.body.lokasi_id || '').trim();
+  const lokasiId = lokasiRaw && /^\d+$/.test(lokasiRaw) ? parseInt(lokasiRaw, 10) : null;
+  const namaLokasi = String(req.body.nama_lokasi || '').trim();
+
+  db.query(
+    `INSERT INTO kelas (nama, tahun_ajaran, wali_kelas, deskripsi, foto, jumlah_santri, status, lokasi_id, nama_lokasi)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [nama, tahunAjaran, waliKelas, deskripsi, foto, jumlahSantri, status, lokasiId, namaLokasi || null],
+    (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.status(201).json({ message: 'Kelas berhasil ditambahkan.' });
+    }
+  );
+});
+
+// PUT /api/admin/kelas/:id — ubah kelas. Foto baru menggantikan foto lama.
+app.put('/api/admin/kelas/:id', authenticateAdminToken, uploadFoto.single('foto'), (req, res) => {
+  const id = parseInt(String(req.params.id).trim(), 10);
+  if (!Number.isFinite(id) || id <= 0) {
+    return res.status(400).json({ error: 'ID kelas tidak valid.' });
+  }
+  const nama = String(req.body.nama || '').trim();
+  if (!nama) return res.status(400).json({ error: 'Nama kelas wajib diisi.' });
+  const tahunAjaran = String(req.body.tahun_ajaran || '').trim();
+  const waliKelas = String(req.body.wali_kelas || '').trim();
+  const deskripsi = String(req.body.deskripsi || '').trim();
+  const jumlahSantri = parseInt(String(req.body.jumlah_santri ?? '0').trim(), 10);
+  if (!Number.isFinite(jumlahSantri) || jumlahSantri < 0) {
+    return res.status(400).json({ error: 'Jumlah santri harus berupa angka 0 atau lebih.' });
+  }
+  const status = STATUS_KELAS.includes(String(req.body.status || '').trim())
+    ? String(req.body.status).trim()
+    : 'draft';
+
+  const lokasiRaw = String(req.body.lokasi_id || '').trim();
+  const lokasiId = lokasiRaw && /^\d+$/.test(lokasiRaw) ? parseInt(lokasiRaw, 10) : null;
+  const namaLokasi = String(req.body.nama_lokasi || '').trim();
+
+  const lanjutSimpan = (fotoBaru) => {
+    const kolom = [
+      'nama = ?', 'tahun_ajaran = ?', 'wali_kelas = ?',
+      'deskripsi = ?', 'jumlah_santri = ?', 'status = ?',
+      'lokasi_id = ?', 'nama_lokasi = ?',
+    ];
+    const nilai = [nama, tahunAjaran, waliKelas, deskripsi, jumlahSantri, status, lokasiId, namaLokasi || null];
+    if (fotoBaru !== undefined) {
+      kolom.push('foto = ?');
+      nilai.push(fotoBaru);
+    }
+    nilai.push(id);
+    db.query(`UPDATE kelas SET ${kolom.join(', ')} WHERE id = ?`, nilai, (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      db.query('SELECT id FROM kelas WHERE id = ?', [id], (errC, cek) => {
+        if (errC) return res.status(500).json({ error: errC.message });
+        if (!cek || !cek.length) {
+          return res.status(404).json({ message: 'Kelas tidak ditemukan' });
+        }
+        res.json({ message: 'Kelas berhasil diperbarui.' });
+      });
+    });
+  };
+
+  if (req.file) return lanjutSimpan(req.file.filename);
+  // Tanpa foto baru → tetap pakai foto lama (bila ada).
+  db.query('SELECT foto FROM kelas WHERE id = ?', [id], (errL, lRows) => {
+    if (errL) return res.status(500).json({ error: errL.message });
+    if (!lRows || !lRows.length) {
+      return res.status(404).json({ message: 'Kelas tidak ditemukan' });
+    }
+    lanjutSimpan(undefined);
+  });
+});
+
+// DELETE /api/admin/kelas/:id — hapus kelas. Aktivitasnya ikut terhapus
+// (FK aktivitas_kelas.kelas_id ON DELETE CASCADE).
+app.delete('/api/admin/kelas/:id', authenticateAdminToken, (req, res) => {
+  const id = parseInt(String(req.params.id).trim(), 10);
+  if (!Number.isFinite(id) || id <= 0) {
+    return res.status(400).json({ error: 'ID kelas tidak valid.' });
+  }
+  db.query('DELETE FROM kelas WHERE id = ?', [id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!result || !result.affectedRows) {
+      return res.status(404).json({ message: 'Kelas tidak ditemukan' });
+    }
+    res.json({ message: 'Kelas berhasil dihapus.' });
+  });
+});
+
+// POST /api/admin/kelas/:id/aktivitas — tambah aktivitas (FGD/Kunjungan/Klasikal).
+app.post('/api/admin/kelas/:id/aktivitas', authenticateAdminToken, uploadFoto.single('foto'), (req, res) => {
+  const kelasId = parseInt(String(req.params.id).trim(), 10);
+  if (!Number.isFinite(kelasId) || kelasId <= 0) {
+    return res.status(400).json({ error: 'ID kelas tidak valid.' });
+  }
+  db.query('SELECT id FROM kelas WHERE id = ?', [kelasId], (errK, kRows) => {
+    if (errK) return res.status(500).json({ error: errK.message });
+    if (!kRows || !kRows.length) {
+      return res.status(404).json({ message: 'Kelas tidak ditemukan' });
+    }
+
+    const jenis = String(req.body.jenis || '').trim().toLowerCase();
+    if (!JENIS_AKTIVITAS_KELAS.includes(jenis)) {
+      return res.status(400).json({ error: 'Jenis aktivitas harus fgd, kunjungan, atau klasikal.' });
+    }
+    const tanggal = String(req.body.tanggal || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(tanggal) || Number.isNaN(new Date(tanggal).getTime())) {
+      return res.status(400).json({ error: 'Tanggal aktivitas tidak valid.' });
+    }
+    const judul = String(req.body.judul || '').trim();
+    if (!judul) return res.status(400).json({ error: 'Judul aktivitas wajib diisi.' });
+    const catatan = String(req.body.catatan || '').trim();
+    const foto = req.file ? req.file.filename : null;
+
+    db.query(
+      `INSERT INTO aktivitas_kelas (kelas_id, jenis, tanggal, judul, catatan, foto)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [kelasId, jenis, tanggal, judul, catatan, foto],
+      (err) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.status(201).json({ message: 'Aktivitas berhasil ditambahkan.' });
+      }
+    );
+  });
+});
+
+// PUT /api/admin/aktivitas-kelas/:id — ubah satu aktivitas kelas.
+app.put('/api/admin/aktivitas-kelas/:id', authenticateAdminToken, uploadFoto.single('foto'), (req, res) => {
+  const id = parseInt(String(req.params.id).trim(), 10);
+  if (!Number.isFinite(id) || id <= 0) {
+    return res.status(400).json({ error: 'ID aktivitas tidak valid.' });
+  }
+
+  const jenis = String(req.body.jenis || '').trim().toLowerCase();
+  if (!JENIS_AKTIVITAS_KELAS.includes(jenis)) {
+    return res.status(400).json({ error: 'Jenis aktivitas harus fgd, kunjungan, atau klasikal.' });
+  }
+  const tanggal = String(req.body.tanggal || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(tanggal) || Number.isNaN(new Date(tanggal).getTime())) {
+    return res.status(400).json({ error: 'Tanggal aktivitas tidak valid.' });
+  }
+  const judul = String(req.body.judul || '').trim();
+  if (!judul) return res.status(400).json({ error: 'Judul aktivitas wajib diisi.' });
+  const catatan = String(req.body.catatan || '').trim();
+
+  const lanjutSimpan = (fotoBaru) => {
+    const kolom = ['jenis = ?', 'tanggal = ?', 'judul = ?', 'catatan = ?'];
+    const nilai = [jenis, tanggal, judul, catatan];
+    if (fotoBaru !== undefined) {
+      kolom.push('foto = ?');
+      nilai.push(fotoBaru);
+    }
+    nilai.push(id);
+    db.query(`UPDATE aktivitas_kelas SET ${kolom.join(', ')} WHERE id = ?`, nilai, (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      db.query('SELECT id FROM aktivitas_kelas WHERE id = ?', [id], (errC, cek) => {
+        if (errC) return res.status(500).json({ error: errC.message });
+        if (!cek || !cek.length) {
+          return res.status(404).json({ message: 'Aktivitas tidak ditemukan' });
+        }
+        res.json({ message: 'Aktivitas berhasil diperbarui.' });
+      });
+    });
+  };
+
+  if (req.file) return lanjutSimpan(req.file.filename);
+  lanjutSimpan(undefined);
+});
+
+// DELETE /api/admin/aktivitas-kelas/:id — hapus satu aktivitas kelas.
+app.delete('/api/admin/aktivitas-kelas/:id', authenticateAdminToken, (req, res) => {
+  const id = parseInt(String(req.params.id).trim(), 10);
+  if (!Number.isFinite(id) || id <= 0) {
+    return res.status(400).json({ error: 'ID aktivitas tidak valid.' });
+  }
+  db.query('DELETE FROM aktivitas_kelas WHERE id = ?', [id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!result || !result.affectedRows) {
+      return res.status(404).json({ message: 'Aktivitas tidak ditemukan' });
+    }
+    res.json({ message: 'Aktivitas berhasil dihapus.' });
+  });
 });
 
 // ── LOKASI ───────────────────────────────────────────────────────────────────
@@ -2245,6 +3301,40 @@ app.post('/api/kategori', authenticateAdminToken, (req, res) => {
   });
 });
 
+// ── SUB KATEGORI (anak dari kategori, dipakai form jadwal) ───────────────────
+// Setiap kategori punya daftar sub kategori sendiri (mis. "Pohon Anggur" →
+// "Tanam", "Pupuk"). Sub kategori hanya tampil untuk kategori induknya.
+app.get('/api/sub-kategori', (req, res) => {
+  const kategoriId = Number.parseInt(req.query.kategori_id, 10);
+  const adaFilter = Number.isInteger(kategoriId) && kategoriId > 0;
+  const sql = adaFilter
+    ? "SELECT id, kategori_id, nama, aktif, created_at FROM sub_kategori WHERE kategori_id = ? ORDER BY nama ASC"
+    : "SELECT id, kategori_id, nama, aktif, created_at FROM sub_kategori ORDER BY kategori_id ASC, nama ASC";
+  db.query(sql, adaFilter ? [kategoriId] : [], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
+app.post('/api/sub-kategori', authenticateAdminToken, (req, res) => {
+  const kategoriId = Number.parseInt(req.body?.kategori_id, 10);
+  const nama = String(req.body?.nama || '').trim();
+  if (!Number.isInteger(kategoriId) || kategoriId <= 0) return res.status(400).json({ error: "Kategori wajib dipilih" });
+  if (!nama) return res.status(400).json({ error: "Nama sub kategori wajib diisi" });
+  db.query("INSERT INTO sub_kategori (kategori_id, nama) VALUES (?, ?)", [kategoriId, nama], (err, results) => {
+    if (err) {
+      if (err.code === 'ER_DUP_ENTRY') return res.status(400).json({ error: "Sub kategori sudah ada di kategori ini" });
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ message: "Berhasil", id: results.insertId, kategori_id: kategoriId, nama });
+  });
+});
+app.delete('/api/sub-kategori/:id', authenticateAdminToken, (req, res) => {
+  db.query("DELETE FROM sub_kategori WHERE id = ?", [req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: "Sub kategori dihapus" });
+  });
+});
+
 // API untuk aksi perawatan tanaman (siram, pupuk, panen)
 app.post('/api/tanaman/:id/aksi', authenticateSantriToken, (req, res) => {
   const tanamanId = Number.parseInt(req.params.id, 10);
@@ -2252,8 +3342,8 @@ app.post('/api/tanaman/:id/aksi', authenticateSantriToken, (req, res) => {
   if (!Number.isInteger(tanamanId) || tanamanId <= 0) {
     return res.status(400).json({ error: 'ID tanaman tidak valid.' });
   }
-  if (!AKSI_PERAWATAN.includes(aksi)) {
-    return res.status(400).json({ error: 'Aksi tidak valid. Pilih siram, pupuk, atau panen.' });
+  if (!aksi || aksi.length > 100) {
+    return res.status(400).json({ error: 'Aksi tidak valid.' });
   }
   if (req.user.userType === 'santri' && req.user.status_pendaftaran !== 'Diterima') {
     return res.status(403).json({
@@ -2281,9 +3371,30 @@ app.post('/api/tanaman/:id/aksi', authenticateSantriToken, (req, res) => {
 });
 
 // API untuk riwayat perawatan tanaman (public access)
+// Riwayat perawatan tanaman — publik. Mendukung pagination (?page&limit),
+// pencarian (?q) dan filter aksi (?aksi). Bila `limit` tidak dikirim, perilaku
+// lama (array penuh) tetap dipertahankan agar pemakaian lama tidak rusak.
 app.get('/api/tanaman/:id/riwayat', (req, res) => {
   const tanaman_id = req.params.id;
-  const query = `
+  const paginasi = req.query.limit !== undefined;
+
+  const where = ['l.tanaman_id = ?'];
+  const params = [tanaman_id];
+
+  const q = String(req.query.q || '').trim();
+  if (q) {
+    where.push('(sch.nama_aktivitas LIKE ? OR l.nama_perawat LIKE ? OR s.nama LIKE ? OR l.laporan_singkat LIKE ?)');
+    const like = `%${q}%`;
+    params.push(like, like, like, like);
+  }
+  const aksi = String(req.query.aksi || '').trim();
+  if (aksi && aksi.toLowerCase() !== 'semua') {
+    where.push('l.jenis_tindakan = ?');
+    params.push(aksi);
+  }
+  const whereSql = `WHERE ${where.join(' AND ')}`;
+
+  const selectSql = `
     SELECT l.id, l.tanaman_id, l.jadwal_id, l.jenis_tindakan, l.waktu_tindakan, l.nama_perawat, l.role_perawat,
            l.laporan_singkat, l.gambar,
            t.nama AS nama_tanaman, s.nama AS nama_santri,
@@ -2292,13 +3403,43 @@ app.get('/api/tanaman/:id/riwayat', (req, res) => {
     JOIN tanaman t ON l.tanaman_id = t.id
     LEFT JOIN pendaftar_santri s ON l.santri_id = s.id
     LEFT JOIN activity_schedules sch ON sch.id = l.jadwal_id
-    WHERE l.tanaman_id = ?
+    ${whereSql}
     ORDER BY l.waktu_tindakan DESC
   `;
 
-  db.query(query, [tanaman_id], (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(results);
+  if (!paginasi) {
+    return db.query(selectSql, params, (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(results);
+    });
+  }
+
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 5));
+  const offset = (page - 1) * limit;
+
+  const countSql = `
+    SELECT COUNT(*) AS total
+    FROM log_perawatan l
+    JOIN tanaman t ON l.tanaman_id = t.id
+    LEFT JOIN pendaftar_santri s ON l.santri_id = s.id
+    LEFT JOIN activity_schedules sch ON sch.id = l.jadwal_id
+    ${whereSql}
+  `;
+
+  db.query(countSql, params, (errC, rowsC) => {
+    if (errC) return res.status(500).json({ error: errC.message });
+    const total = rowsC && rowsC[0] ? Number(rowsC[0].total) : 0;
+    db.query(`${selectSql} LIMIT ? OFFSET ?`, [...params, limit, offset], (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({
+        items: results,
+        total,
+        page,
+        limit,
+        hasMore: offset + results.length < total,
+      });
+    });
   });
 });
 
@@ -2312,10 +3453,9 @@ app.post('/api/tanaman/:id/riwayat', authenticateSantriToken, uploadTugas.single
   const santri_id = req.user.id;
   const gambar = req.file ? req.file.filename : null;
 
-  const aksiVal = AKSI_PERAWATAN.includes(String(aksi || '').toLowerCase())
-    ? String(aksi).toLowerCase()
-    : null;
-  if (!aksiVal) return res.status(400).json({ error: "Aksi tidak valid. Pilih siram, pupuk, atau panen." });
+  const aksiStr = String(aksi || '').trim().toLowerCase();
+  const aksiVal = aksiStr && aksiStr.length <= 100 ? aksiStr : null;
+  if (!aksiVal) return res.status(400).json({ error: "Aksi tidak valid." });
 
   const jadwalId = jadwal_id ? parseInt(String(jadwal_id).trim(), 10) : null;
   const jadwalFinal = Number.isFinite(jadwalId) && jadwalId > 0 ? jadwalId : null;
@@ -2628,9 +3768,14 @@ app.delete('/api/programs/:id', authenticateAdminToken, async (req, res, next) =
 app.get('/api/admin/users', authenticateAdminToken, async (req, res, next) => {
   try {
     const rows = await runQuery(
-      'SELECT id, nama_lengkap, username, role, status, created_at FROM users ORDER BY created_at DESC, id DESC'
+      `SELECT u.id, u.nama_lengkap, u.username, u.role, u.status, u.created_at,
+              GROUP_CONCAT(up.peran ORDER BY up.peran) AS peran_list
+         FROM users u
+         LEFT JOIN user_peran up ON up.user_id = u.id
+        GROUP BY u.id
+        ORDER BY u.created_at DESC, u.id DESC`
     );
-    return res.json(rows);
+    return res.json(rows.map(r => ({ ...r, peran_list: r.peran_list ? r.peran_list.split(',') : [] })));
   } catch (error) {
     return next(error);
   }
@@ -2659,6 +3804,611 @@ app.delete('/api/admin/users/:id/reject', authenticateAdminToken, async (req, re
     return next(error);
   }
 });
+
+// TAHUN AJARAN (CRUD sederhana)
+app.get('/api/admin/tahun-ajaran', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const rows = await runQuery('SELECT id, tahun, aktif, created_at, updated_at FROM tahun_ajaran ORDER BY tahun DESC');
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/admin/tahun-ajaran', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const tahun = String(req.body?.tahun || '').trim();
+    if (!tahun) return res.status(400).json({ error: 'Tahun ajaran wajib diisi.' });
+    await runQuery('INSERT IGNORE INTO tahun_ajaran (tahun, aktif) VALUES (?, 0)', [tahun]);
+    res.status(201).json({ message: 'Tahun ajaran berhasil ditambahkan' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put('/api/admin/tahun-ajaran/:id', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const id = parsePositiveId(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID tidak valid.' });
+    const tahun = String(req.body?.tahun || '').trim();
+    if (!tahun) return res.status(400).json({ error: 'Tahun ajaran wajib diisi.' });
+    await runQuery('UPDATE tahun_ajaran SET tahun = ? WHERE id = ?', [tahun, id]);
+    res.json({ message: 'Tahun ajaran berhasil diperbarui' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch('/api/admin/tahun-ajaran/:id/aktif', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const id = parsePositiveId(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID tidak valid.' });
+    await runQuery('UPDATE tahun_ajaran SET aktif = 0');
+    const result = await runQuery('UPDATE tahun_ajaran SET aktif = 1 WHERE id = ?', [id]);
+    if (!result.affectedRows) return res.status(404).json({ error: 'Tahun ajaran tidak ditemukan.' });
+    res.json({ message: 'Tahun ajaran aktif berhasil diatur' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/admin/tahun-ajaran/:id', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const id = parsePositiveId(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID tidak valid.' });
+    await runQuery('DELETE FROM tahun_ajaran WHERE id = ?', [id]);
+    res.json({ message: 'Tahun ajaran berhasil dihapus' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+// USER ROLES (multi-peran)
+app.get('/api/admin/users/:id/roles', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const id = parsePositiveId(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID tidak valid.' });
+    const rows = await runQuery('SELECT peran FROM user_peran WHERE user_id = ?', [id]);
+    res.json(rows.map(r => r.peran));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/admin/users/:id/roles', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const id = parsePositiveId(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID tidak valid.' });
+    const peran = String(req.body?.peran || '').trim();
+    if (!['guru','santri','petugas'].includes(peran)) return res.status(400).json({ error: 'Peran tidak valid.' });
+    await runQuery('INSERT IGNORE INTO user_peran (user_id, peran) VALUES (?, ?)', [id, peran]);
+    res.json({ message: 'Peran berhasil ditambahkan' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/admin/users/:id/roles/:peran', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const id = parsePositiveId(req.params.id);
+    const peran = String(req.params.peran || '').trim();
+    if (!id) return res.status(400).json({ error: 'ID tidak valid.' });
+    if (!['guru','santri','petugas'].includes(peran)) return res.status(400).json({ error: 'Peran tidak valid.' });
+    await runQuery('DELETE FROM user_peran WHERE user_id = ? AND peran = ?', [id, peran]);
+    res.json({ message: 'Peran berhasil dihapus' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+app.get('/api/pendidikan/guru', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const rows = await runQuery(
+      `SELECT DISTINCT u.id, u.nama_lengkap, u.username
+         FROM users u
+         JOIN user_peran up ON up.user_id = u.id
+        WHERE up.peran = 'guru' AND u.status = 'approved'
+        ORDER BY u.nama_lengkap`
+    );
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+
+app.get('/api/pendidikan/jenis-perawatan', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const rows = await runQuery("SELECT id, nama FROM jenis_aktivitas_pendidikan ORDER BY id ASC");
+    res.json(rows);
+  } catch (error) { next(error); }
+});
+
+app.post('/api/pendidikan/jenis-perawatan', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const nama = (req.body?.nama || '').trim();
+    if (!nama) return res.status(400).json({ error: 'Nama tidak valid.' });
+    await runQuery('INSERT IGNORE INTO jenis_aktivitas_pendidikan (nama) VALUES (?)', [nama]);
+    const rows = await runQuery('SELECT id, nama FROM jenis_aktivitas_pendidikan ORDER BY id ASC');
+    res.json(rows);
+  } catch (error) { next(error); }
+});
+
+app.get('/api/pendidikan/santri', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const rows = await runQuery(
+      `SELECT DISTINCT u.id, u.nama_lengkap, u.username
+         FROM users u
+         JOIN user_peran up ON up.user_id = u.id
+        WHERE up.peran = 'santri' AND u.status = 'approved'
+        ORDER BY u.nama_lengkap`
+    );
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+app.post('/api/admin/users', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const { nama_lengkap, username, password, email, no_hp } = req.body || {};
+    const peran = Array.isArray(req.body?.peran) ? req.body.peran : (req.body?.peran ? [req.body.peran] : []);
+    if (!nama_lengkap || !username || !password) return res.status(400).json({ error: 'Nama, username, password wajib diisi' });
+    const hashed = await bcrypt.hash(password, 10);
+    const resIns = await runQuery('INSERT INTO users (nama_lengkap, username, password, role, status) VALUES (?, ?, ?, ?, "approved")', [nama_lengkap, username, hashed, peran[0] || 'petugas']);
+    const userId = resIns.insertId;
+    const allowed = ['guru','santri','petugas'];
+    for (const p of peran) {
+      if (allowed.includes(p)) {
+        await runQuery('INSERT IGNORE INTO user_peran (user_id, peran) VALUES (?, ?)', [userId, p]);
+      }
+    }
+    res.status(201).json({ message: 'User berhasil dibuat', id: userId });
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') return res.status(400).json({ error: 'Username sudah digunakan' });
+    next(error);
+  }
+});
+
+
+app.patch('/api/admin/users/:id/password', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const id = parsePositiveId(req.params.id);
+    const password = String(req.body?.password || '').trim();
+    if (!id || !password) return res.status(400).json({ error: 'Data tidak valid' });
+    const hashed = await bcrypt.hash(password, 10);
+    await runQuery('UPDATE users SET password = ? WHERE id = ?', [hashed, id]);
+    res.json({ message: 'Password berhasil direset' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch('/api/admin/users/:id/status', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const id = parsePositiveId(req.params.id);
+    const status = String(req.body?.status || '').trim();
+    if (!id || !['approved','pending','rejected','nonaktif'].includes(status)) return res.status(400).json({ error: 'Status tidak valid' });
+    await runQuery('UPDATE users SET status = ? WHERE id = ?', [status, id]);
+    res.json({ message: 'Status berhasil diperbarui' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put('/api/admin/users/:id', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const id = parsePositiveId(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID tidak valid' });
+    const { nama_lengkap, username } = req.body || {};
+    if (!nama_lengkap || !username) return res.status(400).json({ error: 'Nama dan username wajib diisi' });
+    await runQuery('UPDATE users SET nama_lengkap = ?, username = ? WHERE id = ?', [nama_lengkap, username, id]);
+    res.json({ message: 'User berhasil diperbarui' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+// PENEMPATAN SANTRI (berbasis pendaftar_santri — santri asli yang login)
+app.get('/api/pendidikan/penempatan/:kelas_id', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const kelasId = parsePositiveId(req.params.kelas_id);
+    if (!kelasId) return res.status(400).json({ error: 'ID tidak valid' });
+    const rows = await runQuery(
+      `SELECT ps.id, ps.santri_id, s.nama AS nama_lengkap, s.nama, s.username
+         FROM penempatan_santri ps
+         JOIN pendaftar_santri s ON s.id = ps.santri_id
+        WHERE ps.kelas_id = ?
+        ORDER BY s.nama`,
+      [kelasId]
+    );
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/pendidikan/penempatan', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const { kelas_id, santri_id, tahun_ajaran } = req.body || {};
+    const kelasId = parsePositiveId(kelas_id);
+    const santriId = parsePositiveId(santri_id);
+    if (!kelasId || !santriId) return res.status(400).json({ error: 'Data tidak valid' });
+    const ta = tahun_ajaran ? String(tahun_ajaran).trim() : null;
+    if (ta) {
+      const exists = await runQuery('SELECT id FROM penempatan_santri WHERE santri_id = ? AND tahun_ajaran = ?', [santriId, ta]);
+      if (exists.length) return res.status(400).json({ error: 'Santri sudah ditempatkan di kelas lain untuk tahun ajaran ini' });
+    }
+    await runQuery('INSERT IGNORE INTO penempatan_santri (kelas_id, santri_id, tahun_ajaran) VALUES (?, ?, ?)', [kelasId, santriId, ta]);
+    res.json({ message: 'Santri berhasil ditempatkan' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/pendidikan/penempatan/:id', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const id = parsePositiveId(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID tidak valid' });
+    await runQuery('DELETE FROM penempatan_santri WHERE id = ?', [id]);
+    res.json({ message: 'Berhasil dihapus' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+app.get('/api/pendidikan/santri-tersedia/:kelas_id', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const kelasId = parsePositiveId(req.params.kelas_id);
+    if (!kelasId) return res.status(400).json({ error: 'ID tidak valid' });
+    const kelas = await runQuery('SELECT tahun_ajaran FROM kelas WHERE id = ?', [kelasId]);
+    const ta = kelas[0]?.tahun_ajaran || null;
+    const rows = await runQuery(
+      `SELECT s.id, s.nama, s.nama AS nama_lengkap, s.username
+         FROM pendaftar_santri s
+        WHERE s.status_pendaftaran = 'Diterima'
+          AND NOT EXISTS (
+            SELECT 1 FROM penempatan_santri ps
+             WHERE ps.santri_id = s.id
+               AND ps.kelas_id = ?
+               AND (ps.tahun_ajaran = ? OR (ps.tahun_ajaran IS NULL AND ? IS NULL))
+          )
+        ORDER BY s.nama`,
+      [kelasId, ta, ta]
+    );
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+// JADWAL PELAJARAN
+app.get('/api/pendidikan/jadwal/:kelas_id', async (req, res, next) => {
+  try {
+    const kelasId = parsePositiveId(req.params.kelas_id);
+    if (!kelasId) return res.status(400).json({ error: 'ID tidak valid' });
+    const rows = await runQuery(
+      `SELECT jp.id, jp.kelas_id, jp.tahun_ajaran, jp.hari, jp.jam_mulai, jp.jam_selesai, jp.mapel, jp.guru_id, jp.guru_nama,
+              COALESCE(u.nama_lengkap, jp.guru_nama) AS guru_nama_tampil
+         FROM jadwal_pelajaran jp
+         LEFT JOIN users u ON u.id = jp.guru_id
+        WHERE jp.kelas_id = ?
+        ORDER BY FIELD(jp.hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'), jp.jam_mulai`,
+      [kelasId]
+    );
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/pendidikan/jadwal', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const items = Array.isArray(req.body?.jadwal) ? req.body.jadwal : [];
+    const kelasId = parsePositiveId(req.body?.kelas_id);
+    if (!kelasId) return res.status(400).json({ error: 'ID kelas tidak valid' });
+    await runQuery('DELETE FROM jadwal_pelajaran WHERE kelas_id = ?', [kelasId]);
+    for (const it of items) {
+      const hari = String(it.hari || '').trim();
+      const jam_mulai = String(it.jam_mulai || '').trim();
+      const jam_selesai = String(it.jam_selesai || '').trim();
+      const mapel = String(it.mapel || '').trim();
+      const guru_id = it.guru_id ? parsePositiveId(it.guru_id) : null;
+      const guru_nama = String(it.guru_nama || '').trim() || null;
+      if (!hari || !jam_mulai || !jam_selesai || !mapel) continue;
+      await runQuery(
+        'INSERT INTO jadwal_pelajaran (kelas_id, tahun_ajaran, hari, jam_mulai, jam_selesai, mapel, guru_id, guru_nama) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [kelasId, req.body?.tahun_ajaran || null, hari, jam_mulai, jam_selesai, mapel, guru_id, guru_nama]
+      );
+    }
+    res.json({ message: 'Jadwal berhasil disimpan' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+// ── PENEMPATAN SANTRI ↔ KELAS (berbasis pendaftar_santri) ─────────────────
+// Santri asli login memakai tabel pendaftar_santri (bukan users), jadi endpoint
+// penempatan versi ini JOIN ke pendaftar_santri.
+
+// Kelas milik santri yang sedang login (dipakai kartu "Kelas Saya")
+// Sumber kelas:
+//   1) penempatan_santri (bila admin menempatkan manual), ATAU
+//   2) diturunkan dari tiket kategori "Pendidikan" milik santri — lokasi
+//      jadwal Pendidikan dianggap sebagai kelas (match nama, case-insensitive).
+// Ini menghindari keharusan penempatan manual: begitu admin mengirim jadwal
+// Pendidikan ke santri, tombol "Ikuti Kelas" otomatis muncul.
+app.get('/api/santri/kelas-saya', authenticateSantriToken, async (req, res, next) => {
+  try {
+    const rows = await runQuery(
+      `SELECT ps.id AS penempatan_id, ps.tahun_ajaran, k.id, k.nama, k.tahun_ajaran AS tahun_ajaran_kelas,
+              k.wali_kelas, k.deskripsi, k.foto, k.jumlah_santri
+         FROM penempatan_santri ps
+         JOIN kelas k ON k.id = ps.kelas_id
+        WHERE ps.santri_id = ?
+        ORDER BY ps.id DESC
+        LIMIT 1`,
+      [req.user.id]
+    );
+    if (rows[0]) return res.json(rows[0]);
+
+    // Fallback: turunkan kelas dari jadwal Pendidikan yang ditugaskan ke santri.
+    const derived = await runQuery(
+      `SELECT k.id, k.nama, k.tahun_ajaran AS tahun_ajaran_kelas, k.wali_kelas,
+              k.deskripsi, k.foto, k.jumlah_santri, s.lokasi_id
+         FROM activity_tasks at
+         JOIN activity_schedules s ON s.id = at.schedule_id
+         JOIN lokasi l ON l.id = s.lokasi_id
+         JOIN kelas k ON LOWER(TRIM(k.nama)) = LOWER(TRIM(l.nama))
+        WHERE at.santri_id = ?
+          AND LOWER(s.kategori) LIKE '%pendidikan%'
+        ORDER BY at.id DESC
+        LIMIT 1`,
+      [req.user.id]
+    );
+    res.json(derived[0] || null);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Jadwal pelajaran kelas milik santri (semua hari)
+app.get('/api/santri/kelas-saya/jadwal', authenticateSantriToken, async (req, res, next) => {
+  try {
+    const rows = await runQuery(
+      `SELECT jp.id, jp.kelas_id, jp.tahun_ajaran, jp.hari, jp.jam_mulai, jp.jam_selesai, jp.mapel,
+              jp.guru_id, jp.guru_nama, COALESCE(u.nama_lengkap, jp.guru_nama) AS guru_nama_tampil
+         FROM jadwal_pelajaran jp
+         LEFT JOIN users u ON u.id = jp.guru_id
+        WHERE jp.kelas_id = COALESCE(
+          (SELECT ps.kelas_id FROM penempatan_santri ps
+            WHERE ps.santri_id = ? ORDER BY ps.id DESC LIMIT 1),
+          (SELECT k.id FROM activity_tasks at
+             JOIN activity_schedules s ON s.id = at.schedule_id
+             JOIN lokasi l ON l.id = s.lokasi_id
+             JOIN kelas k ON LOWER(TRIM(k.nama)) = LOWER(TRIM(l.nama))
+            WHERE at.santri_id = ?
+              AND LOWER(s.kategori) LIKE '%pendidikan%'
+            ORDER BY at.id DESC LIMIT 1)
+        )
+        ORDER BY FIELD(jp.hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'), jp.jam_mulai`,
+      [req.user.id, req.user.id]
+    );
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Absensi santri untuk sebuah kelas pada hari ini (1x sehari per kelas)
+app.get('/api/santri/absensi/hari-ini/:kelas_id', authenticateSantriToken, async (req, res, next) => {
+  try {
+    const kelasId = parsePositiveId(req.params.kelas_id);
+    if (!kelasId) return res.status(400).json({ error: 'ID kelas tidak valid' });
+    const rows = await runQuery(
+      'SELECT id, status, jawaban_sampai_selesai, foto, deskripsi, waktu_server FROM absensi_santri WHERE santri_id=? AND kelas_id=? AND tanggal=CURDATE()',
+      [req.user.id, kelasId]
+    );
+    res.json(rows[0] || null);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Riwayat absensi santri (semua kelas)
+app.get('/api/santri/absensi/riwayat', authenticateSantriToken, async (req, res, next) => {
+  try {
+    const rows = await runQuery(
+      `SELECT a.id, a.kelas_id, a.tanggal, a.status, a.jawaban_sampai_selesai, a.foto, a.deskripsi,
+              a.waktu_server, k.nama AS nama_kelas, s.nama AS nama_santri
+         FROM absensi_santri a
+         LEFT JOIN kelas k ON k.id = a.kelas_id
+         LEFT JOIN pendaftar_santri s ON s.id = a.santri_id
+        WHERE a.santri_id = ?
+        ORDER BY a.tanggal DESC, a.id DESC`,
+      [req.user.id]
+    );
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Catat absensi (hadir/izin). Hanya 1x per hari per kelas (INSERT IGNORE + unique).
+app.post('/api/santri/absensi', authenticateSantriToken, uploadFoto.single('foto'), async (req, res, next) => {
+  try {
+    const kelasId = parsePositiveId(req.body?.kelas_id);
+    const status = String(req.body?.status || '').trim();
+    const jawaban = String(req.body?.jawaban_sampai_selesai || '').trim() || null;
+    const deskripsi = String(req.body?.deskripsi || '').trim() || null;
+    if (!kelasId) return res.status(400).json({ error: 'ID kelas tidak valid' });
+    if (!['hadir', 'izin'].includes(status)) return res.status(400).json({ error: 'Status absensi tidak valid' });
+
+    // Pastikan santri memang terdaftar di kelas ini — lewat penempatan manual,
+    // atau lewat tiket kategori Pendidikan yang lokasinya = kelas ini.
+    const cek = await runQuery(
+      `SELECT 1 FROM penempatan_santri WHERE santri_id=? AND kelas_id=?
+        UNION
+       SELECT 1 FROM activity_tasks at
+         JOIN activity_schedules s ON s.id = at.schedule_id
+         JOIN lokasi l ON l.id = s.lokasi_id
+         JOIN kelas k ON k.id = ? AND LOWER(TRIM(k.nama)) = LOWER(TRIM(l.nama))
+        WHERE at.santri_id = ?
+          AND LOWER(s.kategori) LIKE '%pendidikan%'
+        LIMIT 1`,
+      [req.user.id, kelasId, kelasId, req.user.id]
+    );
+    if (!cek.length) return res.status(403).json({ error: 'Kamu tidak terdaftar di kelas ini' });
+
+    if (status === 'izin' && !deskripsi) {
+      return res.status(400).json({ error: 'Keterangan sakit wajib diisi' });
+    }
+
+    const foto = req.file ? req.file.filename : null;
+    const hasil = await runQuery(
+      'INSERT IGNORE INTO absensi_santri (santri_id, kelas_id, tanggal, status, jawaban_sampai_selesai, foto, deskripsi, waktu_server) VALUES (?, ?, CURDATE(), ?, ?, ?, ?, NOW())',
+      [req.user.id, kelasId, status, jawaban, foto, deskripsi]
+    );
+    if (!hasil.affectedRows) {
+      return res.status(400).json({ error: 'Kamu sudah absen hari ini. Absensi hanya dapat dilakukan sekali sehari.' });
+    }
+    res.json({ message: 'Absensi berhasil dicatat' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ── ADMIN: penempatan santri (berbasis pendaftar_santri) ──────────────────
+app.get('/api/admin/penempatan-santri/:kelas_id', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const kelasId = parsePositiveId(req.params.kelas_id);
+    if (!kelasId) return res.status(400).json({ error: 'ID tidak valid' });
+    const rows = await runQuery(
+      `SELECT ps.id, ps.santri_id, ps.tahun_ajaran, s.nama, s.username
+         FROM penempatan_santri ps
+         JOIN pendaftar_santri s ON s.id = ps.santri_id
+        WHERE ps.kelas_id = ?
+        ORDER BY s.nama`,
+      [kelasId]
+    );
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/api/admin/santri-tersedia/:kelas_id', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const kelasId = parsePositiveId(req.params.kelas_id);
+    if (!kelasId) return res.status(400).json({ error: 'ID tidak valid' });
+    const rows = await runQuery(
+      `SELECT s.id, s.nama, s.username
+         FROM pendaftar_santri s
+        WHERE s.status_pendaftaran = 'Diterima'
+          AND NOT EXISTS (
+            SELECT 1 FROM penempatan_santri ps
+             WHERE ps.santri_id = s.id AND ps.kelas_id = ?
+          )
+        ORDER BY s.nama`,
+      [kelasId]
+    );
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/admin/penempatan-santri', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const kelasId = parsePositiveId(req.body?.kelas_id);
+    const santriId = parsePositiveId(req.body?.santri_id);
+    const ta = req.body?.tahun_ajaran ? String(req.body.tahun_ajaran).trim() : null;
+    if (!kelasId || !santriId) return res.status(400).json({ error: 'Data tidak valid' });
+    const cek = await runQuery('SELECT id FROM penempatan_santri WHERE santri_id=? AND kelas_id=?', [santriId, kelasId]);
+    if (cek.length) return res.status(400).json({ error: 'Santri sudah ada di kelas ini' });
+    await runQuery('INSERT INTO penempatan_santri (santri_id, kelas_id, tahun_ajaran) VALUES (?, ?, ?)', [santriId, kelasId, ta]);
+    res.status(201).json({ message: 'Santri berhasil ditempatkan' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/admin/penempatan-santri/:id', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const id = parsePositiveId(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID tidak valid' });
+    await runQuery('DELETE FROM penempatan_santri WHERE id = ?', [id]);
+    res.json({ message: 'Penempatan dihapus' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+// ABSENSI SANTRI
+app.get('/api/pendidikan/absensi/cek/:kelas_id/:tanggal', authenticateSantriToken, async (req, res, next) => {
+  try {
+    const kelasId = parsePositiveId(req.params.kelas_id);
+    const tgl = String(req.params.tanggal || '').trim();
+    if (!kelasId || !tgl) return res.status(400).json({ error: 'Data tidak valid' });
+    const rows = await runQuery('SELECT status, jawaban_sampai_selesai, waktu_server FROM absensi_santri WHERE santri_id=? AND kelas_id=? AND tanggal=?', [req.user.id, kelasId, tgl]);
+    res.json(rows[0] || null);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/pendidikan/absensi', authenticateSantriToken, uploadFoto.single('foto'), async (req, res, next) => {
+  try {
+    const { kelas_id, tanggal, status, jawaban_sampai_selesai, deskripsi } = req.body || {};
+    const kelasId = parsePositiveId(kelas_id);
+    const santriId = req.user.id;
+    if (!kelasId || !tanggal || !status) return res.status(400).json({ error: 'Data tidak valid' });
+    const foto = req.file ? req.file.filename : null;
+    await runQuery('INSERT IGNORE INTO absensi_santri (santri_id, kelas_id, tanggal, status, jawaban_sampai_selesai, foto, deskripsi, waktu_server) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())', [santriId, kelasId, tanggal, status, jawaban_sampai_selesai || null, foto, deskripsi || null]);
+    res.json({ message: 'Berhasil absen' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/api/pendidikan/absensi/kelas/:kelas_id', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const kelasId = parsePositiveId(req.params.kelas_id);
+    if (!kelasId) return res.status(400).json({ error: 'ID tidak valid' });
+    const rows = await runQuery(
+      `SELECT a.id, a.santri_id, a.tanggal, a.status, a.jawaban_sampai_selesai, a.foto, a.deskripsi, a.waktu_server, u.nama_lengkap
+         FROM absensi_santri a
+         JOIN users u ON u.id = a.santri_id
+        WHERE a.kelas_id = ? ORDER BY a.tanggal DESC, u.nama_lengkap`,
+      [kelasId]
+    );
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch('/api/pendidikan/absensi/:id/koreksi', authenticateAdminToken, async (req, res, next) => {
+  try {
+    const id = parsePositiveId(req.params.id);
+    const { status, catatan } = req.body || {};
+    if (!id || !status) return res.status(400).json({ error: 'Data tidak valid' });
+    await runQuery('UPDATE absensi_santri SET status=?, dikoreksi_oleh=? WHERE id=?', [status, req.user.id, id]);
+    res.json({ message: 'Berhasil dikoreksi' });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.post('/api/upload', authenticateAdminToken, upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Gagal" });
   res.json({ url: `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` });
@@ -2738,6 +4488,15 @@ const lokasiTables = [
     nama VARCHAR(100) NOT NULL UNIQUE,
     aktif TINYINT(1) DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`,
+  `CREATE TABLE IF NOT EXISTS sub_kategori (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    kategori_id INT NOT NULL,
+    nama VARCHAR(255) NOT NULL,
+    aktif TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (kategori_id) REFERENCES kategori(id) ON DELETE CASCADE,
+    UNIQUE KEY uq_sub_kategori_nama (kategori_id, nama)
   )`,
   `CREATE TABLE IF NOT EXISTS lokasi (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -2862,7 +4621,7 @@ const ternakTables = [
   )`
 ];
 function createTernakTablesSeq(idx) {
-  if (idx >= ternakTables.length) return migrasiTernakSeed();
+  if (idx >= ternakTables.length) return migrasiIndexTernak();
   db.query(ternakTables[idx], (err) => {
     if (err && err.code !== 'ER_TABLE_EXISTS_ERROR') {
       console.error(`[Ternak Table ${idx+1}] Error:`, err.message);
@@ -2870,6 +4629,26 @@ function createTernakTablesSeq(idx) {
       console.log(`[Ternak Table ${idx+1}] Siap ✅`);
     }
     createTernakTablesSeq(idx + 1);
+  });
+}
+
+// Buat index komposit bila belum ada. Idempotent: dicek dulu via SHOW INDEX.
+function pastikanIndex(tabel, namaIndex, kolom, next) {
+  db.query(`SHOW INDEX FROM ${tabel} WHERE Key_name='${namaIndex}'`, (e, rows) => {
+    if (e || (rows && rows.length)) return next();
+    db.query(`ALTER TABLE ${tabel} ADD INDEX ${namaIndex} (${kolom})`, (eAdd) => {
+      if (eAdd) console.log(`[Migrasi] index ${namaIndex} gagal:`, eAdd.message);
+      else console.log(`✅ Index ${namaIndex} ditambahkan.`);
+      next();
+    });
+  });
+}
+
+// Index riwayat: ternak (ternak_id, created_at) lalu tanaman
+// (tanaman_id, waktu_tindakan) — mempercepat WHERE + ORDER BY saat data besar.
+function migrasiIndexTernak() {
+  pastikanIndex('log_perawatan_ternak', 'idx_log_ternak_waktu', 'ternak_id, created_at', () => {
+    pastikanIndex('log_perawatan', 'idx_log_tanaman_waktu', 'tanaman_id, waktu_tindakan', migrasiTernakSeed);
   });
 }
 
@@ -3168,7 +4947,149 @@ db.query("SHOW COLUMNS FROM activity_schedules LIKE 'lokasi_id'", (err, rows) =>
     });
   }
 });
+db.query("SHOW COLUMNS FROM activity_schedules LIKE 'sub_kategori_id'", (err, rows) => {
+  if (err) return;
+  if (!rows || rows.length === 0) {
+    db.query("ALTER TABLE activity_schedules ADD COLUMN sub_kategori_id INT NULL, ADD COLUMN sub_kategori VARCHAR(255) NULL, ADD FOREIGN KEY (sub_kategori_id) REFERENCES sub_kategori(id) ON DELETE SET NULL", (err2) => {
+      if (err2) console.error('[Migrasi] tambah activity_schedules sub_kategori gagal:', err2.message);
+      else console.log('[Migrasi] activity_schedules: sub_kategori_id & sub_kategori ditambah ✅');
+    });
+  }
+});
 }
+
+// ── TABEL JADWAL PELAJARAN (mode Pendidikan) ──────────────────────────────────
+// Dibuat idempoten karena bootstrap tabel lama (RUN_LEGACY_DATABASE_BOOTSTRAP)
+// sudah dimatikan — tanpa ini tabel jadwal_pelajaran tidak pernah dibuat.
+db.query('CREATE TABLE IF NOT EXISTS jadwal_pelajaran (\n' +
+  '  id INT AUTO_INCREMENT PRIMARY KEY,\n' +
+  '  kelas_id INT NOT NULL,\n' +
+  '  tahun_ajaran VARCHAR(50) NULL,\n' +
+  "  hari ENUM('Senin','Selasa','Rabu','Kamis','Jumat','Sabtu') NOT NULL,\n" +
+  '  jam_mulai TIME NOT NULL,\n' +
+  '  jam_selesai TIME NOT NULL,\n' +
+  '  mapel VARCHAR(150) NOT NULL,\n' +
+  '  guru_id INT NULL,\n' +
+  '  guru_nama VARCHAR(150) NULL,\n' +
+  "  pola_perulangan ENUM('sekali','setiap_hari','mingguan') DEFAULT 'sekali',\n" +
+  '  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n' +
+  '  CONSTRAINT fk_jadwal_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE,\n' +
+  '  CONSTRAINT fk_jadwal_guru FOREIGN KEY (guru_id) REFERENCES users(id) ON DELETE SET NULL\n' +
+  ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4', (err) => {
+  if (err) console.error('[Migrasi] buat tabel jadwal_pelajaran gagal:', err.message);
+  else console.log('[Migrasi] tabel jadwal_pelajaran siap ✅');
+});
+
+// Penempatan santri ↔ kelas. FK ke pendaftar_santri (santri asli yang login),
+// bukan users — banyak endpoint lama memakai users sehingga tabel ini sempat
+// tidak pernah terbentuk.
+db.query('CREATE TABLE IF NOT EXISTS penempatan_santri (\n' +
+  '  id INT AUTO_INCREMENT PRIMARY KEY,\n' +
+  '  santri_id INT NOT NULL,\n' +
+  '  kelas_id INT NOT NULL,\n' +
+  '  tahun_ajaran VARCHAR(50) NULL,\n' +
+  '  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n' +
+  '  UNIQUE KEY uq_penempatan (santri_id, kelas_id, tahun_ajaran),\n' +
+  '  CONSTRAINT fk_penempatan_santri FOREIGN KEY (santri_id) REFERENCES pendaftar_santri(id) ON DELETE CASCADE,\n' +
+  '  CONSTRAINT fk_penempatan_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE\n' +
+  ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4', (err) => {
+  if (err) console.error('[Migrasi] buat tabel penempatan_santri gagal:', err.message);
+  else console.log('[Migrasi] tabel penempatan_santri siap ✅');
+});
+
+// Absensi santri per kelas per hari (unique → 1x sehari).
+db.query('CREATE TABLE IF NOT EXISTS absensi_santri (\n' +
+  '  id INT AUTO_INCREMENT PRIMARY KEY,\n' +
+  '  santri_id INT NOT NULL,\n' +
+  '  kelas_id INT NOT NULL,\n' +
+  '  tanggal DATE NOT NULL,\n' +
+  "  status ENUM('hadir','izin') NOT NULL,\n" +
+  "  jawaban_sampai_selesai ENUM('ya','tidak') NULL,\n" +
+  '  foto VARCHAR(255) NULL,\n' +
+  '  deskripsi TEXT NULL,\n' +
+  '  waktu_server TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n' +
+  '  dikoreksi_oleh INT NULL,\n' +
+  '  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n' +
+  '  CONSTRAINT fk_abs_santri FOREIGN KEY (santri_id) REFERENCES pendaftar_santri(id) ON DELETE CASCADE,\n' +
+  '  CONSTRAINT fk_abs_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE CASCADE,\n' +
+  '  UNIQUE KEY uq_abs (santri_id, kelas_id, tanggal)\n' +
+  ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4', (err) => {
+  if (err) console.error('[Migrasi] buat tabel absensi_santri gagal:', err.message);
+  else console.log('[Migrasi] tabel absensi_santri siap ✅');
+});
+
+// Kolom pola_perulangan mungkin belum ada di db lama — tambah bila perlu.
+db.query("SHOW COLUMNS FROM jadwal_pelajaran LIKE 'pola_perulangan'", (err, rows) => {
+  if (err) return;
+  if (!rows || rows.length === 0) {
+    db.query("ALTER TABLE jadwal_pelajaran ADD COLUMN pola_perulangan ENUM('sekali','setiap_hari','mingguan') DEFAULT 'sekali'", (err2) => {
+      if (err2) console.error('[Migrasi] tambah jadwal_pelajaran.pola_perulangan gagal:', err2.message);
+      else console.log('[Migrasi] jadwal_pelajaran.pola_perulangan ditambah ✅');
+    });
+  }
+});
+
+// Kolom guru_nama (nama guru manual, di luar daftar user guru) — tambah bila perlu.
+db.query("SHOW COLUMNS FROM jadwal_pelajaran LIKE 'guru_nama'", (err, rows) => {
+  if (err) return;
+  if (!rows || rows.length === 0) {
+    db.query("ALTER TABLE jadwal_pelajaran ADD COLUMN guru_nama VARCHAR(150) NULL AFTER guru_id", (err2) => {
+      if (err2) console.error('[Migrasi] tambah jadwal_pelajaran.guru_nama gagal:', err2.message);
+      else console.log('[Migrasi] jadwal_pelajaran.guru_nama ditambah ✅');
+    });
+  }
+});
+
+// ── AKSI PERAWATAN TANAMAN (katalog per tanaman) ──────────────────────────────
+// Katalog aksi bisa ditambah/diubah admin per tanaman. log_perawatan.jenis_tindakan
+// diperlebar dari ENUM('siram','pupuk','panen') ke VARCHAR(100) supaya aksi kustom
+// bisa dicatat. Idempoten — aman dijalankan ulang.
+function seedAksiTanamanDefault() {
+  db.query('SELECT id FROM tanaman', (err, rows) => {
+    if (err) return console.error('[Migrasi] seed aksi tanaman gagal:', err.message);
+    (rows || []).forEach((t) => {
+      db.query('SELECT COUNT(*) AS n FROM master_aksi_tanaman WHERE tanaman_id = ?', [t.id], (errC, cRows) => {
+        if (errC || Number(cRows?.[0]?.n || 0) > 0) return;
+        let urutan = 10;
+        for (const nama of ['siram', 'pupuk', 'panen']) {
+          db.query(
+            'INSERT IGNORE INTO master_aksi_tanaman (tanaman_id, nama_aksi, urutan) VALUES (?, ?, ?)',
+            [t.id, nama, urutan]
+          );
+          urutan += 10;
+        }
+      });
+    });
+  });
+}
+
+db.query(`CREATE TABLE IF NOT EXISTS master_aksi_tanaman (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tanaman_id INT NOT NULL,
+  nama_aksi VARCHAR(255) NOT NULL,
+  urutan INT NOT NULL DEFAULT 0,
+  aktif TINYINT(1) DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (tanaman_id) REFERENCES tanaman(id) ON DELETE CASCADE,
+  UNIQUE KEY uq_master_aksi_tanaman (tanaman_id, nama_aksi)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`, (err) => {
+  if (err) return console.error('[Migrasi] master_aksi_tanaman gagal dibuat:', err.message);
+  db.query(
+    "SELECT COLUMN_TYPE AS t FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'log_perawatan' AND COLUMN_NAME = 'jenis_tindakan'",
+    (err2, rows) => {
+      if (err2) return console.error('[Migrasi] cek log_perawatan.jenis_tindakan gagal:', err2.message);
+      if (/^enum/i.test(String(rows?.[0]?.t || ''))) {
+        db.query('ALTER TABLE log_perawatan MODIFY COLUMN jenis_tindakan VARCHAR(100) NOT NULL', (err3) => {
+          if (err3) return console.error('[Migrasi] perluas log_perawatan.jenis_tindakan gagal:', err3.message);
+          console.log('[Migrasi] log_perawatan.jenis_tindakan: ENUM → VARCHAR(100) ✅');
+          seedAksiTanamanDefault();
+        });
+      } else {
+        seedAksiTanamanDefault();
+      }
+    }
+  );
+});
 
 // ── CRON: generate tiket activity_tasks setiap hari jam 00:01 ────────────────
 function generateTiketHarian() {
@@ -3282,7 +5203,9 @@ app.get('/api/santri-pemilih', authenticateAdminToken, (req, res) => {
     else console.log('[/api/santri-pemilih] Jumlah per status:', (rowsLog || []).map(r => `${r.status_pendaftaran}=${r.c}`).join(' | ') || 'kosong');
   });
 
-  let q = `SELECT id, username, nama, kelas, kamar
+  // `role` ikut diambil supaya admin bisa melihat penanda (Santri/Petani/Guru) di
+  // daftar "Santri Penerima". COALESCE menjaga baris lama yang role-nya NULL.
+  let q = `SELECT id, username, nama, role, kelas, kamar
            FROM pendaftar_santri
            WHERE LOWER(TRIM(status_pendaftaran)) = 'diterima'`;
   const params = [];
@@ -3377,13 +5300,35 @@ app.get('/api/jadwal/:id', authenticateAdminToken, (req, res) => {
             WHERE atr.aktivitas_id = ?
             ORDER BY atr.id ASC`,
           [req.params.id],
-          (err3, ternaks) => {
+(err3, ternaks) => {
             if (err3) return res.status(500).json({ error: err3.message });
-            res.json({
-              ...results[0],
-              tanaman_terpilih: kelompokkanTanamanPivot(plants),
-              ternak_terpilih: kelompokkanTernakPivot(ternaks),
-            });
+            db.query(
+              `SELECT k.id, k.nama
+                 FROM aktivitas_kegiatan ak
+                 JOIN kegiatan_lokasi k ON k.id = ak.kegiatan_id
+                WHERE ak.aktivitas_id = ?
+                ORDER BY ak.id ASC`,
+              [req.params.id],
+              (err4, kegiatans) => {
+                db.query(
+                  `SELECT jk.kelas_id, jk.aksi, k.nama, k.foto
+                     FROM jadwal_kelas jk
+                     JOIN kelas k ON k.id = jk.kelas_id
+                    WHERE jk.aktivitas_id = ?
+                    ORDER BY jk.id ASC`,
+                  [req.params.id],
+                  (err5, kelasRows) => {
+                    res.json({
+                      ...results[0],
+                      tanaman_terpilih: kelompokkanTanamanPivot(plants),
+                      ternak_terpilih: kelompokkanTernakPivot(ternaks),
+                      kelas_terpilih: err5 ? [] : kelompokkanKelasPivot(kelasRows),
+                      kegiatan_terpilih: err4 ? [] : kegiatans,
+                    });
+                  }
+                );
+              }
+            );
           }
         );
       }
@@ -3458,6 +5403,15 @@ function kumpulkanIdArray(raw) {
 
 // Helper: pastikan ada nama kategori sebagai string (kolom kategori NOT NULL).
 // cb(nama) — pakai string lama, atau ambil dari tabel kategori_id, atau fallback 'Lainnya'.
+// Helper: ubah nilai id dari body (yang bisa string kosong dari <select>) jadi INT atau null.
+function normalisasiIdInt(value) {
+  if (value === null || value === undefined) return null;
+  const str = String(value).trim();
+  if (str === '') return null;
+  const num = Number(str);
+  return Number.isInteger(num) ? num : null;
+}
+
 function ambilNamaKategori(kategori, kategoriId, cb) {
   if (kategori && String(kategori).trim()) return cb(String(kategori).trim());
   if (!kategoriId) return cb('Lainnya');
@@ -3465,6 +5419,23 @@ function ambilNamaKategori(kategori, kategoriId, cb) {
     if (err || !rows || !rows.length) return cb('Lainnya');
     cb(rows[0].nama);
   });
+}
+
+// Helper: ambil sub kategori berdasarkan id DAN pastikan milik kategori terpilih.
+// cb(err, {id, nama} | null) — null bila id kosong atau tidak cocok kategorinya.
+function ambilSubKategori(subKategoriId, kategoriId, cb) {
+  const subId = normalisasiIdInt(subKategoriId);
+  const katId = normalisasiIdInt(kategoriId);
+  if (!subId || !katId) return cb(null, null);
+  db.query(
+    "SELECT id, nama FROM sub_kategori WHERE id = ? AND kategori_id = ?",
+    [subId, katId],
+    (err, rows) => {
+      if (err) return cb(err);
+      if (!rows || !rows.length) return cb(null, null);
+      cb(null, rows[0]);
+    }
+  );
 }
 
 // Helper: verifikasi semua kegiatan benar-benar milik lokasi terpilih. cb(err, jumlahCocok)
@@ -3483,13 +5454,20 @@ function verifikasiKegiatanMilikLokasi(lokasiId, kegiatanIds, cb) {
 
 // Helper: pastikan semua tanaman benar-benar milik lokasi terpilih. cb(err, invalid[]) berisi {id, nama}.
 function verifikasiTanamanMilikLokasi(lokasiId, tanamanIds, cb) {
+  // Tanpa lokasi terpilih tidak ada "pemilik lokasi" yang bisa dibandingkan.
+  // Form kategori produksi (pertanian/perkebunan/peternakan) memang tidak punya
+  // kolom lokasi dan mengirim lokasi_id "", yang di-cast MySQL jadi 0 — sehingga
+  // jika lokasi ini diteruskan apa adanya, semua tanaman selalu dianggap
+  // "bukan milik lokasi" dan penyimpanan ditolak.
+  const lokasi = parseInt(lokasiId, 10);
+  if (!Number.isInteger(lokasi) || lokasi <= 0) return cb(null, []);
   if (!tanamanIds.length) return cb(null, []);
   const placeholders = tanamanIds.map(() => '?').join(',');
   db.query(
     `SELECT t.id, t.nama FROM tanaman t
       WHERE t.id IN (${placeholders})
         AND (t.lokasi_id IS NULL OR t.lokasi_id <> ?)`,
-    [...tanamanIds, lokasiId],
+    [...tanamanIds, lokasi],
     (err, rows) => {
       if (err) return cb(err);
       cb(null, rows || []);
@@ -3511,7 +5489,7 @@ function normalisasiTanamanTerpilih(body) {
     if (Array.isArray(aksi)) {
       aksi.forEach((a) => {
         const aStr = String(a).trim().toLowerCase();
-        if (AKSI_PERAWATAN.includes(aStr)) hasil.get(key).add(aStr);
+        if (aStr && aStr.length <= 100) hasil.get(key).add(aStr);
       });
     }
   };
@@ -3537,9 +5515,10 @@ function kelompokkanTanamanPivot(rows) {
   return [...map.values()];
 }
 
-// Helper: string info tanaman untuk tugas (GROUP_CONCAT "nama||aksi;;nama||aksi")
+// Helper: string info tanaman untuk tugas
+// (GROUP_CONCAT "tanaman_id||nama||aksi;;tanaman_id||nama||aksi")
 function tanamanInfoSubquery(aliasS = 's') {
-  return `(SELECT GROUP_CONCAT(CONCAT(t.nama, '||', at.aksi) SEPARATOR ';;')
+  return `(SELECT GROUP_CONCAT(CONCAT(at.tanaman_id, '||', t.nama, '||', at.aksi) SEPARATOR ';;')
             FROM aktivitas_tanaman at
             JOIN tanaman t ON t.id = at.tanaman_id
            WHERE at.aktivitas_id = ${aliasS}.id AND at.aksi IS NOT NULL)`;
@@ -3582,9 +5561,87 @@ function kelompokkanTernakPivot(rows) {
   return [...map.values()];
 }
 
-// Helper: string info ternak untuk tugas (GROUP_CONCAT "nama||namaAksi;;nama||namaAksi")
+// ── Helper kelas (mode Pendidikan di Jadwal Aktivitas) ───────────────────────
+// Aksi kelas adalah pilihan tetap: FGD, Kunjungan, Klasikal.
+const JENIS_AKSI_KELAS = ['fgd', 'kunjungan', 'klasikal'];
+
+// Normalisasi pilihan kelas menjadi [{ id, aksi: [] }].
+// `kelas_terpilih` = [{ kelas_id, aksi: ['fgd', 'kunjungan', 'klasikal'] }].
+function normalisasiKelasTerpilih(body) {
+  const raw = body.kelas_terpilih;
+  const hasil = new Map();
+  const tambah = (id, aksi) => {
+    const key = parseInt(String(id).trim(), 10);
+    if (!Number.isFinite(key) || key <= 0) return;
+    if (!hasil.has(key)) hasil.set(key, new Set());
+    if (Array.isArray(aksi)) {
+      aksi.forEach((a) => {
+        const k = String(a).trim().slice(0, 50);
+        if (k) hasil.get(key).add(k);
+      });
+    }
+  };
+  if (Array.isArray(raw) && raw.length > 0) {
+    raw.forEach((item) => {
+      if (!item || typeof item !== 'object') return;
+      tambah(item.kelas_id !== undefined ? item.kelas_id : item.id, item.aksi);
+    });
+  }
+  return [...hasil.entries()].map(([id, s]) => ({ id, aksi: [...s] }));
+}
+
+
+// Mode Pendidikan: simpan baris Jadwal Pelajaran (jadwal_pelajaran) dari form /admin/jadwal
+function simpanBarisJadwalPelajaran(rows, polaRaw, intervalHari, cb) {
+  if (!Array.isArray(rows) || rows.length === 0) return cb(null);
+  const pola = polaRaw === 'sekali'
+    ? 'sekali'
+    : (parseInt(intervalHari, 10) === 7 ? 'mingguan' : 'setiap_hari');
+  const valid = rows.filter((r) => r && r.hari && r.jam_mulai && r.jam_selesai && String(r.mapel || '').trim() && normalisasiIdInt(r.kelas_id));
+  if (!valid.length) return cb(null);
+  const kelasIds = [...new Set(valid.map((r) => normalisasiIdInt(r.kelas_id)))];
+  db.query('DELETE FROM jadwal_pelajaran WHERE kelas_id IN (?)', [kelasIds], (errDel) => {
+    if (errDel) return cb(errDel);
+    let i = 0;
+    (function next() {
+      if (i >= valid.length) return cb(null);
+      const r = valid[i++];
+      db.query(
+        'INSERT INTO jadwal_pelajaran (kelas_id, tahun_ajaran, hari, jam_mulai, jam_selesai, mapel, guru_id, pola_perulangan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [normalisasiIdInt(r.kelas_id), r.tahun_ajaran || null, r.hari, r.jam_mulai, r.jam_selesai, String(r.mapel).trim().slice(0,150), normalisasiIdInt(r.guru_id), pola],
+        (e) => e ? cb(e) : next(),
+      );
+    })();
+  });
+}
+
+// Helper: ubah baris pivot jadwal_kelas jadi [{ kelas_id, aksi:[...], nama, foto }]
+function kelompokkanKelasPivot(rows) {
+  const map = new Map();
+  (rows || []).forEach((r) => {
+    const key = Number(r.kelas_id);
+    if (!map.has(key)) map.set(key, { kelas_id: key, nama: r.nama, foto: r.foto, aksi: [] });
+    if (r.aksi) map.get(key).aksi.push(r.aksi);
+  });
+  return [...map.values()];
+}
+
+// Helper: jumlah rekan (Santri lain) yang punya tiket untuk schedule dan tanggal
+// yang sama. Dipakai buat badge di tombol "Status Rekan" dashboard Santri.
+// Tiket dengan santri_id NULL tidak ikut terhitung.
+function jumlahRekanSubquery(aliasT = 't') {
+  return `(SELECT COUNT(*)
+            FROM activity_tasks rt
+           WHERE rt.schedule_id = ${aliasT}.schedule_id
+             AND rt.tanggal_tugas = ${aliasT}.tanggal_tugas
+             AND rt.santri_id IS NOT NULL
+             AND rt.santri_id <> ${aliasT}.santri_id)`;
+}
+
+// Helper: string info ternak untuk tugas
+// (GROUP_CONCAT "ternak_id||nama||master_aksi_id||namaAksi;;...")
 function ternakInfoSubquery(aliasS = 's') {
-  return `(SELECT GROUP_CONCAT(CONCAT(tr.nama, '||', m.nama_aksi, IFNULL(CONCAT(' (', m.sub_aksi, ')'), '')) SEPARATOR ';;')
+  return `(SELECT GROUP_CONCAT(CONCAT(tk.id, '||', tr.nama, '||', m.id, '||', m.nama_aksi, IFNULL(CONCAT(' (', m.sub_aksi, ')'), '')) SEPARATOR ';;')
             FROM aktivitas_ternak atr
             JOIN ternak tk ON tk.id = atr.ternak_id
             JOIN jenis_ternak tr ON tr.id = tk.jenis_ternak_id
@@ -3596,13 +5653,15 @@ function ternakInfoSubquery(aliasS = 's') {
 // tanamanData: [{ id, aksi: [] }] — tiap aksi jadi SATU baris aktivitas_tanaman
 // (range multibaris, valid join dgn aksi NULL bila tidak ada aksi).
 // ternakData: [{ id, master_aksi_ids: [] }] — tiap aksi jadi SATU baris aktivitas_ternak.
-function simpanRelasiAktivitas(aktivitasId, kegiatanIds, tanamanData, ternakData, santriIds, cb) {
+// kelasData: [{ id, aksi: [] }] — tiap aksi (fgd/kunjungan/klasikal) jadi SATU baris jadwal_kelas.
+function simpanRelasiAktivitas(aktivitasId, kegiatanIds, tanamanData, ternakData, santriIds, kelasData, cb) {
   const hapusSemua = (done) => {
     const tasks = [
       cbx => db.query('DELETE FROM aktivitas_kegiatan WHERE aktivitas_id=?', [aktivitasId], cbx),
       cbx => db.query('DELETE FROM aktivitas_tanaman WHERE aktivitas_id=?', [aktivitasId], cbx),
       cbx => db.query('DELETE FROM aktivitas_ternak WHERE aktivitas_id=?', [aktivitasId], cbx),
       cbx => db.query('DELETE FROM aktivitas_santri WHERE aktivitas_id=?', [aktivitasId], cbx),
+      cbx => db.query('DELETE FROM jadwal_kelas WHERE aktivitas_id=?', [aktivitasId], cbx),
     ];
     let i = 0;
     const next = () => {
@@ -3661,6 +5720,25 @@ function simpanRelasiAktivitas(aktivitasId, kegiatanIds, tanamanData, ternakData
     next();
   };
 
+  // Kelas dipilih: satu baris per aksi (fgd/kunjungan/klasikal) — pivot jadwal_kelas
+  const insertKelas = (kelas, done) => {
+    if (!kelas || !kelas.length) return done(null);
+    let i = 0;
+    const next = () => {
+      if (i >= kelas.length) return done(null);
+      const k = kelas[i++];
+      const aksiList = k.aksi && k.aksi.length ? k.aksi : [null];
+      let j = 0;
+      const nextAksi = () => {
+        if (j >= aksiList.length) return next();
+        const aksi = aksiList[j++];
+        db.query('INSERT IGNORE INTO jadwal_kelas (aktivitas_id, kelas_id, aksi) VALUES (?, ?, ?)', [aktivitasId, k.id, aksi], (e) => e ? done(e) : nextAksi());
+      };
+      nextAksi();
+    };
+    next();
+  };
+
   hapusSemua((errHapus) => {
     if (errHapus) return cb(errHapus);
     insertBatch('aktivitas_kegiatan', kegiatanIds, (errK) => {
@@ -3669,7 +5747,10 @@ function simpanRelasiAktivitas(aktivitasId, kegiatanIds, tanamanData, ternakData
         if (errT) return cb(errT);
         insertTernak(ternakData || [], (errTr) => {
           if (errTr) return cb(errTr);
-          insertBatch('aktivitas_santri', santriIds, (errS) => cb(errS));
+          insertKelas(kelasData || [], (errKl) => {
+            if (errKl) return cb(errKl);
+            insertBatch('aktivitas_santri', santriIds, (errS) => cb(errS));
+          });
         });
       });
     });
@@ -3679,15 +5760,17 @@ function simpanRelasiAktivitas(aktivitasId, kegiatanIds, tanamanData, ternakData
 // POST buat jadwal baru — langsung generate tiket ke santri (multi-santri support)
 // Mode Pertanian/Perkebunan: pilih TANAMAN + aksi (tanaman_terpilih), lokasi/kegiatan opsional.
 // Mode Peternakan: pilih TERNAK + aksi (ternak_terpilih), lokasi/kegiatan opsional.
+// Mode Pendidikan: pilih KELAS + aksi tetap FGD/Kunjungan/Klasikal (kelas_terpilih), lokasi/kegiatan opsional.
 // Mode non-Pertanian/-Peternakan: tetap wajib lokasi + kegiatan (tanaman terkait lokasi, opsional).
 app.post('/api/jadwal', authenticateAdminToken, (req, res) => {
-  const { nama_aktivitas, kategori, kategori_id, lokasi_id, deskripsi, pola_perulangan, interval_hari, tanggal_mulai, jam_mulai, jam_selesai, tanggal_selesai } = req.body;
+  const { nama_aktivitas, kategori, kategori_id, sub_kategori_id, lokasi_id, deskripsi, pola_perulangan, interval_hari, tanggal_mulai, jam_mulai, jam_selesai, tanggal_selesai } = req.body;
   const santriIdArray = kumpulkanSantriIds(req.body);
   const kegiatanIds = kumpulkanIdArray(req.body.kegiatan_lokasi_ids);
   const tanamanData = normalisasiTanamanTerpilih(req.body);
   const ternakData = normalisasiTernakTerpilih(req.body);
+  const kelasData = normalisasiKelasTerpilih(req.body);
 
-  console.log('[POST /api/jadwal] Menerima:', { nama_aktivitas, kategori, kategori_id, lokasi_id, pola_perulangan, tanggal_mulai, santriIdArray, kegiatanIds, tanamanData, ternakData });
+  console.log('[POST /api/jadwal] Menerima:', { nama_aktivitas, kategori, kategori_id, lokasi_id, pola_perulangan, tanggal_mulai, santriIdArray, kegiatanIds, tanamanData, ternakData, kelasData });
 
   verifikasiSantriDiterima(santriIdArray, (invalid, err) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -3701,7 +5784,8 @@ app.post('/api/jadwal', authenticateAdminToken, (req, res) => {
     ambilNamaKategori(kategori, kategori_id, (namaKategori) => {
       const isPertanian = /pertanian|perkebunan/i.test(namaKategori || '');
       const isPeternakan = /peternakan/i.test(namaKategori || '');
-      const isProduksi = isPertanian || isPeternakan;
+      const isPendidikan = /pendidikan/i.test(namaKategori || '');
+      const isProduksi = isPertanian || isPeternakan || isPendidikan;
 
       if (isPertanian && tanamanData.length === 0) {
         return res.status(400).json({ error: 'Kategori pertanian wajib memilih minimal satu tanaman.' });
@@ -3709,62 +5793,76 @@ app.post('/api/jadwal', authenticateAdminToken, (req, res) => {
       if (isPeternakan && ternakData.length === 0) {
         return res.status(400).json({ error: 'Kategori peternakan wajib memilih minimal satu jenis ternak.' });
       }
+      if (isPendidikan && kelasData.length === 0) {
+        return res.status(400).json({ error: 'Kategori pendidikan wajib memilih minimal satu kelas.' });
+      }
       if (!isProduksi) {
         if (!lokasi_id) return res.status(400).json({ error: 'Lokasi wajib dipilih.' });
         if (kegiatanIds.length === 0) return res.status(400).json({ error: 'Minimal satu kegiatan harus dipilih.' });
       }
-      const lokasiFinal = isProduksi ? (lokasi_id || null) : lokasi_id;
+      // lokasi_id harus INT: string kosong / non-numerik diubah jadi null agar MySQL tidak menolak.
+      const lokasiFinal = normalisasiIdInt(lokasi_id);
 
-      const simpanJadwal = (tanamanFinal, ternakFinal) => {
+      const simpanJadwal = (tanamanFinal, ternakFinal, kelasFinal) => {
         const penanggungJawabString = santriIdArray.length > 0 ? santriIdArray[0] : null;
         const interval = pola_perulangan === 'sekali' ? 1 : parseInt(interval_hari) || 7;
+        const kategoriIdFinal = normalisasiIdInt(kategori_id);
 
-        db.query(
-          `INSERT INTO activity_schedules (nama_aktivitas, kategori, kategori_id, lokasi_id, deskripsi, pola_perulangan, interval_hari, tanggal_mulai, jam_mulai, jam_selesai, tanggal_selesai, penanggung_jawab)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [nama_aktivitas, namaKategori, kategori_id || null, lokasiFinal, deskripsi || null, pola_perulangan, interval,
-           tanggal_mulai, jam_mulai || '08:00', jam_selesai || '09:00', tanggal_selesai || null, penanggungJawabString],
-          (errIns, result) => {
-            if (errIns) {
-              console.error('[POST /api/jadwal] DB Error:', errIns.message);
-              return res.status(500).json({ error: errIns.message });
-            }
-          const scheduleId = result.insertId;
-          console.log(`[POST /api/jadwal] Jadwal tersimpan dengan ID: ${scheduleId}`);
+        ambilSubKategori(sub_kategori_id, kategoriIdFinal, (errSub, subKat) => {
+          if (errSub) return res.status(500).json({ error: errSub.message });
+          const subKategoriIdFinal = subKat ? subKat.id : null;
+          const subKategoriNama = subKat ? subKat.nama : null;
 
-          // Simpan relasi kegiatan/tanaman/ternak (dengan aksi)/santri ke pivot
-          simpanRelasiAktivitas(scheduleId, isProduksi ? [] : kegiatanIds, tanamanFinal, ternakFinal, santriIdArray, (errRel) => {
-            if (errRel) console.error('[POST /api/jadwal] Gagal simpan relasi:', errRel.message);
+          db.query(
+            `INSERT INTO activity_schedules (nama_aktivitas, kategori, kategori_id, sub_kategori_id, sub_kategori, lokasi_id, deskripsi, pola_perulangan, interval_hari, tanggal_mulai, jam_mulai, jam_selesai, tanggal_selesai, penanggung_jawab)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [nama_aktivitas, namaKategori, kategoriIdFinal, subKategoriIdFinal, subKategoriNama, lokasiFinal, deskripsi || null, pola_perulangan, interval,
+             tanggal_mulai, jam_mulai || '08:00', jam_selesai || '09:00', tanggal_selesai || null, penanggungJawabString],
+            (errIns, result) => {
+              if (errIns) {
+                console.error('[POST /api/jadwal] DB Error:', errIns.message);
+                return res.status(500).json({ error: errIns.message });
+              }
+            const scheduleId = result.insertId;
+            console.log(`[POST /api/jadwal] Jadwal tersimpan dengan ID: ${scheduleId}`);
 
-            // Generate tiket untuk semua santri yang ditunjuk
-            if (santriIdArray.length > 0) {
-              let completed = 0;
-              const total = santriIdArray.length;
+            // Simpan relasi kegiatan/tanaman/ternak (dengan aksi)/kelas/santri ke pivot
+            simpanRelasiAktivitas(scheduleId, isProduksi ? [] : kegiatanIds, tanamanFinal, ternakFinal, santriIdArray, kelasFinal, (errRel) => {
+              if (errRel) console.error('[POST /api/jadwal] Gagal simpan relasi:', errRel.message);
+              simpanBarisJadwalPelajaran(req.body.jadwal_pelajaran, pola_perulangan, interval_hari, (errJp) => {
+                if (errJp) console.error('[POST /api/jadwal] Gagal simpan jadwal_pelajaran:', errJp.message);
+              });
 
-              santriIdArray.forEach((santriId) => {
-                db.query('SELECT nama FROM pendaftar_santri WHERE id=?', [santriId], (errNama, rows) => {
-                  const namaSantri = rows && rows.length ? rows[0].nama : null;
-                  console.log(`[POST /api/jadwal] Generate tiket untuk santri: ${namaSantri} (id=${santriId})`);
-                  const sch = { id: scheduleId, pola_perulangan, interval_hari: interval, tanggal_mulai, penanggung_jawab: santriId };
-                  generateTiketUntukJadwal(sch, namaSantri, () => {
-                    completed++;
-                    if (completed === total) {
-                      // Jika sekali, tandai selesai
-                      if (pola_perulangan === 'sekali') {
-                        db.query("UPDATE activity_schedules SET status='selesai' WHERE id=?", [scheduleId]);
+              // Generate tiket untuk semua santri yang ditunjuk
+              if (santriIdArray.length > 0) {
+                let completed = 0;
+                const total = santriIdArray.length;
+
+                santriIdArray.forEach((santriId) => {
+                  db.query('SELECT nama FROM pendaftar_santri WHERE id=?', [santriId], (errNama, rows) => {
+                    const namaSantri = rows && rows.length ? rows[0].nama : null;
+                    console.log(`[POST /api/jadwal] Generate tiket untuk santri: ${namaSantri} (id=${santriId})`);
+                    const sch = { id: scheduleId, pola_perulangan, interval_hari: interval, tanggal_mulai, penanggung_jawab: santriId };
+                    generateTiketUntukJadwal(sch, namaSantri, () => {
+                      completed++;
+                      if (completed === total) {
+                        // Jika sekali, tandai selesai
+                        if (pola_perulangan === 'sekali') {
+                          db.query("UPDATE activity_schedules SET status='selesai' WHERE id=?", [scheduleId]);
+                        }
+                        res.json({ message: `Jadwal berhasil dibuat dan tiket sudah dikirim ke ${total} santri`, id: scheduleId });
                       }
-                      res.json({ message: `Jadwal berhasil dibuat dan tiket sudah dikirim ke ${total} santri`, id: scheduleId });
-                    }
+                    });
                   });
                 });
-              });
-            } else {
-              res.json({ message: 'Jadwal berhasil dibuat', id: scheduleId });
-            }
-          });
-        }
-      );
-    }
+              } else {
+                res.json({ message: 'Jadwal berhasil dibuat', id: scheduleId });
+              }
+            });
+          }
+        );
+        });
+      }
 
       // Untuk mode non-Pertanian & non-Peternakan, verifikasi kegiatan & tanaman benar-benar milik lokasi.
       if (!isProduksi) {
@@ -3784,11 +5882,11 @@ app.post('/api/jadwal', authenticateAdminToken, (req, res) => {
                   '. Kaitkan tanaman itu ke lokasi ini lewat Manajemen Tanaman.'
               });
             }
-            simpanJadwal(tanamanData, ternakData);
+            simpanJadwal(tanamanData, ternakData, kelasData);
           });
         });
       } else {
-        simpanJadwal(tanamanData, ternakData);
+        simpanJadwal(tanamanData, ternakData, kelasData);
       }
     });
   });
@@ -3796,11 +5894,12 @@ app.post('/api/jadwal', authenticateAdminToken, (req, res) => {
 
 // PUT update jadwal — jika PJ berubah, regenerate tiket pending mendatang ke PJ baru (multi-santri support)
 app.put('/api/jadwal/:id', authenticateAdminToken, (req, res) => {
-  const { nama_aktivitas, kategori, kategori_id, lokasi_id, deskripsi, pola_perulangan, interval_hari, tanggal_mulai, jam_mulai, jam_selesai, tanggal_selesai, status } = req.body;
+  const { nama_aktivitas, kategori, kategori_id, sub_kategori_id, lokasi_id, deskripsi, pola_perulangan, interval_hari, tanggal_mulai, jam_mulai, jam_selesai, tanggal_selesai, status } = req.body;
   const santriIdArray = kumpulkanSantriIds(req.body);
   const kegiatanIds = kumpulkanIdArray(req.body.kegiatan_lokasi_ids);
   const tanamanData = normalisasiTanamanTerpilih(req.body);
   const ternakData = normalisasiTernakTerpilih(req.body);
+  const kelasData = normalisasiKelasTerpilih(req.body);
   const penanggungJawabString = santriIdArray.length > 0 ? santriIdArray[0] : null;
   const interval = pola_perulangan === 'sekali' ? 1 : parseInt(interval_hari) || 7;
 
@@ -3815,7 +5914,8 @@ app.put('/api/jadwal/:id', authenticateAdminToken, (req, res) => {
     ambilNamaKategori(kategori, kategori_id, (namaKategori) => {
       const isPertanian = /pertanian|perkebunan/i.test(namaKategori || '');
       const isPeternakan = /peternakan/i.test(namaKategori || '');
-      const isProduksi = isPertanian || isPeternakan;
+      const isPendidikan = /pendidikan/i.test(namaKategori || '');
+      const isProduksi = isPertanian || isPeternakan || isPendidikan;
 
       if (isPertanian && tanamanData.length === 0) {
         return res.status(400).json({ error: 'Kategori pertanian wajib memilih minimal satu tanaman.' });
@@ -3823,30 +5923,43 @@ app.put('/api/jadwal/:id', authenticateAdminToken, (req, res) => {
       if (isPeternakan && ternakData.length === 0) {
         return res.status(400).json({ error: 'Kategori peternakan wajib memilih minimal satu jenis ternak.' });
       }
+      if (isPendidikan && kelasData.length === 0) {
+        return res.status(400).json({ error: 'Kategori pendidikan wajib memilih minimal satu kelas.' });
+      }
       if (!isProduksi) {
         if (!lokasi_id) return res.status(400).json({ error: 'Lokasi wajib dipilih.' });
         if (kegiatanIds.length === 0) return res.status(400).json({ error: 'Minimal satu kegiatan harus dipilih.' });
       }
-      const lokasiFinal = isProduksi ? (lokasi_id || null) : lokasi_id;
+      // lokasi_id harus INT: string kosong / non-numerik diubah jadi null agar MySQL tidak menolak.
+      const lokasiFinal = normalisasiIdInt(lokasi_id);
+      const kategoriIdFinal = normalisasiIdInt(kategori_id);
 
       const updateSchedule = () => {
-        db.query(
-          `UPDATE activity_schedules SET
-             nama_aktivitas=?, kategori=?, kategori_id=?, lokasi_id=?, deskripsi=?, pola_perulangan=?,
-             interval_hari=?, tanggal_mulai=?, jam_mulai=?, jam_selesai=?, tanggal_selesai=?,
-             penanggung_jawab=?, status=?
-           WHERE id=?`,
-          [nama_aktivitas, namaKategori, kategori_id || null, lokasiFinal, deskripsi || null, pola_perulangan, interval,
-           tanggal_mulai, jam_mulai || '08:00', jam_selesai || '09:00', tanggal_selesai || null, penanggungJawabString, status || 'aktif',
-           req.params.id],
-          (errUpd) => {
-            if (errUpd) return res.status(500).json({ error: errUpd.message });
-            simpanRelasiAktivitas(req.params.id, isProduksi ? [] : kegiatanIds, tanamanData, ternakData, santriIdArray, (errRel) => {
-              if (errRel) console.error('[PUT /api/jadwal] Gagal simpan relasi:', errRel.message);
-              res.json({ message: 'Jadwal berhasil diperbarui' });
-            });
-          }
-        );
+        ambilSubKategori(sub_kategori_id, kategoriIdFinal, (errSub, subKat) => {
+          if (errSub) return res.status(500).json({ error: errSub.message });
+          const subKategoriIdFinal = subKat ? subKat.id : null;
+          const subKategoriNama = subKat ? subKat.nama : null;
+          db.query(
+            `UPDATE activity_schedules SET
+               nama_aktivitas=?, kategori=?, kategori_id=?, sub_kategori_id=?, sub_kategori=?, lokasi_id=?, deskripsi=?, pola_perulangan=?,
+               interval_hari=?, tanggal_mulai=?, jam_mulai=?, jam_selesai=?, tanggal_selesai=?,
+               penanggung_jawab=?, status=?
+             WHERE id=?`,
+            [nama_aktivitas, namaKategori, kategoriIdFinal, subKategoriIdFinal, subKategoriNama, lokasiFinal, deskripsi || null, pola_perulangan, interval,
+             tanggal_mulai, jam_mulai || '08:00', jam_selesai || '09:00', tanggal_selesai || null, penanggungJawabString, status || 'aktif',
+             req.params.id],
+            (errUpd) => {
+              if (errUpd) return res.status(500).json({ error: errUpd.message });
+              simpanRelasiAktivitas(req.params.id, isProduksi ? [] : kegiatanIds, tanamanData, ternakData, santriIdArray, kelasData, (errRel) => {
+                if (errRel) console.error('[PUT /api/jadwal] Gagal simpan relasi:', errRel.message);
+                simpanBarisJadwalPelajaran(req.body.jadwal_pelajaran, pola_perulangan, interval_hari, (errJp) => {
+                  if (errJp) console.error('[PUT /api/jadwal] Gagal simpan jadwal_pelajaran:', errJp.message);
+                  res.json({ message: 'Jadwal berhasil diperbarui' });
+                });
+              });
+            }
+          );
+        });
       };
 
       if (!isProduksi) {
@@ -3909,29 +6022,36 @@ app.get('/api/tugas', authenticateAdminToken, (req, res) => {
   });
 });
 
-// GET tiket HARI INI milik santri yang login
+// GET tiket milik santri yang login untuk daftar "Tugas Saya" di dashboard
 // ⚠️ Harus SEBELUM /api/tugas/:id agar tidak dianggap param
+// Hanya tiket PENDING. Tanpa batas tanggal supaya tugas yang baru dibuat admin
+// langsung terlihat—even kalau tanggalnya masih di masa depan.
+// Ticket yang sudah 'selesai'/'dilewati' TIDAK dikembalikan: setelah santri
+// menyelesaikannya, tugas itu pindah ke "Riwayat Tugas" (endpoint /api/tugas/saya)
 app.get('/api/tugas/hari-ini', authenticateSantriToken, (req, res) => {
   const santriId = req.user.id;
-  const todayStr = toDateStr(new Date());
-  const q = `
-    SELECT t.*, s.nama_aktivitas, s.kategori, s.deskripsi, ${tanamanInfoSubquery()} AS tanaman_info, ${ternakInfoSubquery()} AS ternak_info
+  const cols = `
+    SELECT t.*, s.nama_aktivitas, s.kategori, s.deskripsi, s.jam_mulai, s.jam_selesai, ${jumlahRekanSubquery()} AS jumlah_rekan, ${tanamanInfoSubquery()} AS tanaman_info, ${ternakInfoSubquery()} AS ternak_info
     FROM activity_tasks t
     JOIN activity_schedules s ON t.schedule_id = s.id
-    WHERE t.santri_id = ? AND t.tanggal_tugas = ?
-    ORDER BY t.id ASC
   `;
-  db.query(q, [santriId, todayStr], (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(results);
-  });
+  db.query(
+    `${cols} WHERE t.santri_id = ? AND t.status = 'pending'
+     ORDER BY t.tanggal_tugas ASC, s.jam_mulai IS NULL, s.jam_mulai ASC, t.id ASC
+     LIMIT 20`,
+    [santriId],
+    (err, pending) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(pending || []);
+    }
+  );
 });
 
 // GET semua tugas milik santri yang login (riwayat lengkap)
 app.get('/api/tugas/saya', authenticateSantriToken, (req, res) => {
   const santriId = req.user.id;
   const q = `
-    SELECT t.*, s.nama_aktivitas, s.kategori, s.deskripsi, s.pola_perulangan, ${tanamanInfoSubquery()} AS tanaman_info, ${ternakInfoSubquery()} AS ternak_info
+    SELECT t.*, s.nama_aktivitas, s.kategori, s.deskripsi, s.jam_mulai, s.jam_selesai, s.pola_perulangan, ${jumlahRekanSubquery()} AS jumlah_rekan, ${tanamanInfoSubquery()} AS tanaman_info, ${ternakInfoSubquery()} AS ternak_info
     FROM activity_tasks t
     JOIN activity_schedules s ON t.schedule_id = s.id
     WHERE t.santri_id = ?
@@ -3948,16 +6068,40 @@ app.get('/api/tugas/mendatang', authenticateSantriToken, (req, res) => {
   const santriId = req.user.id;
   const todayStr = toDateStr(new Date());
   const q = `
-    SELECT t.*, s.nama_aktivitas, s.kategori, s.deskripsi, ${tanamanInfoSubquery()} AS tanaman_info, ${ternakInfoSubquery()} AS ternak_info
+    SELECT t.*, s.nama_aktivitas, s.kategori, s.deskripsi, s.jam_mulai, s.jam_selesai, ${jumlahRekanSubquery()} AS jumlah_rekan, ${tanamanInfoSubquery()} AS tanaman_info, ${ternakInfoSubquery()} AS ternak_info
     FROM activity_tasks t
     JOIN activity_schedules s ON t.schedule_id = s.id
     WHERE t.santri_id = ? AND t.tanggal_tugas > ? AND t.status = 'pending'
-    ORDER BY t.tanggal_tugas ASC
+    ORDER BY t.tanggal_tugas ASC, s.jam_mulai IS NULL, s.jam_mulai ASC
     LIMIT 10
   `;
   db.query(q, [santriId, todayStr], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
+  });
+});
+
+// GET detail satu tiket tugas milik santri yang login.
+// Dipakai halaman tanaman/ternak untuk mode "Kerjakan" (?tugas=<id>).
+app.get('/api/tugas/:id', authenticateSantriToken, (req, res) => {
+  const santriId = req.user.id;
+  const taskId = parseInt(req.params.id, 10);
+  if (!Number.isFinite(taskId)) {
+    return res.status(400).json({ message: 'ID tugas tidak valid' });
+  }
+  const q = `
+    SELECT t.*, s.nama_aktivitas, s.kategori, s.deskripsi, s.jam_mulai, s.jam_selesai, s.pola_perulangan,
+           ${jumlahRekanSubquery()} AS jumlah_rekan,
+           ${tanamanInfoSubquery()} AS tanaman_info,
+           ${ternakInfoSubquery()} AS ternak_info
+    FROM activity_tasks t
+    JOIN activity_schedules s ON t.schedule_id = s.id
+    WHERE t.id = ? AND t.santri_id = ?
+  `;
+  db.query(q, [taskId, santriId], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!results.length) return res.status(404).json({ message: 'Tugas tidak ditemukan' });
+    res.json(results[0]);
   });
 });
 
@@ -4006,8 +6150,30 @@ app.post('/api/tugas', authenticateAdminToken, (req, res) => {
 // PATCH tandai selesai — santri upload foto opsional
 app.patch('/api/tugas/:id/selesai', authenticateSantriToken, uploadTugas.single('foto_bukti'), (req, res) => {
   const santriId  = req.user.id;
-  const { catatan } = req.body;
+  const {
+    catatan,
+    tanaman_id: tanamanIdBody,
+    aksi: aksiBody,
+    ternak_id: ternakIdBody,
+    master_aksi_id: masterAksiIdBody,
+    nilai_angka: nilaiAngkaBody,
+  } = req.body;
   const fotoBukti = req.file ? req.file.filename : null;
+
+  // Fallback target tanaman: dikirim dari halaman detail tanaman saat Santri
+  // mengerjakan tugas. Tanpa ini, jadwal yang belum punya baris di
+  // aktivitas_tanaman tidak punya tanaman tujuan sehingga riwayatnya hilang.
+  const tanamanFallback = Number.parseInt(tanamanIdBody, 10);
+  const tanamanIdValid = Number.isInteger(tanamanFallback) && tanamanFallback > 0 ? tanamanFallback : null;
+  const aksiFallback = String(aksiBody || '').trim().toLowerCase();
+
+  // Fallback target ternak + nominal (mis. "Konfirmasi Ayam Mati") dari halaman
+  // detail ternak: nominal dicatat ke riwayat & mengurangi total ternak.
+  const ternakFallback = Number.parseInt(ternakIdBody, 10);
+  const ternakIdValid = Number.isInteger(ternakFallback) && ternakFallback > 0 ? ternakFallback : null;
+  const masterAksiFallback = Number.parseInt(masterAksiIdBody, 10);
+  const masterAksiIdValid = Number.isInteger(masterAksiFallback) && masterAksiFallback > 0 ? masterAksiFallback : null;
+  const nilaiAngkaFallback = Number.parseInt(nilaiAngkaBody, 10);
 
   db.query('SELECT * FROM activity_tasks WHERE id=?', [req.params.id], (err, rows) => {
     if (err)            return res.status(500).json({ error: err.message });
@@ -4038,10 +6204,24 @@ app.patch('/api/tugas/:id/selesai', authenticateSantriToken, uploadTugas.single(
             [scheduleId],
             (errPlants, plantRows) => {
               if (errPlants) return cbDone(errPlants);
-              const rows = plantRows || [];
+
+              // Target tanaman digabung dengan fallback dari halaman detail,
+              // lalu di-de-duplicate per tanaman agar tidak dobel.
+              const targets = new Map();
+              (plantRows || []).forEach((pr) => {
+                targets.set(pr.tanaman_id, pr.aksi);
+              });
+              if (tanamanIdValid && !targets.has(tanamanIdValid)) {
+                targets.set(
+                  tanamanIdValid,
+                  aksiFallback && aksiFallback.length <= 100 ? aksiFallback : 'siram'
+                );
+              }
+
+              const list = [...targets.entries()].map(([tanaman_id, aksi]) => ({ tanaman_id, aksi }));
               let inserted = 0;
-              if (!rows.length) return cbDone(null, 0);
-              rows.forEach((pr) => {
+              if (!list.length) return cbDone(null, 0);
+              list.forEach((pr) => {
                 db.query(
                   `INSERT INTO log_perawatan
                      (tanaman_id, jadwal_id, santri_id, jenis_tindakan, laporan_singkat, gambar, nama_perawat, role_perawat, waktu_tindakan)
@@ -4050,7 +6230,7 @@ app.patch('/api/tugas/:id/selesai', authenticateSantriToken, uploadTugas.single(
                   (errLog) => {
                     if (errLog) console.error('[selesai] Gagal catat riwayat tanaman:', errLog.message);
                     inserted++;
-                    if (inserted === rows.length) cbDone(null, rows.length);
+                    if (inserted === list.length) cbDone(null, list.length);
                   }
                 );
               });
@@ -4058,7 +6238,31 @@ app.patch('/api/tugas/:id/selesai', authenticateSantriToken, uploadTugas.single(
           );
         };
 
-        const catatTernak = (cbDone) => {
+        // Validasi nominal untuk aksi yang butuh angka (mis. ayam mati).
+        const siapkanNilaiTernak = (cb) => {
+          if (!ternakIdValid || !masterAksiIdValid) return cb(null, 0);
+          db.query(
+            `SELECT m.butuh_input_angka, m.label_input, t.total
+               FROM master_aksi_ternak m
+               JOIN ternak t ON t.id = ? AND t.jenis_ternak_id = m.jenis_ternak_id
+              WHERE m.id = ? AND m.aktif = 1`,
+            [ternakIdValid, masterAksiIdValid],
+            (errV, vRows) => {
+              if (errV) return cb(errV);
+              if (!vRows || !vRows.length || !vRows[0].butuh_input_angka) return cb(null, 0);
+              const angka = nilaiAngkaFallback;
+              if (!(angka > 0)) {
+                return cb(new Error(vRows[0].label_input || 'Jumlah wajib diisi dengan angka positif.'));
+              }
+              if (angka > (Number(vRows[0].total) || 0)) {
+                return cb(new Error(`Jumlah melebihi total ternak saat ini (${vRows[0].total}).`));
+              }
+              cb(null, angka);
+            }
+          );
+        };
+
+        const catatTernak = (nilaiAngka, cbDone) => {
           db.query(
             `SELECT atr.ternak_id, atr.master_aksi_id
                FROM aktivitas_ternak atr
@@ -4066,38 +6270,102 @@ app.patch('/api/tugas/:id/selesai', authenticateSantriToken, uploadTugas.single(
             [scheduleId],
             (errTernaks, ternakRows) => {
               if (errTernaks) return cbDone(errTernaks);
-              const rows = ternakRows || [];
-              let inserted = 0;
-              if (!rows.length) return cbDone(null, 0);
-              rows.forEach((tr) => {
-                db.query(
-                  `INSERT INTO log_perawatan_ternak
-                     (ternak_id, master_aksi_id, jadwal_id, aktivitas_id, catatan, foto, diinput_oleh, nama_perawat, role_perawat)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Santri')`,
-                  [tr.ternak_id, tr.master_aksi_id, scheduleId, scheduleId, catatan || null, fotoBukti, santriId, namaPerawat],
-                  (errLog) => {
-                    if (errLog) console.error('[selesai] Gagal catat riwayat ternak:', errLog.message);
-                    inserted++;
-                    if (inserted === rows.length) cbDone(null, rows.length);
-                  }
-                );
+
+              const targets = new Map();
+              (ternakRows || []).forEach((tr) => {
+                targets.set(Number(tr.master_aksi_id), {
+                  ternak_id: tr.ternak_id,
+                  master_aksi_id: tr.master_aksi_id,
+                });
               });
+              if (ternakIdValid && masterAksiIdValid && !targets.has(masterAksiIdValid)) {
+                targets.set(masterAksiIdValid, {
+                  ternak_id: ternakIdValid,
+                  master_aksi_id: masterAksiIdValid,
+                });
+              }
+
+              let list = [...targets.values()];
+              if (!list.length) return cbDone(null, 0);
+
+              // Aksi butuh nominal (mis. "Konfirmasi Ayam Mati") hanya dicatat
+              // bila santri benar-benar mengisi nominalnya — agar menyelesaikan
+              // tugas rutin tidak ikut mencatat "ayam mati" tanpa jumlah.
+              const idsButuhAngka = list.map((tr) => Number(tr.master_aksi_id));
+              db.query(
+                `SELECT id, butuh_input_angka FROM master_aksi_ternak WHERE id IN (?)`,
+                [idsButuhAngka],
+                (errM, mRows) => {
+                  if (errM) return cbDone(errM);
+                  const butuhAngka = new Map(
+                    (mRows || []).map((m) => [Number(m.id), !!m.butuh_input_angka])
+                  );
+                  list = list.filter((tr) => {
+                    if (!butuhAngka.get(Number(tr.master_aksi_id))) return true;
+                    return Number(tr.master_aksi_id) === masterAksiIdValid && nilaiAngka > 0;
+                  });
+                  if (!list.length) return cbDone(null, 0);
+
+                  let inserted = 0;
+                  let ternakUpdateId = null;
+                  let nilaiTersimpan = 0;
+
+                  list.forEach((tr) => {
+                    const isTargetAngka =
+                      Number(tr.master_aksi_id) === masterAksiIdValid && nilaiAngka > 0;
+                    const nilaiLog = isTargetAngka ? nilaiAngka : null;
+                    if (isTargetAngka) {
+                      ternakUpdateId = tr.ternak_id;
+                      nilaiTersimpan = nilaiLog;
+                    }
+                    db.query(
+                      `INSERT INTO log_perawatan_ternak
+                         (ternak_id, master_aksi_id, jadwal_id, aktivitas_id, catatan, foto, nilai_angka, diinput_oleh, nama_perawat, role_perawat)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Santri')`,
+                      [tr.ternak_id, tr.master_aksi_id, scheduleId, scheduleId, catatan || null, fotoBukti, nilaiLog, santriId, namaPerawat],
+                      (errLog) => {
+                        if (errLog) console.error('[selesai] Gagal catat riwayat ternak:', errLog.message);
+                        inserted++;
+                        if (inserted !== list.length) return;
+
+                        if (nilaiTersimpan > 0 && ternakUpdateId) {
+                          db.query(
+                            `UPDATE ternak SET total = GREATEST(0, total - ?), total_mati = IFNULL(total_mati, 0) + ? WHERE id = ?`,
+                            [nilaiTersimpan, nilaiTersimpan, ternakUpdateId],
+                            (errUpd) => {
+                              if (errUpd) console.error('[selesai] Gagal update total ternak:', errUpd.message);
+                              cbDone(null, list.length, nilaiTersimpan);
+                            }
+                          );
+                        } else {
+                          cbDone(null, list.length, 0);
+                        }
+                      }
+                    );
+                  });
+                }
+              );
             }
           );
         };
 
-        let catatTanamanCount = 0, catatTernakCount = 0;
+        let catatTanamanCount = 0, catatTernakCount = 0, catatNilaiCount = 0;
         catatTanaman((errP, nP) => {
           if (errP) return res.status(500).json({ error: errP.message });
           catatTanamanCount = nP;
-          catatTernak((errT, nT) => {
-            if (errT) return res.status(500).json({ error: errT.message });
-            catatTernakCount = nT;
-            res.json({
-              message: 'Tugas berhasil ditandai selesai',
-              riwayat_dicatat: catatTanamanCount + catatTernakCount,
-              tanaman_dicatat: catatTanamanCount,
-              ternak_dicatat: catatTernakCount,
+          siapkanNilaiTernak((errV, nilaiDipakai) => {
+            if (errV) return res.status(400).json({ error: errV.message });
+            catatTernak(nilaiDipakai, (errT, nT, nilaiT) => {
+              if (errT) return res.status(500).json({ error: errT.message });
+              catatTernakCount = nT;
+              catatNilaiCount = nilaiT || 0;
+              res.json({
+                message: 'Tugas berhasil ditandai selesai',
+                riwayat_dicatat: catatTanamanCount + catatTernakCount,
+                tanaman_dicatat: catatTanamanCount,
+                ternak_dicatat: catatTernakCount,
+                nilai_angka: catatNilaiCount,
+              });
             });
           });
         });
@@ -4152,9 +6420,12 @@ let shuttingDown = false;
 
 function connectDatabase() {
   return new Promise((resolve, reject) => {
-    db.connect((error) => {
+    db.getConnection((error, connection) => {
       if (error) reject(error);
-      else resolve();
+      else {
+        connection.release();
+        resolve();
+      }
     });
   });
 }
@@ -4192,10 +6463,35 @@ function shutdownServer() {
   setTimeout(() => process.exit(1), 10000).unref();
 }
 
+// Jaring pengaman terakhir: log error tak tertangani tanpa mematikan server.
+process.on('uncaughtException', (err) => {
+  console.error('❌ [uncaughtException]', err && (err.stack || err.message || err));
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ [unhandledRejection]', reason);
+});
+
 if (require.main === module) {
   process.once('SIGINT', shutdownServer);
   process.once('SIGTERM', shutdownServer);
   startServer();
 }
+
+
+app.get('/api/santri/jadwal-pelajaran', authenticateSantriToken, async (req, res, next) => {
+  try {
+    const santriId = req.santri?.id;
+    if (!santriId) return res.status(401).json({ error: 'Unauthorized' });
+    const kelas = await runQuery(`SELECT ps.kelas_id FROM penempatan_santri ps WHERE ps.santri_id = ? ORDER BY ps.id DESC LIMIT 1`, [santriId]);
+    if (!kelas.length) return res.json([]);
+    const kelasId = kelas[0].kelas_id;
+    const rows = await runQuery(`SELECT jp.id, jp.kelas_id, jp.hari, jp.jam_mulai, jp.jam_selesai, jp.mapel, jp.guru_id, jp.pola_perulangan, u.nama_lengkap AS guru_nama
+      FROM jadwal_pelajaran jp
+      LEFT JOIN users u ON u.id = jp.guru_id
+      WHERE jp.kelas_id = ?
+      ORDER BY FIELD(jp.hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'), jp.jam_mulai`, [kelasId]);
+    res.json(rows);
+  } catch (error) { next(error); }
+});
 
 module.exports = { app, db, startServer, shutdownServer };

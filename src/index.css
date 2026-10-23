@@ -1,4 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&display=swap");
+/* Font Albert Sans dimuat lewat <link> di index.html (dengan preconnect)
+   supaya tidak memblokir render seperti @import CSS. */
 
 @tailwind base;
 @tailwind components;
@@ -45,6 +46,14 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
+}
+
+/* Mode gelap: seluruh border di halaman /admin disembunyikan.
+   Cakupan dibatasi lewat penanda .admin-shell di root AlfilahaAdmin
+   (layar login & layout utama), jadi halaman lain tidak terpengaruh. */
+[data-theme="dark"] .admin-shell,
+[data-theme="dark"] .admin-shell * {
+  border-color: transparent !important;
 }
 
 html,
@@ -209,6 +218,30 @@ body {
   transform: translateY(-50%) translateX(-50%) scale(1);
 }
 
+/* Animasi masuk konten — kelas ini sudah dipakai di banyak halaman
+   (Beranda admin, Pendaftaran, dll) tetapi sebelumnya tidak pernah
+   didefinisikan, jadi tidak menghasilkan animasi apa pun. */
+.animate-fade-in-up {
+  animation: fade-in-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up {
+    animation: none;
+  }
+}
+
 /* ── Notifikasi toast (sistem notifikasi aplikasi) ── */
 .notif-toast {
   animation: notif-masuk 0.22s ease-out;
@@ -332,4 +365,301 @@ body {
   --tw-prose-th-borders: var(--border-soft);
   --tw-prose-td-borders: var(--border-soft);
   --tw-prose-hr: var(--border-soft);
+}
+
+/* ── Sidebar admin ─────────────────────────────────────────────────
+   Ukuran & animasi dipusatkan di sini:
+     --sidebar-w            lebar sidebar terbuka (desktop) = 288px
+     --sidebar-w-collapsed  lebar sidebar mode ikon          = 80px
+     --sidebar-dur          durasi transisi buka/tutup       = 300ms
+     --sidebar-ease         kurva animasi
+   Sidebar & konten utama memakai flex, jadi keduanya bergerak
+   serempak dalam frame yang sama tanpa perlu transisi terpisah. */
+:root {
+  --sidebar-w: 288px;
+  --sidebar-w-collapsed: 80px;
+  --sidebar-dur: 300ms;
+  --sidebar-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sembunyikan scrollbar daftar menu tanpa mematikan scroll. */
+.sidebar-scroll-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.sidebar-scroll-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-sidebar {
+  width: var(--sidebar-w);
+  will-change: width;
+  transition:
+    width var(--sidebar-dur) var(--sidebar-ease),
+    transform var(--sidebar-dur) var(--sidebar-ease);
+}
+
+/* Jarak kiri/kanan daftar menu disamakan dengan mode ikon supaya pusat
+   ikon tidak bergeser ("melompat") saat sidebar menyempit. */
+.admin-nav,
+.admin-bottom-nav {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.admin-nav {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.admin-bottom-nav {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+/* Item menu & tombol bawah: baris fleksibel dengan tinggi konsisten. */
+.admin-menu-item,
+.admin-bottom-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 52px;
+  padding: 0;
+  border-radius: 14px;
+  cursor: pointer;
+}
+.admin-bottom-btn {
+  justify-content: center;
+}
+
+/* Wadah ikon: kotak persegi tetap yang tidak menyusut/melar. */
+.admin-menu-icon {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Label: menyusut lebar + memudar (bukan display:none) & tidak turun
+   baris saat sidebar menyempit. */
+.admin-menu-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 200px;
+  margin-left: 12px;
+  opacity: 1;
+  transform: translateX(0);
+  overflow: hidden;
+  white-space: nowrap;
+  /* Saat MEMBUKA (state tujuan = aturan ini) label menyusul sedikit (delay
+     100ms) supaya teks tidak "meloncat" saat lebar sidebar masih sedang
+     melebar. Saat menutup, aturan .is-collapsed di bawah dipakai sebagai
+     state tujuan sehingga tanpa delay (langsung memudar). */
+  transition:
+    max-width 250ms var(--sidebar-ease),
+    transform 250ms var(--sidebar-ease) 100ms,
+    opacity 160ms ease 100ms;
+}
+.admin-menu-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+.admin-bottom-btn .admin-menu-label {
+  flex: 0 1 auto;
+  margin-left: 10px;
+}
+
+/* Lencana jumlah (reservasi/pesan). */
+.admin-badge {
+  flex: 0 0 auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+/* Panah submenu (mis. Galeri). */
+.admin-submenu-arrow {
+  flex: 0 0 auto;
+  font-size: 10px;
+  line-height: 1;
+  transition:
+    transform 250ms var(--sidebar-ease),
+    opacity 160ms ease;
+}
+
+/* Header / brand: dua versi logo saling bersilang saat collapse. */
+.admin-brand {
+  position: relative;
+  flex: 0 0 auto;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.admin-brand-full {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 22px 16px;
+  text-align: center;
+  overflow: hidden;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 200ms ease,
+    transform 250ms var(--sidebar-ease);
+}
+.admin-brand-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+  transition:
+    opacity 200ms ease,
+    transform 250ms var(--sidebar-ease);
+}
+
+/* Tombol buka/tutup: panah berputar 180° saat collapse. */
+.admin-toggle-btn {
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+.admin-toggle-arrow {
+  transition: transform var(--sidebar-dur) var(--sidebar-ease);
+}
+.admin-sidebar.is-collapsed .admin-toggle-arrow {
+  transform: rotate(180deg);
+}
+
+/* Tooltip mode ikon — dirender lewat portal (position: fixed) agar tidak
+   terpotong oleh overflow sidebar. */
+.admin-tooltip {
+  position: fixed;
+  z-index: 9999;
+  transform: translateY(-50%);
+  pointer-events: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #064e3b;
+  color: #ecfdf5;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  animation: sidebar-tip-in 120ms ease-out;
+}
+.admin-tooltip::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  background: #064e3b;
+  transform: translateY(-50%) rotate(45deg);
+}
+@keyframes sidebar-tip-in {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+/* ── Mode ikon (collapsed) — hanya desktop (≥992px) ────────────────
+   Semua aturan di-scope ke desktop supaya drawer mobile tetap lebar. */
+@media (min-width: 992px) {
+  .admin-sidebar.is-collapsed {
+    width: var(--sidebar-w-collapsed);
+  }
+
+  /* Kotak ikon 48px pas di tengah (80px − 2×16px = 48px). */
+  .admin-sidebar.is-collapsed .admin-menu-item,
+  .admin-sidebar.is-collapsed .admin-bottom-btn {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    min-height: 48px;
+    margin-inline: auto;
+    justify-content: center;
+  }
+
+  .admin-sidebar.is-collapsed .admin-menu-label {
+    flex: 0 0 auto;
+    max-width: 0;
+    margin-left: 0;
+    opacity: 0;
+    transform: translateX(-10px);
+    /* Menutup: tanpa delay agar label langsung memudar. */
+    transition:
+      max-width 250ms var(--sidebar-ease),
+      transform 200ms var(--sidebar-ease),
+      opacity 120ms ease;
+  }
+
+  .admin-sidebar.is-collapsed .admin-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 10px;
+    min-width: 10px;
+    height: 10px;
+    padding: 0;
+    font-size: 0;
+    line-height: 0;
+  }
+
+  .admin-sidebar.is-collapsed .admin-submenu-arrow {
+    opacity: 0;
+  }
+
+  .admin-sidebar.is-collapsed .admin-brand-full {
+    opacity: 0;
+    transform: translateX(-12px);
+    pointer-events: none;
+  }
+  .admin-sidebar.is-collapsed .admin-brand-icon {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-sidebar,
+  .admin-menu-label,
+  .admin-menu-text,
+  .admin-brand-full,
+  .admin-brand-icon,
+  .admin-toggle-arrow,
+  .admin-submenu-arrow {
+    transition: none !important;
+  }
+  .admin-tooltip {
+    animation: none !important;
+  }
 }

@@ -19,7 +19,7 @@ const S = Date.now().toString().slice(-6);
 const namaJadwal = `E2E Siram Luhurr ${S}`;
 const LUHURR_ID = 16;
 const LUHURR_USERNAME = "luhurr";
-const LUHURR_NAMA = "luhur";
+const LUHURR_NAMA = "luhurr";
 const TANAMAN_ID = 3;
 
 let adminToken;
@@ -142,7 +142,7 @@ test.describe.serial("Dashboard Santri — tugas pertanian dari admin", () => {
     expect(hari.ok()).toBeTruthy();
     const hariJson = await hari.json();
     expect(hariJson.some((t) => t.id === taskId && t.nama_aktivitas === namaJadwal)).toBeTruthy();
-    expect(hariJson.find((t) => t.id === taskId).tanaman_info).toBe("Pohon Anggur||siram");
+    expect(hariJson.find((t) => t.id === taskId).tanaman_info).toBe(`${TANAMAN_ID}||Pohon Anggur||siram`);
 
     const saya = await request.get(`${API}/api/tugas/saya`, {
       headers: { Authorization: `Bearer ${st}` },

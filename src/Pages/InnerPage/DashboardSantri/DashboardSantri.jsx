@@ -1,959 +1,99 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNotifikasi } from "../../../Context/NotifikasiContext.jsx";
 import {
-  FiCheckCircle,
-  FiClock,
-  FiCalendar,
-  FiList,
-  FiLogOut,
-  FiUser,
-  FiCamera,
-  FiX,
-  FiAlertCircle,
-  FiAward,
-  FiRefreshCw,
-  FiChevronDown,
-  FiChevronUp,
-  FiImage,
-  FiSun,
-  FiTrendingUp,
-  FiBookOpen,
-  FiGrid,
-  FiUpload,
-  FiFileText,
-  FiRepeat,
-  FiFeather,
+  FiCheckCircle, FiClock, FiCalendar, FiList, FiLogOut,
+  FiUser, FiUsers, FiX, FiAlertCircle, FiActivity,
+  FiAward, FiRefreshCw, FiChevronDown, FiChevronUp,
+  FiImage, FiSun, FiTrendingUp, FiBookOpen, FiGrid,
+  FiMoon, FiSunrise, FiPlayCircle,
 } from "react-icons/fi";
+import { kc } from "../../../Shared/kategoriWarna";
+import ModalBukti from "../../../Shared/ModalBukti/ModalBukti";
+import { AKSI_LABEL, parseTanamanInfo, parseTernakInfo } from "../../../Shared/tugasInfo";
 
 const API = import.meta.env.VITE_PUBLIC_API || "http://localhost:5000";
 
 // Debug: log API URL saat module load
 console.log("[DashboardSantri] API URL:", API);
 
-// Label aksi perawatan (siram/pupuk/panen) untuk ditampilkan di kartu tugas
-const AKSI_LABEL = {
-  siram: "Siram",
-  pupuk: "Pupuk",
-  panen: "Panen",
-};
-
-// Tokenisasi "nama||aksi;;nama||aksi" menjadi [{ nama, aksi }]
-const parseTanamanInfo = (raw) =>
-  (Array.isArray(raw)
-    ? raw
-    : typeof raw === "string" && raw.trim()
-      ? raw.split(";;")
-      : []
-  )
-    .map((chunk) => {
-      const [nama, aksi] = String(chunk).split("||");
-      return { nama: (nama || "").trim(), aksi: (aksi || "").trim() };
-    })
-    .filter((t) => t.nama);
-
-/* ─── KATEGORI WARNA ─────────────────────────────────────────────────────── */
-const KATEGORI_COLOR = {
-  Kepondokan: {
-    bg: "bg-blue-100 dark:bg-blue-500/20",
-    text: "text-blue-700 dark:text-blue-300",
-    dot: "bg-blue-500",
-    ring: "ring-blue-200 dark:ring-blue-500/30",
-  },
-  Akademik: {
-    bg: "bg-purple-100 dark:bg-purple-500/20",
-    text: "text-purple-700 dark:text-purple-300",
-    dot: "bg-purple-500",
-    ring: "ring-purple-200 dark:ring-purple-500/30",
-  },
-  Kebersihan: {
-    bg: "bg-cyan-100 dark:bg-cyan-500/20",
-    text: "text-cyan-700 dark:text-cyan-300",
-    dot: "bg-cyan-500",
-    ring: "ring-cyan-200 dark:ring-cyan-500/30",
-  },
-  Pertanian: {
-    bg: "bg-green-100 dark:bg-green-500/20",
-    text: "text-green-700 dark:text-green-300",
-    dot: "bg-green-500",
-    ring: "ring-green-200 dark:ring-green-500/30",
-  },
-  Peternakan: {
-    bg: "bg-teal-100 dark:bg-teal-500/20",
-    text: "text-teal-700 dark:text-teal-300",
-    dot: "bg-teal-500",
-    ring: "ring-teal-200 dark:ring-teal-500/30",
-  },
-  Ibadah: {
-    bg: "bg-orange-100 dark:bg-orange-500/20",
-    text: "text-orange-700 dark:text-orange-300",
-    dot: "bg-orange-500",
-    ring: "ring-orange-200 dark:ring-orange-500/30",
-  },
-  Olahraga: {
-    bg: "bg-red-100 dark:bg-red-500/20",
-    text: "text-red-700 dark:text-red-300",
-    dot: "bg-red-500",
-    ring: "ring-red-200 dark:ring-red-500/30",
-  },
-  Lainnya: {
-    bg: "bg-surface2",
-    text: "text-muted",
-    dot: "bg-gray-400",
-    ring: "ring-line",
-  },
-};
-const kc = (k) => {
-  // Use nama_kategori if available, fallback to kategori
-  const categoryName = k?.nama_kategori || k?.kategori || "Lainnya";
-  return KATEGORI_COLOR[categoryName] || KATEGORI_COLOR.Lainnya;
-};
-
 /* ─── HELPERS ────────────────────────────────────────────────────────────── */
-const fmtTgl = (d) =>
-  new Date(d).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-const fmtTglPendek = (d) =>
-  new Date(d).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-const fmtHari = (d) =>
-  new Date(d).toLocaleDateString("id-ID", { weekday: "long" });
-const fmtWaktu = (d) =>
-  new Date(d).toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-const initials = (n) =>
-  n
-    ? n
-        .split(" ")
-        .slice(0, 2)
-        .map((w) => w[0])
-        .join("")
-        .toUpperCase()
-    : "?";
+const fmtTgl       = (d) => new Date(d).toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+const fmtTglPendek = (d) => new Date(d).toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"});
+const fmtHari      = (d) => new Date(d).toLocaleDateString("id-ID",{weekday:"long"});
+const fmtWaktu     = (d) => new Date(d).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
+const initials     = (n) => n ? n.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase() : "?";
+
+/**
+ * Format jam jadwal (kolom MySQL TIME) agar selalu "HH:MM".
+ * Driver mysql2 bisa mengirim "08:00:00" maupun "08:00", jadi potong 5 karakter.
+ * Mengembalikan "" bila kosong supaya pemanggil bisa menyembunyikan elemennya.
+ */
+const fmtJam = (t) => {
+  if (!t) return "";
+  const s = String(t).trim();
+  if (!s) return "";
+  const m = s.match(/^(\d{1,2}):(\d{2})/);
+  if (!m) return s;
+  return `${m[1].padStart(2, "0")}:${m[2]}`;
+};
+
+/** Rentang jam jadwal siap tampil, mis. "08:00 - 09:00" atau "" bila kosong. */
+const fmtRentangJam = (mulai, selesai) => {
+  const a = fmtJam(mulai);
+  const b = fmtJam(selesai);
+  if (!a) return "";
+  return b ? `${a} - ${b}` : a;
+};
+
+/** Gradient banner salam — konsisten memakai warna brand hijau Al-Filaha */
+const HERO_GRADIENT = "from-[#0a6658] via-[#0d806a] to-[#12a48c]";
+
+/**
+ * Parse daftar pelajaran terstruktur yang disimpan backend di deskripsi
+ * jadwal kategori Pendidikan. Format yang diharapkan:
+ *   Jadwal Pelajaran:
+ *   Senin
+ *   • B.Inggris (07:00-08:00) — Ustadz Ahmad
+ * Mengembalikan { hari, mapel, jam, guru }[] atau [] bila tak cocok.
+ */
+const parseDaftarPelajaran = (deskripsi) => {
+  if (!deskripsi || typeof deskripsi !== "string") return [];
+  const idx = deskripsi.indexOf("Jadwal Pelajaran:");
+  if (idx === -1) return [];
+  const baris = deskripsi.slice(idx).split("\n");
+  const hasil = [];
+  let hari = "";
+  for (const raw of baris) {
+    const line = raw.trim();
+    if (!line || line === "Jadwal Pelajaran:") continue;
+    if (line.startsWith("•")) {
+      const isi = line.slice(1).trim();
+      const m = isi.match(/^(.+?)\s*\(([^)]+)\)\s*(?:—\s*(.+))?$/);
+      if (m) {
+        hasil.push({ hari, mapel: m[1].trim(), jam: m[2].trim(), guru: (m[3] || "").trim() });
+      } else {
+        hasil.push({ hari, mapel: isi, jam: "", guru: "" });
+      }
+    } else {
+      hari = line;
+    }
+  }
+  return hasil;
+};
 
 /** Salam + emoji dinamis berdasarkan jam */
 const getGreeting = () => {
   const h = new Date().getHours();
-  if (h >= 4 && h < 11)
-    return {
-      teks: "Selamat pagi",
-      emoji: "🌅",
-      gradient: "from-amber-500 via-orange-400 to-yellow-400",
-    };
-  if (h >= 11 && h < 15)
-    return {
-      teks: "Selamat siang",
-      emoji: "☀️",
-      gradient: "from-emerald-600 via-green-500 to-teal-400",
-    };
-  if (h >= 15 && h < 18)
-    return {
-      teks: "Selamat sore",
-      emoji: "🌇",
-      gradient: "from-orange-600 via-amber-500 to-yellow-400",
-    };
-  return {
-    teks: "Selamat malam",
-    emoji: "🌙",
-    gradient: "from-indigo-700 via-purple-600 to-blue-500",
-  };
+  if (h >= 4  && h < 11) return { teks:"Selamat pagi",  emoji:"🌅" };
+  if (h >= 11 && h < 15) return { teks:"Selamat siang", emoji:"☀️" };
+  if (h >= 15 && h < 18) return { teks:"Selamat sore",  emoji:"🌇" };
+  return                         { teks:"Selamat malam", emoji:"🌙" };
 };
 
 /** Format tanggal hari ini panjang */
 const todayLong = () =>
-  new Date().toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-/* ══════════════════════════════════════════════════════
-   MODAL KIRIM BUKTI — Camera langsung + Gallery + Preview
-══════════════════════════════════════════════════════ */
-const TIPE_FOTO_IZIN = ["image/jpeg", "image/png", "image/webp"];
-const MAX_UKURAN_FOTO = 5 * 1024 * 1024; // 5 MB
-
-// Terjemahkan error getUserMedia jadi pesan Bahasa Indonesia yang jelas
-const mapKameraError = (e) => {
-  const nama = e?.name || "unknown";
-  if (nama === "NotAllowedError" || nama === "PermissionDeniedError")
-    return {
-      kode: nama,
-      teknis: nama,
-      pesan:
-        "Izin kamera ditolak. Klik ikon gembok di kiri alamat → Izin → Kamera → Izinkan, lalu coba lagi.",
-    };
-  if (nama === "NotFoundError" || nama === "DevicesNotFoundError")
-    return { kode: nama, teknis: nama, pesan: "Kamera tidak ditemukan pada perangkat ini." };
-  if (nama === "NotReadableError" || nama === "TrackStartError")
-    return {
-      kode: nama,
-      teknis: nama,
-      pesan: "Kamera sedang dipakai aplikasi atau tab lain. Tutup aplikasi itu lalu coba lagi.",
-    };
-  if (nama === "OverconstrainedError")
-    return {
-      kode: nama,
-      teknis: nama,
-      pesan: "Kamera tidak mendukung mode yang diminta. Mencoba ulang dengan pengaturan dasar…",
-    };
-  if (nama === "SecurityError" || nama === "NotSupportedError")
-    return {
-      kode: nama,
-      teknis: nama,
-      pesan: "Kamera tidak dapat diakses: halaman ini harus dibuka melalui HTTPS atau localhost.",
-    };
-  return {
-    kode: nama,
-    teknis: nama,
-    pesan: "Tidak dapat mengakses kamera. Gunakan tombol 'Coba lagi' atau pilih foto dari Galeri.",
-  };
-};
-
-const ModalBukti = ({ tugas, token, onClose, onSuccess, onSending }) => {
-  const notif = useNotifikasi();
-  const [sukses, setSukses] = useState(false);
-  const payloadRef = useRef(null);
-  const [catatan, setCatatan] = useState("");
-  const [foto, setFoto] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
-  const [modeKamera, setModeKamera] = useState(false);
-  const [kameraError, setKameraError] = useState(null);
-  const [punyaMultiKamera, setPunyaMultiKamera] = useState(false);
-  const [facing, setFacing] = useState("environment");
-  const [menungguKonfirmasi, setMenungguKonfirmasi] = useState(false);
-  const galleryRef = useRef(null);
-  const fallbackRef = useRef(null);
-  const videoRef = useRef(null);
-  const streamRef = useRef(null);
-  const [kameraStream, setKameraStream] = useState(null);
-  const colors = kc(tugas);
-
-  // Daftar tanaman + aksi dari field "nama||aksi;;nama||aksi" (tugas pertanian/perkebunan)
-  const daftarTanaman = (Array.isArray(tugas.tanaman_info)
-    ? tugas.tanaman_info
-    : typeof tugas.tanaman_info === "string" && tugas.tanaman_info.trim()
-      ? tugas.tanaman_info.split(";;")
-      : []
-  )
-    .map((chunk) => {
-      const [nama, aksi] = String(chunk).split("||");
-      return { nama: (nama || "").trim(), aksi: (aksi || "").trim() };
-    })
-    .filter((t) => t.nama);
-
-  // Hentikan semua track kamera (saat: Batal, pindah Galeri, foto diambil, modal ditutup, unmount)
-  const hentikanKamera = () => {
-    const stream = streamRef.current;
-    if (stream) {
-      stream.getTracks().forEach((t) => {
-        try {
-          t.stop();
-        } catch (_) { /* track mungkin sudah berhenti */ }
-      });
-      streamRef.current = null;
-    }
-    if (videoRef.current) videoRef.current.srcObject = null;
-    setKameraStream(null);
-  };
-
-  // Stop kamera saat komponen dilepas
-  useEffect(() => {
-    return () => hentikanKamera();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Bersihkan object URL pratinjau saat diganti / modal ditutup
-  useEffect(() => {
-    return () => {
-      if (preview) URL.revokeObjectURL(preview);
-    };
-  }, [preview]);
-
-  // Pasang stream ke <video> setelah elemen ter-mount, lalu play (await dengan try/catch)
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!kameraStream || !v) return;
-    v.srcObject = kameraStream;
-    v.play().catch(() => { /* autoplay mungkin diblokir; preview diam di frame */ });
-  }, [kameraStream]);
-
-  // Nyalakan kamera langsung di dalam modal (getUserMedia → video element)
-  const mulaiKamera = async (fCtx) => {
-    setKameraError(null);
-    // Konteks tidak aman (bukan HTTPS/localhost): mediaDevices tidak tersedia
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setKameraError({
-        kode: "SecurityError",
-        teknis: "SecurityError",
-        pesan:
-          "Kamera tidak dapat diakses: halaman ini harus dibuka melalui HTTPS atau localhost.",
-      });
-      return;
-    }
-    // Hentikan stream lama sebelum membuat yang baru (hindari stream ganda, termasuk StrictMode)
-    hentikanKamera();
-
-    let stream;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: fCtx || "environment" },
-          width: { ideal: 1280 },
-          height: { ideal: 960 },
-        },
-        audio: false,
-      });
-    } catch (e) {
-      if (
-        e.name === "OverconstrainedError" ||
-        e.name === "NotFoundError" ||
-        e.name === "DevicesNotFoundError"
-      ) {
-        console.error("getUserMedia pertama gagal:", e.name, e.message);
-        // Coba ulang dengan pengaturan dasar — tanpa facingMode / resolusi khusus
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: false,
-          });
-        } catch (e2) {
-          console.error("getUserMedia (retry dasar) gagal:", e2.name, e2.message);
-          setKameraError(mapKameraError(e2));
-          return;
-        }
-      } else {
-        console.error("getUserMedia gagal:", e.name, e.message);
-        setKameraError(mapKameraError(e));
-        return;
-      }
-    }
-
-    streamRef.current = stream;
-    setKameraStream(stream);
-
-    // Deteksi jumlah kamera → baru tampilkan tombol "Balik kamera"
-    try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      setPunyaMultiKamera(
-        devices.filter((d) => d.kind === "videoinput").length > 1,
-      );
-    } catch (err) {
-      setPunyaMultiKamera(false);
-    }
-  };
-
-  const bukaKamera = () => {
-    setErr("");
-    setModeKamera(true);
-    mulaiKamera(facing);
-  };
-
-  // Minta izin kamera ulang (tombol "Coba lagi" di panel error)
-  const cobaKameraLagi = () => mulaiKamera(facing);
-
-  // Pantau izin kamera: saat berubah menjadi "granted", nyalakan kamera otomatis
-  useEffect(() => {
-    if (!navigator.permissions?.query) return;
-    let hidup = true;
-    navigator.permissions
-      .query({ name: "camera" })
-      .then((status) => {
-        if (!hidup) return;
-        const mulai = () => {
-          if (hidup && modeKamera && kameraError) mulaiKamera(facing);
-        };
-        status.addEventListener("change", mulai);
-      })
-      .catch(() => { /* query izin tidak didukung browser */ });
-    return () => {
-      hidup = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modeKamera, kameraError, facing]);
-
-  const balikKamera = () => {
-    const baru = facing === "environment" ? "user" : "environment";
-    setFacing(baru);
-    hentikanKamera();
-    mulaiKamera(baru);
-  };
-
-  const batalKamera = () => {
-    hentikanKamera();
-    setModeKamera(false);
-    setKameraError(null);
-  };
-
-  // Tangkap frame dari video → resize (sisi terpanjang maks 1280 px) → JPEG 0.8
-  const ambilFotoLangsung = () => {
-    const video = videoRef.current;
-    if (!video || !video.videoWidth) {
-      setErr("Kamera belum siap. Tunggu sebentar atau coba lagi.");
-      return;
-    }
-    const MAX = 1280;
-    let w = video.videoWidth || 640;
-    let h = video.videoHeight || 480;
-    const skala = Math.max(w, h) > MAX ? MAX / Math.max(w, h) : 1;
-    const cw = Math.max(1, Math.round(w * skala));
-    const ch = Math.max(1, Math.round(h * skala));
-    const canvas = document.createElement("canvas");
-    canvas.width = cw;
-    canvas.height = ch;
-    canvas.getContext("2d").drawImage(video, 0, 0, cw, ch);
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          setErr("Gagal mengambil gambar dari kamera.");
-          return;
-        }
-        const file = new File([blob], `bukti-kamera-${Date.now()}.jpg`, {
-          type: "image/jpeg",
-        });
-        // Foto sudah diambil → matikan lampu/stream kamera
-        hentikanKamera();
-        setModeKamera(false);
-        setKameraError(null);
-        setErr("");
-        if (preview) URL.revokeObjectURL(preview);
-        setFoto(file);
-        setPreview(URL.createObjectURL(file));
-        setMenungguKonfirmasi(true);
-      },
-      "image/jpeg",
-      0.8,
-    );
-  };
-
-  // Buang foto terpilih (revoke URL) — dipakai saat ulangi / ganti / hapus
-  const buangFotoKeadaan = () => {
-    if (preview) URL.revokeObjectURL(preview);
-    setPreview(null);
-    setFoto(null);
-    setMenungguKonfirmasi(false);
-  };
-
-  const ulangiJepret = () => {
-    buangFotoKeadaan();
-    setModeKamera(true);
-    mulaiKamera(facing);
-  };
-
-  const gunakanJepret = () => setMenungguKonfirmasi(false);
-
-  const gantiFoto = () => {
-    hentikanKamera();
-    buangFotoKeadaan();
-    setErr("");
-  };
-
-  const hapusFoto = () => {
-    hentikanKamera();
-    buangFotoKeadaan();
-    setErr("");
-  };
-
-  const bukaGaleri = () => {
-    hentikanKamera(); // berhenti saat pindah ke Galeri
-    setModeKamera(false);
-    setKameraError(null);
-    setErr("");
-    galleryRef.current?.click();
-  };
-
-  const handleFile = (e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    if (!TIPE_FOTO_IZIN.includes(f.type)) {
-      notif.warning("Foto harus berformat JPG, PNG, atau WebP.");
-      e.target.value = "";
-      return;
-    }
-    if (f.size > MAX_UKURAN_FOTO) {
-      notif.warning("Ukuran foto maksimal 5 MB.");
-      e.target.value = "";
-      return;
-    }
-    setErr("");
-    if (modeKamera) hentikanKamera();
-    setModeKamera(false);
-    setKameraError(null);
-    if (preview) URL.revokeObjectURL(preview);
-    setFoto(f);
-    setPreview(URL.createObjectURL(f));
-    setMenungguKonfirmasi(false);
-    // Reset input agar bisa pilih file yang sama lagi jika mau ganti
-    e.target.value = "";
-  };
-
-  const tutupModal = () => {
-    hentikanKamera();
-    if (preview) URL.revokeObjectURL(preview);
-    setPreview(null);
-    setFoto(null);
-    onClose();
-  };
-
-  // Akhiri tampilan sukses → tutup modal & serahkan ke parent (optimistic update + sorot kartu)
-  const tuntaskanSukses = () => {
-    hentikanKamera();
-    if (preview) URL.revokeObjectURL(preview);
-    setPreview(null);
-    setFoto(null);
-    onSuccess(payloadRef.current || {});
-  };
-
-  // Tampilan sukses ditutup otomatis sekitar 3 detik
-  useEffect(() => {
-    if (!sukses) return;
-    const t = setTimeout(() => tuntaskanSukses(), 3000);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sukses]);
-
-  const submit = async (e) => {
-    e.preventDefault();
-
-    if (loading || sukses) return;
-
-    if (!catatan.trim()) {
-      setErr("Laporan singkat wajib diisi.");
-      return;
-    }
-
-    setLoading(true);
-    setErr("");
-    onSending?.(true);
-
-    const doSubmit = async (method) => {
-      const fd = new FormData();
-      if (catatan.trim()) fd.append("catatan", catatan.trim());
-      if (foto) fd.append("foto_bukti", foto);
-
-      return fetch(`${API}/api/tugas/${tugas.id}/selesai`, {
-        method,
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
-      });
-    };
-
-    try {
-      let res;
-      try {
-        // Coba PATCH dulu
-        res = await doSubmit("PATCH");
-      } catch (patchErr) {
-        // PATCH gagal (CORS/network), fallback ke PUT
-        console.warn("PATCH gagal, fallback ke PUT:", patchErr.message);
-        res = await doSubmit("PUT");
-      }
-
-      let data = {};
-      try {
-        data = await res.json();
-      } catch (_) {}
-
-      if (!res.ok)
-        throw new Error(
-          data.message || data.error || `Server error ${res.status}`,
-        );
-      // Simpan data respons untuk optimistic update di parent (setelah modal sukses ditutup)
-      payloadRef.current = { ...data, catatan: catatan.trim() || null };
-      setSukses(true);
-    } catch (e) {
-      console.error("Submit error:", e.name, e.message);
-
-      // Coba ping untuk diagnosa
-      let serverJalan = false;
-      try {
-        const ping = await fetch(`${API}/api/test`, {
-          signal: AbortSignal.timeout(2000),
-        });
-        serverJalan = ping.ok;
-      } catch (_) {}
-
-      if (!serverJalan) {
-        notif.error(
-          "Gagal mengirim laporan. Periksa koneksi internet lalu coba lagi.",
-        );
-      } else {
-        notif.error(
-          e.message || "Gagal mengirim laporan. Periksa koneksi lalu coba lagi.",
-        );
-      }
-    } finally {
-      setLoading(false);
-      onSending?.(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[999] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 60 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 60 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="bg-card w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col"
-      >
-        {/* Accent bar atas */}
-        <div className={`h-1.5 w-full flex-shrink-0 ${colors.dot}`} />
-
-        <div className="overflow-y-auto flex-1 overscroll-contain">
-          <div className="p-5 sm:p-6">
-            {sukses ? (
-              /* ── Tampilan Sukses — laporan terkirim ── */
-              <div className="text-center py-6 sm:py-10">
-                <div className="w-20 h-20 mx-auto rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center">
-                  <span className="w-14 h-14 rounded-full bg-green-600 text-white grid place-items-center animate-[notif-pop_.5s_ease-out] motion-reduce:animate-none">
-                    <FiCheckCircle size={30} />
-                  </span>
-                </div>
-                <h3 className="text-2xl font-extrabold text-ink mt-5">
-                  Laporan terkirim!
-                </h3>
-                <p className="text-sm text-muted mt-1.5 font-semibold">
-                  {tugas.nama_aktivitas} —{" "}
-                  {tugas.nama_kategori || tugas.kategori}
-                </p>
-                <p className="text-sm text-muted mt-3">
-                  Terima kasih, laporanmu sudah diterima.
-                </p>
-                <button
-                  type="button"
-                  onClick={tuntaskanSukses}
-                  className="mt-6 w-full min-h-[44px] bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold py-3.5 rounded-xl transition shadow-md shadow-green-200 flex items-center justify-center gap-2"
-                >
-                  <FiCheckCircle size={18} /> Tutup
-                </button>
-              </div>
-            ) : (
-              <>
-            {/* ── Header ── */}
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-start gap-3">
-                <div
-                  className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 ${colors.bg}`}
-                >
-                  <FiFileText size={20} className={colors.text} />
-                </div>
-                <div>
-                  <h3 className="text-lg font-extrabold text-ink leading-snug">
-                    Kirim Bukti Tugas
-                  </h3>
-                  <p className="text-sm text-muted mt-0.5">
-                    {tugas.nama_aktivitas}
-                  </p>
-                  <p className={`text-sm font-semibold mt-0.5 ${colors.text}`}>
-                    {tugas.nama_kategori || tugas.kategori}
-                  </p>
-                  {tugas.nama_lokasi && (
-                    <p className="text-xs text-muted mt-0.5">
-                      📍 {tugas.nama_lokasi}
-                    </p>
-                  )}
-                  {daftarTanaman.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {daftarTanaman.map((t, i) => (
-                        <span
-                          key={i}
-                          className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-500/30"
-                        >
-                          <FiFeather size={11} />
-                          {t.nama}
-                          {t.aksi && (
-                            <>
-                              <span className="text-green-300">•</span>
-                              {t.aksi}
-                            </>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={tutupModal}
-                aria-label="Tutup"
-                className="p-2 rounded-xl bg-surface2 hover:bg-gray-200 dark:bg-gray-700 text-muted transition flex-shrink-0"
-              >
-                <FiX size={17} />
-              </button>
-            </div>
-
-            {/* ── Error ── */}
-            {err && (
-              <div className="mb-4 flex items-start gap-2 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm font-medium">
-                <FiAlertCircle size={16} className="mt-0.5 flex-shrink-0" />
-                <span>{err}</span>
-              </div>
-            )}
-
-            <form onSubmit={submit} className="space-y-5">
-              {/* ── Foto Bukti ── */}
-              <div>
-                <p className="text-sm font-bold text-ink mb-2.5">
-                  Foto Bukti{" "}
-                  <span className="font-normal text-muted text-xs">
-                    (opsional)
-                  </span>
-                </p>
-
-                {preview ? (
-                  /* Pratinjau foto — tombol Ulangi/Gunakan saat jepret, atau Ganti/Hapus setelah dipakai */
-                  <div className="relative rounded-2xl overflow-hidden border-2 border-green-300 dark:border-green-500/40 shadow-sm">
-                    <img loading="lazy" decoding="async"
-                      src={preview}
-                      alt="Preview bukti"
-                      className="w-full h-52 object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-                    <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/60 text-white text-xs font-bold px-2.5 py-1 rounded-full backdrop-blur-sm">
-                      <FiCheckCircle size={11} /> Foto dipilih — {foto?.name}
-                    </div>
-                    {menungguKonfirmasi ? (
-                      /* Hasil jepret kamera: putuskan pakai / ulangi */
-                      <div className="absolute inset-x-0 bottom-0 p-3 flex gap-2 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                        <button
-                          type="button"
-                          onClick={ulangiJepret}
-                          className="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 bg-card text-ink font-bold text-sm rounded-xl transition hover:bg-surface2"
-                        >
-                          <FiRepeat size={15} /> Ulangi
-                        </button>
-                        <button
-                          type="button"
-                          onClick={gunakanJepret}
-                          className="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-700 text-white font-bold text-sm rounded-xl transition"
-                        >
-                          <FiCheckCircle size={15} /> Gunakan foto
-                        </button>
-                      </div>
-                    ) : (
-                      /* Foto final: ganti / hapus */
-                      <div className="absolute top-2 right-2 flex gap-1.5">
-                        <button
-                          type="button"
-                          onClick={gantiFoto}
-                          className="min-h-[44px] px-3 bg-white/90 hover:bg-card text-ink rounded-xl shadow-md transition text-xs font-bold flex items-center gap-1"
-                        >
-                          <FiUpload size={13} /> Ganti foto
-                        </button>
-                        <button
-                          type="button"
-                          onClick={hapusFoto}
-                          className="min-h-[44px] px-3 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-md transition flex items-center gap-1 text-xs font-bold"
-                        >
-                          <FiX size={13} /> Hapus foto
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ) : modeKamera ? (
-                  /* ── Kamera langsung (getUserMedia) di dalam modal ── */
-                  <div className="rounded-2xl overflow-hidden border-2 border-line bg-black">
-                    {kameraError ? (
-                      <div className="p-5 text-center">
-                        <FiCamera size={30} className="text-gray-500 mx-auto mb-3" />
-                        <p className="text-sm font-bold text-white">
-                          {kameraError.pesan}
-                        </p>
-                        {kameraError.teknis && (
-                          <p className="text-xs text-gray-400 mt-1 font-mono break-all">
-                            {kameraError.teknis}
-                          </p>
-                        )}
-                        {kameraError.kode === "NotAllowedError" && (
-                          <p className="text-xs text-gray-400 mt-1">
-                            Aktifkan izin kamera lalu coba lagi, atau gunakan
-                            pemilih berkas di bawah.
-                          </p>
-                        )}
-                        <div className="flex flex-col gap-2 mt-4">
-                          <button
-                            type="button"
-                            onClick={cobaKameraLagi}
-                            className="w-full min-h-[44px] flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition text-sm"
-                          >
-                            <FiRepeat size={16} /> Coba lagi
-                          </button>
-                          {/* Cadangan: input file dengan capture — hanya sebagai fallback error kamera */}
-                          <button
-                            type="button"
-                            onClick={() => fallbackRef.current?.click()}
-                            className="w-full min-h-[44px] flex items-center justify-center gap-2 bg-card text-ink font-bold rounded-xl transition text-sm"
-                          >
-                            <FiUpload size={16} /> Buka Pemilih Berkas (cadangan)
-                          </button>
-                          <button
-                            type="button"
-                            onClick={batalKamera}
-                            className="w-full min-h-[44px] flex items-center justify-center gap-2 text-gray-400 hover:text-white font-bold rounded-xl transition text-sm"
-                          >
-                            Kembali
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <video
-                          ref={videoRef}
-                          autoPlay
-                          playsInline
-                          muted
-                          className="w-full h-64 object-cover bg-black"
-                        />
-                        <div className="flex items-center justify-center gap-4 p-3 bg-black/80">
-                          {punyaMultiKamera && (
-                            <button
-                              type="button"
-                              onClick={balikKamera}
-                              className="min-h-[44px] px-3 flex items-center gap-1.5 text-white/90 hover:text-white text-xs font-bold rounded-xl transition"
-                            >
-                              <FiRepeat size={16} /> Balik kamera
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={ambilFotoLangsung}
-                            className="w-16 h-16 rounded-full bg-card hover:bg-surface2 text-green-600 dark:text-green-300 shadow-lg transition flex items-center justify-center active:scale-95"
-                            aria-label="Ambil foto"
-                          >
-                            <FiCamera size={26} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={batalKamera}
-                            className="min-h-[44px] px-3 flex items-center gap-1.5 text-white/90 hover:text-white text-xs font-bold rounded-xl transition"
-                          >
-                            <FiX size={16} /> Batal
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  /* Dua pilihan: Kamera langsung / Galeri */
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Ambil Foto Langsung (getUserMedia) */}
-                    <button
-                      type="button"
-                      onClick={bukaKamera}
-                      className="flex flex-col items-center justify-center gap-3 p-5 border-2 border-dashed border-line hover:border-green-400 rounded-2xl bg-surface2 hover:bg-green-50 dark:hover:bg-green-500/15 transition group active:scale-95"
-                    >
-                      <div className="w-14 h-14 rounded-2xl bg-card shadow flex items-center justify-center group-hover:shadow-md transition">
-                        <FiCamera size={26} className="text-green-600 dark:text-green-300" />
-                      </div>
-                      <div className="text-center">
-                        <p className="font-extrabold text-sm text-ink group-hover:text-green-700 dark:group-hover:text-green-300">
-                          Ambil Foto
-                        </p>
-                        <p className="text-[11px] text-muted mt-0.5">
-                          Buka kamera
-                        </p>
-                      </div>
-                    </button>
-
-                    {/* Dari Galeri */}
-                    <button
-                      type="button"
-                      onClick={bukaGaleri}
-                      className="flex flex-col items-center justify-center gap-3 p-5 border-2 border-dashed border-line hover:border-blue-400 rounded-2xl bg-surface2 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition group active:scale-95"
-                    >
-                      <div className="w-14 h-14 rounded-2xl bg-card shadow flex items-center justify-center group-hover:shadow-md transition">
-                        <FiUpload size={26} className="text-blue-600 dark:text-blue-300" />
-                      </div>
-                      <div className="text-center">
-                        <p className="font-extrabold text-sm text-ink group-hover:text-blue-700 dark:group-hover:text-blue-300">
-                          Dari Galeri
-                        </p>
-                        <p className="text-[11px] text-muted mt-0.5">
-                          Pilih file
-                        </p>
-                      </div>
-                    </button>
-                  </div>
-                )}
-
-                {/* Input Galeri — accept="image/*" tanpa capture */}
-                <input
-                  ref={galleryRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFile}
-                />
-                {/* Input cadangan kamera — hanya muncul saat kamera error (fallback) */}
-                <input
-                  ref={fallbackRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="hidden"
-                  onChange={handleFile}
-                />
-              </div>
-
-              {/* ── Laporan singkat ── */}
-              <div>
-                <label className="block text-sm font-bold text-ink mb-1.5">
-                  Laporan Singkat <span className="text-red-500 dark:text-red-400">*</span>
-                </label>
-                <textarea
-                  required
-                  value={catatan}
-                  onChange={(e) => setCatatan(e.target.value)}
-                  rows={3}
-                  placeholder="Ceritakan singkat bagaimana kamu menyelesaikan tugas ini..."
-                  className="w-full px-4 py-3 bg-surface2 border border-line rounded-xl focus:ring-2 focus:ring-green-500 outline-none resize-none text-base transition"
-                />
-              </div>
-
-              {/* ── Actions ── (sticky: tombol utama selalu terlihat) */}
-              <div className="sticky bottom-0 flex gap-3 pt-3 pb-2 px-5 sm:px-6 -mx-5 sm:-mx-6 bg-card border-t border-line">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 min-h-[44px] bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold py-3.5 rounded-xl transition disabled:opacity-60 flex items-center justify-center gap-2 shadow-md shadow-green-200"
-                >
-                  {loading ? (
-                    <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                  ) : (
-                    <FiCheckCircle size={18} />
-                  )}
-                  {loading ? "Mengirim..." : "Kirim Laporan"}
-                </button>
-                <button
-                  type="button"
-                  onClick={tutupModal}
-                  className="px-5 min-h-[44px] py-3.5 border-2 border-line rounded-xl font-bold text-muted hover:bg-surface2 active:bg-surface2 transition"
-                >
-                  Batal
-                </button>
-              </div>
-            </form>
-              </>
-            )}
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  );
-};
+  new Date().toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 
 /* ══════════════════════════════════════════════════════
    MONITORING REKAN TUGAS
@@ -992,17 +132,10 @@ const MonitoringRekan = ({ tugas, token, onClose }) => {
         {/* Header */}
         <div className="px-6 py-4 border-b border-line flex items-center justify-between bg-surface2">
           <div>
-            <h3 className="text-lg font-extrabold text-ink">
-              Status Rekan Satu Tugas
-            </h3>
-            <p className="text-xs text-muted mt-0.5">
-              {tugas.nama_aktivitas}
-            </p>
+            <h3 className="text-lg font-extrabold text-ink">Status Rekan Satu Tugas</h3>
+            <p className="text-xs text-muted mt-0.5">{tugas.nama_aktivitas}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:bg-gray-700 text-muted transition"
-          >
+          <button onClick={onClose} className="p-2 rounded-xl bg-surface2 hover:bg-line text-muted transition">
             <FiX size={18} />
           </button>
         </div>
@@ -1014,7 +147,7 @@ const MonitoringRekan = ({ tugas, token, onClose }) => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
             </div>
           ) : err ? (
-            <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 rounded-xl text-sm">
+            <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 rounded-xl text-sm">
               <FiAlertCircle size={16} />
               <span>{err}</span>
             </div>
@@ -1026,52 +159,31 @@ const MonitoringRekan = ({ tugas, token, onClose }) => {
           ) : (
             <div className="space-y-3">
               {rekanList.map((rekan) => (
-                <div
-                  key={rekan.id}
-                  className="flex items-center gap-3 p-4 rounded-xl border-2 bg-surface2"
-                >
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-sm flex-shrink-0 ${
-                      rekan.status === "selesai"
-                        ? "bg-green-600 text-white"
-                        : rekan.status === "pending"
-                          ? "bg-amber-500 text-white"
-                          : "bg-gray-400 text-white"
-                    }`}
-                  >
+                <div key={rekan.id} className="flex items-center gap-3 p-4 rounded-xl border-2 border-line bg-surface2">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-sm flex-shrink-0 ${
+                    rekan.status === 'selesai' ? 'bg-green-600 text-white' :
+                    rekan.status === 'pending' ? 'bg-amber-500 text-white' : 'bg-gray-400 text-white'
+                  }`}>
                     {initials(rekan.nama_santri)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-ink text-sm">
-                      {rekan.nama_santri}
-                    </p>
+                    <p className="font-bold text-ink text-sm">{rekan.nama_santri}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span
-                        className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                          rekan.status === "selesai"
-                            ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300"
-                            : rekan.status === "pending"
-                              ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300"
-                              : "bg-surface2 text-muted"
-                        }`}
-                      >
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                        rekan.status === 'selesai' ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300' :
+                        rekan.status === 'pending' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300' : 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300'
+                      }`}>
                         {rekan.status}
                       </span>
                       {rekan.diselesaikan_at && (
                         <span className="text-xs text-muted">
-                          {new Date(rekan.diselesaikan_at).toLocaleTimeString(
-                            "id-ID",
-                            { hour: "2-digit", minute: "2-digit" },
-                          )}
+                          {new Date(rekan.diselesaikan_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       )}
                     </div>
                   </div>
-                  {rekan.status === "selesai" && (
-                    <FiCheckCircle
-                      size={20}
-                      className="text-green-600 dark:text-green-300 flex-shrink-0"
-                    />
+                  {rekan.status === 'selesai' && (
+                    <FiCheckCircle size={20} className="text-green-600 dark:text-green-400 flex-shrink-0" />
                   )}
                 </div>
               ))}
@@ -1084,66 +196,69 @@ const MonitoringRekan = ({ tugas, token, onClose }) => {
 };
 
 /* ══════════════════════════════════════════════════════
-   KARTU TUGAS HARI INI
-══════════════════════════════════════════════════════ */
-const KartuTugas = ({
-  tugas,
-  onSelesai,
-  onMonitoring,
-  menyelesaikanId,
-  tugasTersorot,
-}) => {
-  const done = tugas.status === "selesai";
+   KARTU TUGAS — dipakai di section "Tugas Saya"
+   ══════════════════════════════════════════════════════ */
+const KartuTugas = ({ tugas, onSelesai, onMonitoring, onKerjakan, onIkutiKelas }) => {
+  const done    = tugas.status === "selesai";
   const skipped = tugas.status === "dilewati";
-  const colors = kc(tugas.kategori);
-  const tersorot = tugas.id === tugasTersorot;
+  const colors  = kc(tugas.kategori);
 
   // Cek apakah tugas ini hari ini atau mendatang
   const todayISO = new Date().toISOString().split("T")[0];
-  const tugasDate = tugas.tanggal_tugas
-    ? tugas.tanggal_tugas.split("T")[0]
-    : "";
-  const isToday = tugasDate === todayISO;
-  const isFuture = tugasDate > todayISO;
+  const tugasDate = tugas.tanggal_tugas ? tugas.tanggal_tugas.split("T")[0] : "";
+  const isToday   = tugasDate === todayISO;
+  const isFuture  = tugasDate > todayISO;
 
-  // Tanaman + aksi dari field "nama||aksi;;nama||aksi" (tugas pertanian/perkebunan)
+  // Jam jadwal diambil dari activity_schedules (sumber sama dengan /admin/jadwal)
+  const jamLabel = fmtRentangJam(tugas.jam_mulai, tugas.jam_selesai);
+  const jamMulai = fmtJam(tugas.jam_mulai);
+
+  // Tanaman & ternak yang terkait aktivitas ini
   const daftarTanaman = parseTanamanInfo(tugas.tanaman_info);
+  const daftarTernak  = parseTernakInfo(tugas.ternak_info);
+  const adaChip = daftarTanaman.length > 0 || daftarTernak.length > 0;
 
-  // Ternak + aksi dari field "nama||namaAksi (sub)" (tugas peternakan)
-  const daftarTernak = parseTanamanInfo(tugas.ternak_info);
+  // Bisa dibuka halaman detail kalau salah satu target punya id
+  const targetTanaman = daftarTanaman.find((t) => t.id);
+  const targetTernak  = daftarTernak.find((t) => t.id);
+  const adaTarget     = Boolean(targetTanaman || targetTernak);
+
+  // Untuk kategori Pendidikan: tampilkan daftar pelajaran rapi dari deskripsi
+  const daftarPelajaran = parseDaftarPelajaran(tugas.deskripsi);
+  const kelompokPelajaran = [];
+  daftarPelajaran.forEach((p) => {
+    const last = kelompokPelajaran[kelompokPelajaran.length - 1];
+    if (last && last.hari === p.hari) last.items.push(p);
+    else kelompokPelajaran.push({ hari: p.hari, items: [p] });
+  });
+  const adaPelajaran = daftarPelajaran.length > 0;
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity:0, y:12 }}
+      animate={{ opacity:1, y:0 }}
       className={`rounded-2xl overflow-hidden transition-all ${
-        tersorot
-          ? "ring-2 ring-green-400 shadow-lg shadow-green-100"
-          : ""
-      } ${
         done
           ? "border border-green-200 dark:border-green-500/30 bg-green-50/60 dark:bg-green-500/10 shadow-sm"
           : skipped
-            ? "border border-line bg-surface2 opacity-60"
-            : "border-0 bg-card shadow-md hover:shadow-lg"
+          ? "border border-line bg-surface2 opacity-60"
+          : "border border-line bg-card shadow-sm hover:shadow-md"
       }`}
     >
       {/* Accent bar atas */}
       {!done && !skipped && <div className={`h-1 w-full ${colors.dot}`} />}
 
       <div className="p-4 sm:p-5">
-        {/* Baris kartu: kiri (ikon + teks) & kanan (tombol aksi) */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-6">
-          <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
-            {/* Ikon kategori */}
+        <div className="flex items-start gap-3 sm:gap-4">
+          {/* Ikon kategori */}
           <div
             className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${
               done ? "bg-green-100 dark:bg-green-500/20" : colors.bg
             }`}
           >
             {done ? (
-              <FiCheckCircle size={22} className="text-green-600 dark:text-green-300" />
+              <FiCheckCircle size={22} className="text-green-600 dark:text-green-400" />
             ) : (
               <FiClock size={20} className={colors.text} />
             )}
@@ -1153,9 +268,7 @@ const KartuTugas = ({
           <div className="flex-1 min-w-0">
             {/* Badge */}
             <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-              <span
-                className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${colors.bg} ${colors.text}`}
-              >
+              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${colors.bg} ${colors.text}`}>
                 {tugas.nama_kategori || tugas.kategori}
               </span>
               {tugas.nama_lokasi && (
@@ -1187,66 +300,111 @@ const KartuTugas = ({
               {tugas.nama_aktivitas}
             </h3>
 
-            {/* Tanaman + aksi (tugas pertanian/perkebunan) */}
-            {daftarTanaman.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 mt-2">
+            {/* Daftar pelajaran (kategori Pendidikan) */}
+            {adaPelajaran ? (
+              <div
+                className={`mt-2.5 ${
+                  kelompokPelajaran.length > 1
+                    ? "grid grid-cols-1 sm:grid-cols-2 gap-2"
+                    : ""
+                }`}
+              >
+                {kelompokPelajaran.map((grp) => (
+                  <div
+                    key={grp.hari || "_"}
+                    className="rounded-xl border border-line bg-surface2/60 overflow-hidden"
+                  >
+                    {grp.hari && (
+                      <div className="px-3 py-1.5 bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 text-[11px] font-extrabold uppercase tracking-wide">
+                        {grp.hari}
+                      </div>
+                    )}
+                    <div className="divide-y divide-line">
+                      {grp.items.map((p, i) => (
+                        <div key={i} className="flex items-center gap-2 px-3 py-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-ink truncate">
+                              {p.mapel}
+                            </p>
+                            {p.guru && (
+                              <p className="text-[11px] text-muted truncate flex items-center gap-1 mt-0.5">
+                                <FiUser size={10} /> {p.guru}
+                              </p>
+                            )}
+                          </div>
+                          {p.jam && (
+                            <span className="text-[11px] font-bold text-violet-600 dark:text-violet-300 flex items-center gap-1 shrink-0">
+                              <FiClock size={10} /> {p.jam}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              tugas.deskripsi && (
+                <p className="text-sm text-muted mt-1 line-clamp-2 leading-relaxed">
+                  {tugas.deskripsi}
+                </p>
+              )
+            )}
+
+            {/* Tanggal, jam jadwal, dan waktu selesai */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2.5">
+              <span className="text-xs text-muted flex items-center gap-1 font-medium">
+                <FiCalendar size={11} />
+                {fmtTgl(tugas.tanggal_tugas)}
+              </span>
+              {jamLabel && (
+                <span
+                  className={`text-xs font-bold flex items-center gap-1 px-2 py-0.5 rounded-full ${
+                    !done && !skipped && jamMulai
+                      ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300"
+                      : "bg-surface2 text-muted"
+                  }`}
+                >
+                  <FiClock size={11} />
+                  {jamLabel}
+                </span>
+              )}
+              {done && tugas.diselesaikan_at && (
+                <span className="text-xs text-green-600 dark:text-green-400 font-bold flex items-center gap-1">
+                  <FiCheckCircle size={11} /> Pukul {fmtWaktu(tugas.diselesaikan_at)} WIB
+                </span>
+              )}
+            </div>
+
+            {/* Chip tanaman / ternak yang perlu ditangani */}
+            {adaChip && (
+              <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
                 {daftarTanaman.map((t, i) => (
                   <span
-                    key={i}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 rounded-full px-3 py-1"
+                    key={`tanaman-${i}`}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-500/30 rounded-full px-2.5 py-1"
                   >
-                    <FiCheckCircle size={12} />
+                    <FiCheckCircle size={11} />
                     {t.nama}
                     {t.aksi && (
-                      <span className="text-muted font-semibold">
+                      <span className="text-muted">
                         · {AKSI_LABEL[t.aksi] || t.aksi}
                       </span>
                     )}
                   </span>
                 ))}
-              </div>
-            )}
-
-            {/* Ternak + aksi (tugas peternakan) */}
-            {daftarTernak.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 mt-2">
                 {daftarTernak.map((t, i) => (
                   <span
-                    key={i}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-500/10 border border-teal-200 dark:border-teal-500/30 rounded-full px-3 py-1"
+                    key={`ternak-${i}`}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-500/30 rounded-full px-2.5 py-1"
                   >
-                    <FiCheckCircle size={12} />
+                    <FiActivity size={11} />
                     {t.nama}
-                    {t.aksi && (
-                      <span className="text-muted font-semibold">
-                        · {t.aksi}
-                      </span>
-                    )}
+                    {t.aksi && <span className="text-muted">· {t.aksi}</span>}
                   </span>
                 ))}
               </div>
             )}
-
-            {/* Deskripsi */}
-            {tugas.deskripsi && (
-              <p className="text-sm text-muted mt-1 line-clamp-2 leading-relaxed">
-                {tugas.deskripsi}
-              </p>
-            )}
-
-            {/* Tanggal & waktu selesai */}
-            <div className="flex flex-wrap items-center gap-3 mt-2.5">
-              <span className="text-xs text-muted flex items-center gap-1 font-medium">
-                <FiCalendar size={11} />
-                {fmtTgl(tugas.tanggal_tugas)}
-              </span>
-              {done && tugas.diselesaikan_at && (
-                <span className="text-xs text-green-600 dark:text-green-300 font-bold flex items-center gap-1">
-                  <FiCheckCircle size={11} /> Pukul{" "}
-                  {fmtWaktu(tugas.diselesaikan_at)} WIB
-                </span>
-              )}
-            </div>
 
             {/* Link foto bukti */}
             {done && tugas.foto_bukti && (
@@ -1254,7 +412,7 @@ const KartuTugas = ({
                 href={`${API}/uploads/${tugas.foto_bukti}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 mt-2 text-xs text-blue-600 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-300 font-bold hover:underline"
+                className="inline-flex items-center gap-1.5 mt-2 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-bold hover:underline"
               >
                 <FiImage size={12} /> Lihat Foto Bukti
               </a>
@@ -1262,46 +420,76 @@ const KartuTugas = ({
 
             {/* Catatan */}
             {done && tugas.catatan && (
-              <div className="mt-2.5 px-3 py-2 bg-green-100/60 dark:bg-green-500/20 rounded-xl border border-green-200 dark:border-green-500/30">
+              <div className="mt-2.5 px-3 py-2 bg-green-100/60 dark:bg-green-500/12 rounded-xl border border-green-200 dark:border-green-500/25">
                 <p className="text-xs text-green-700 dark:text-green-300 font-medium italic">
                   "{tugas.catatan}"
                 </p>
               </div>
             )}
-
-            {/* Tombol monitoring rekan */}
-            {onMonitoring && (
-              <button
-                onClick={() => onMonitoring(tugas)}
-                className="mt-2 sm:mt-0 text-xs text-blue-600 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-300 font-semibold flex items-center gap-1"
-              >
-                <FiUser size={12} /> Lihat status rekan
-              </button>
-            )}
           </div>
         </div>
 
-        {/* Aksi (kanan): tombol selesaikan / status selesai */}
-        {!done && !skipped ? (
-          <button
-            onClick={() => onSelesai(tugas)}
-            disabled={menyelesaikanId === tugas.id}
-            className="shrink-0 w-full sm:w-auto min-h-[44px] px-5 py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold text-sm rounded-xl transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {menyelesaikanId === tugas.id ? (
-              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-            ) : null}
-            {menyelesaikanId === tugas.id
-              ? "Mengirim..."
-              : isToday
-                ? "Selesaikan Tugas"
-                : "Selesaikan Awal"}
-          </button>
-        ) : done ? (
-          <div className="shrink-0 self-start sm:self-center inline-flex items-center gap-2 bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 px-3.5 py-2 rounded-xl text-sm font-bold">
-            <FiCheckCircle size={15} /> Selesai
-          </div>
-        ) : null}
+        {/* Aksi: status rekan (outline) + selesaikan (primary) */}
+        <div
+          className={`flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 ${
+            done || skipped ? "" : "mt-4 pt-4 border-t border-line"
+          }`}
+        >
+          {onIkutiKelas && (
+            <button
+              type="button"
+              onClick={onIkutiKelas}
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 rounded-xl text-xs font-bold border border-green-200 dark:border-green-500/40 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-500/20 hover:border-green-300 dark:hover:border-green-400/60 active:scale-[0.98] transition shadow-sm"
+            >
+              <FiBookOpen size={14} />
+              Ikuti Kelas
+            </button>
+          )}
+
+          {onMonitoring && (
+            <button
+              type="button"
+              onClick={() => onMonitoring(tugas)}
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 rounded-xl text-xs font-bold border border-blue-200 dark:border-blue-500/40 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-500/20 hover:border-blue-300 dark:hover:border-blue-400/60 active:scale-[0.98] transition shadow-sm"
+            >
+              <FiUsers size={14} />
+              Status Rekan
+              {tugas.jumlah_rekan ? (
+                <span className="px-1.5 py-px rounded-full bg-blue-600 dark:bg-blue-400 text-white dark:text-blue-950 text-[10px] font-extrabold">
+                  {tugas.jumlah_rekan}
+                </span>
+              ) : null}
+            </button>
+          )}
+
+          {!done && !skipped && (
+            <>
+              {adaTarget && onKerjakan && (
+                <button
+                  type="button"
+                  onClick={() => onKerjakan(tugas)}
+                  className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 sm:py-2.5 rounded-xl bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold transition shadow-sm text-sm active:scale-[0.98]"
+                >
+                  <FiPlayCircle size={16} /> Kerjakan
+                </button>
+              )}
+              {/* Hanya tugas hari ini yang bisa diselesaikan langsung dari
+                  dashboard. "Selesaikan Awal" (tugas mendatang) dihilangkan. */}
+              {isToday && (
+                <button
+                  type="button"
+                  onClick={() => onSelesai(tugas)}
+                  className={
+                    adaTarget
+                      ? "inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 sm:py-2.5 rounded-xl border-2 border-green-600 dark:border-green-500 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-500/10 font-bold transition text-sm active:scale-[0.98]"
+                      : "inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 sm:py-2.5 rounded-xl bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold transition shadow-sm text-sm active:scale-[0.98]"
+                  }
+                >
+                  <FiCheckCircle size={16} /> Selesaikan Tugas
+                </button>
+              )}
+            </>
+          )}
         </div>
       </div>
     </motion.div>
@@ -1313,10 +501,10 @@ const KartuTugas = ({
 ══════════════════════════════════════════════════════ */
 const RiwayatGroup = ({ group }) => {
   const [open, setOpen] = useState(false);
-  const colors = kc(group.kategori);
+  const colors  = kc(group.kategori);
   const selesai = group.items.filter((t) => t.status === "selesai").length;
-  const total = group.items.length;
-  const persen = total ? Math.round((selesai / total) * 100) : 0;
+  const total   = group.items.length;
+  const persen  = total ? Math.round((selesai / total) * 100) : 0;
 
   return (
     <div>
@@ -1333,9 +521,7 @@ const RiwayatGroup = ({ group }) => {
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-ink text-sm truncate">
-            {group.nama}
-          </p>
+          <p className="font-bold text-ink text-sm truncate">{group.nama}</p>
           <div className="flex items-center gap-2 mt-0.5">
             <span
               className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${colors.bg} ${colors.text}`}
@@ -1349,7 +535,7 @@ const RiwayatGroup = ({ group }) => {
         </div>
         {/* Mini progress */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="w-14 bg-surface2 rounded-full h-1.5">
+          <div className="w-14 bg-surface2 border border-line rounded-full h-1.5">
             <div
               className="bg-green-500 h-1.5 rounded-full transition-all"
               style={{ width: `${persen}%` }}
@@ -1378,20 +564,20 @@ const RiwayatGroup = ({ group }) => {
                   key={t.id}
                   className={`flex items-start gap-3 p-3 rounded-xl border ${
                     t.status === "selesai"
-                      ? "bg-green-50 dark:bg-green-500/10 border-green-100 dark:border-green-500/30"
+                      ? "bg-green-50 dark:bg-green-500/10 border-green-100 dark:border-green-500/25"
                       : t.status === "dilewati"
-                        ? "bg-surface2 border-line opacity-60"
-                        : "bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/30"
+                      ? "bg-surface2 border-line opacity-60"
+                      : "bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/25"
                   }`}
                 >
                   {/* Status icon */}
                   <div
                     className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${
                       t.status === "selesai"
-                        ? "bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-300"
+                        ? "bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400"
                         : t.status === "dilewati"
-                          ? "bg-surface2 text-muted"
-                          : "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300"
+                        ? "bg-surface2 text-muted"
+                        : "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400"
                     }`}
                   >
                     {t.status === "selesai" ? (
@@ -1406,23 +592,22 @@ const RiwayatGroup = ({ group }) => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-xs font-bold text-ink">
-                        {fmtTglPendek(t.tanggal_tugas)} ·{" "}
-                        {fmtHari(t.tanggal_tugas)}
+                        {fmtTglPendek(t.tanggal_tugas)} · {fmtHari(t.tanggal_tugas)}
                       </p>
                       <span
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
                           t.status === "selesai"
                             ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300"
                             : t.status === "dilewati"
-                              ? "bg-surface2 text-muted"
-                              : "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300"
+                            ? "bg-surface2 text-muted"
+                            : "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300"
                         }`}
                       >
                         {t.status}
                       </span>
                     </div>
                     {t.diselesaikan_at && (
-                      <p className="text-[11px] text-green-600 dark:text-green-300 font-semibold mt-0.5">
+                      <p className="text-[11px] text-green-600 dark:text-green-400 font-semibold mt-0.5">
                         ✓ Selesai pukul {fmtWaktu(t.diselesaikan_at)} WIB
                       </p>
                     )}
@@ -1436,7 +621,7 @@ const RiwayatGroup = ({ group }) => {
                         href={`${API}/uploads/${t.foto_bukti}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 mt-1 text-[11px] text-blue-600 dark:text-blue-300 font-bold hover:underline"
+                        className="inline-flex items-center gap-1 mt-1 text-[11px] text-blue-600 dark:text-blue-400 font-bold hover:underline"
                       >
                         <FiImage size={10} /> Foto Bukti
                       </a>
@@ -1472,33 +657,29 @@ const DashboardSantri = () => {
 
   // Santri yang belum Diterima (Menunggu Verifikasi / Ditolak) tidak boleh masuk dashboard
   useEffect(() => {
-    if (token && userData && userData.status_pendaftaran !== "Diterima") {
+    if (token && userData && userData.status_pendaftaran !== 'Diterima') {
       navigate("/status-pendaftaran", { replace: true });
     }
   }, [token, userData, navigate]);
 
   /* ── State ── */
-  const [tugasHariIni, setTugasHariIni] = useState([]);
-  const [semuaTugas, setSemuaTugas] = useState([]);
-  const [loadingHI, setLoadingHI] = useState(true);
-  const [loadingRiwayat, setLoadingRiwayat] = useState(true);
-  const [modalTugas, setModalTugas] = useState(null);
-  const [menyelesaikanId, setMenyelesaikanId] = useState(null);
+  const [tugasHariIni,   setTugasHariIni]   = useState([]);
+  const [semuaTugas,     setSemuaTugas]      = useState([]);
+  const [loadingHI,      setLoadingHI]       = useState(true);
+  const [loadingRiwayat, setLoadingRiwayat]  = useState(true);
+  const [modalTugas,     setModalTugas]      = useState(null);
   const [monitoringTugas, setMonitoringTugas] = useState(null);
-  const [tugasTersorot, setTugasTersorot] = useState(null);
-  const [riwayatOpen, setRiwayatOpen] = useState(false);
-  const [filterRiwayat, setFilterRiwayat] = useState("semua");
+  const [toast,          setToast]           = useState(null);
+  const [riwayatOpen,    setRiwayatOpen]     = useState(false);
+  const [filterRiwayat,  setFilterRiwayat]   = useState("semua");
+  const [kelasSaya,      setKelasSaya]       = useState(null);
+  const [jadwalKelasSaya,setJadwalKelasSaya] = useState([]);
+  const [loadingKelas,   setLoadingKelas]     = useState(true);
 
-  // Kunci scroll halaman selama modal terbuka
-  useEffect(() => {
-    const terkunci = !!(modalTugas || monitoringTugas);
-    document.body.style.overflow = terkunci ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [modalTugas, monitoringTugas]);
-
-  const notif = useNotifikasi();
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   /* ── Fetch data ── */
   const fetchHariIni = useCallback(async () => {
@@ -1509,17 +690,13 @@ const DashboardSantri = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setTugasHariIni(await res.json());
-      else if (res.status === 401) {
-        notif.error("Sesi berakhir. Silakan masuk kembali.");
-        navigate("/login-santri");
-      }
+      else if (res.status === 401) navigate("/login-santri");
     } catch (err) {
       console.error(err);
-      notif.error("Gagal memuat tugas. Periksa koneksi internetmu.");
     } finally {
       setLoadingHI(false);
     }
-  }, [token, notif]);
+  }, [token]);
 
   const fetchRiwayat = useCallback(async () => {
     if (!token) return;
@@ -1531,48 +708,93 @@ const DashboardSantri = () => {
       if (res.ok) setSemuaTugas(await res.json());
     } catch (err) {
       console.error(err);
-      notif.error("Gagal memuat tugas. Periksa koneksi internetmu.");
     } finally {
       setLoadingRiwayat(false);
     }
-  }, [token, notif]);
+  }, [token]);
 
   useEffect(() => {
     fetchHariIni();
     fetchRiwayat();
   }, [fetchHariIni, fetchRiwayat]);
 
+  /* ── Fetch kelas saya + jadwalnya ── */
+  const fetchKelasSaya = useCallback(async () => {
+    if (!token) return;
+    setLoadingKelas(true);
+    try {
+      const res = await fetch(`${API}/api/santri/kelas-saya`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = res.ok ? await res.json() : null;
+      setKelasSaya(data || null);
+      if (data?.id) {
+        const resJ = await fetch(`${API}/api/pendidikan/jadwal/${data.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setJadwalKelasSaya(resJ.ok ? await resJ.json() : []);
+      } else {
+        setJadwalKelasSaya([]);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingKelas(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchKelasSaya();
+  }, [fetchKelasSaya]);
+
   const handleSelesaiSuccess = (data) => {
     // Simpan id sebelum modal ditutup
     const tugasId = modalTugas?.id;
     setModalTugas(null);
-    notif.success("Tugas berhasil diselesaikan! Tetap semangat.");
+    showToast("Tugas berhasil diselesaikan! Tetap semangat 🌟");
 
     // Optimistic update — langsung tandai selesai di state tanpa tunggu re-fetch
     if (tugasId) {
       const nowISO = new Date().toISOString();
-      const updater = (list) =>
-        list.map((t) =>
-          t.id === tugasId
-            ? {
-                ...t,
-                status: "selesai",
-                diselesaikan_at: nowISO,
-                foto_bukti: data?.foto_bukti ?? t.foto_bukti ?? null,
-                catatan: data?.catatan ?? t.catatan ?? null,
-              }
-            : t,
-        );
-      setTugasHariIni(updater);
+      const updater = (list) => list.map(t =>
+        t.id === tugasId
+          ? {
+              ...t,
+              status: "selesai",
+              diselesaikan_at: nowISO,
+              foto_bukti: data?.foto_bukti ?? t.foto_bukti ?? null,
+              catatan: data?.catatan ?? t.catatan ?? null,
+            }
+          : t
+      );
+      // Hapus dari "Tugas Saya" karena sudah selesai (tidak lagi pending)
+      setTugasHariIni((list) => list.filter((t) => t.id !== tugasId));
       setSemuaTugas(updater);
-      // Sorotan halus sesaat pada kartu yang baru selesai
-      setTugasTersorot(tugasId);
-      setTimeout(() => setTugasTersorot(null), 2400);
     }
 
     // Sinkronisasi dengan server (untuk dapat data lengkap dari DB)
     fetchHariIni();
     fetchRiwayat();
+  };
+
+  // "Kerjakan" mengarahkan santri langsung ke halaman objek yang ditugaskan
+  // (tanaman/ternak) dengan membawa id tiket tugas. Di halaman itu santri
+  // mengirim bukti (foto opsional, laporan wajib) dan riwayatnya otomatis
+  // tercatat pada objek tersebut.
+  const handleKerjakan = (tugas) => {
+    const tanaman = parseTanamanInfo(tugas.tanaman_info).find((t) => t.id);
+    if (tanaman) {
+      navigate(`/tanaman/${tanaman.id}?tugas=${tugas.id}`);
+      return;
+    }
+    const ternak = parseTernakInfo(tugas.ternak_info).find((t) => t.id);
+    if (ternak) {
+      navigate(`/peternakan/${ternak.id}?tugas=${tugas.id}`);
+    }
+  };
+
+  const handleIkutiKelas = () => {
+    if (kelasSaya?.id) navigate(`/kelas/${kelasSaya.id}`);
   };
 
   const handleLogout = () => {
@@ -1583,45 +805,39 @@ const DashboardSantri = () => {
 
   /* ── Statistik ── */
   const stats = {
-    total: semuaTugas.length,
+    total:   semuaTugas.length,
     selesai: semuaTugas.filter((t) => t.status === "selesai").length,
     pending: semuaTugas.filter((t) => t.status === "pending").length,
-    persen: semuaTugas.length
-      ? Math.round(
-          (semuaTugas.filter((t) => t.status === "selesai").length /
-            semuaTugas.length) *
-            100,
-        )
+    persen:  semuaTugas.length
+      ? Math.round((semuaTugas.filter((t) => t.status === "selesai").length / semuaTugas.length) * 100)
       : 0,
   };
-  // Tugas aktif = belum selesai (baru muncul, setelah selesai pindah ke riwayat)
-  const tugasAktif = tugasHariIni.filter((t) => t.status === "pending");
-  const tugasPending = tugasAktif.length;
-  const tugasSelesaiHariIni = tugasHariIni.filter(
-    (t) => t.status === "selesai",
-  ).length;
+  const tugasPending       = tugasHariIni.filter((t) => t.status === "pending").length;
+  const tugasSelesaiHariIni = tugasHariIni.filter((t) => t.status === "selesai").length;
 
   /* ── Filter & group riwayat ── */
   const riwayatFiltered = semuaTugas.filter((t) =>
-    filterRiwayat === "semua" ? true : t.status === filterRiwayat,
+    filterRiwayat === "semua" ? true : t.status === filterRiwayat
   );
   const riwayatByAktivitas = {};
   riwayatFiltered.forEach((t) => {
     const key = t.nama_aktivitas;
     if (!riwayatByAktivitas[key])
-      riwayatByAktivitas[key] = {
-        nama: t.nama_aktivitas,
-        kategori: t.kategori,
-        items: [],
-      };
+      riwayatByAktivitas[key] = { nama: t.nama_aktivitas, kategori: t.kategori, items: [] };
     riwayatByAktivitas[key].items.push(t);
   });
   const riwayatGroups = Object.values(riwayatByAktivitas);
 
   /* ── Greeting ── */
-  const { teks: salamTeks, emoji: salamEmoji, gradient } = getGreeting();
-  const namaDepan =
-    userData?.username || userData?.nama?.split(" ")[0] || "Santri";
+  const { teks: salamTeks, emoji: salamEmoji } = getGreeting();
+  const namaDepan = userData?.username || userData?.nama?.split(" ")[0] || "Santri";
+
+  /* ── Jadwal kelas saya untuk hari ini ── */
+  const HARI_NAMA = ["Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+  const hariIniNama = HARI_NAMA[new Date().getDay() - 1] || "";
+  const jadwalHariIniKelas = (jadwalKelasSaya || [])
+    .filter((j) => j.hari === hariIniNama)
+    .sort((a, b) => String(a.jam_mulai).localeCompare(String(b.jam_mulai)));
 
   if (!token) return null;
 
@@ -1630,19 +846,46 @@ const DashboardSantri = () => {
   ════════════════════════════════════════════════ */
   return (
     <div className="min-h-screen bg-surface2 overflow-x-hidden">
+
+      {/* ── Toast ── */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -24 }}
+            animate={{ opacity: 1, y: 0   }}
+            exit={{   opacity: 0, y: -24  }}
+            className={`fixed top-4 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-2xl shadow-2xl font-bold text-sm flex items-center gap-2 whitespace-nowrap max-w-[90vw] ${
+              toast.type === "error" ? "bg-red-600 text-white" : "bg-green-600 text-white"
+            }`}
+          >
+            {toast.type === "error" ? (
+              <FiAlertCircle size={16} />
+            ) : (
+              <FiCheckCircle size={16} />
+            )}
+            <span className="truncate">{toast.msg}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── Modal Bukti ── */}
       <AnimatePresence>
-        {modalTugas && (
-          <ModalBukti
-            tugas={modalTugas}
-            token={token}
-            onClose={() => setModalTugas(null)}
-            onSending={(sending) =>
-              setMenyelesaikanId(sending ? modalTugas.id : null)
-            }
-            onSuccess={handleSelesaiSuccess}
-          />
-        )}
+        {modalTugas && (() => {
+          // Ternak + aksi terkait dari tiket tugas (mode "Selesaikan Tugas").
+          // Dipakai ModalBukti untuk memunculkan kolom nominal aksi butuh angka.
+          const daftarTernakModal = parseTernakInfo(modalTugas.ternak_info);
+          const ternakModal = daftarTernakModal.find((t) => t.id);
+          return (
+            <ModalBukti
+              tugas={modalTugas}
+              token={token}
+              ternakId={ternakModal?.id || null}
+              aksiIds={daftarTernakModal.map((t) => t.aksiId).filter(Boolean)}
+              onClose={() => setModalTugas(null)}
+              onSuccess={handleSelesaiSuccess}
+            />
+          );
+        })()}
       </AnimatePresence>
 
       {/* ── Modal Monitoring Rekan ── */}
@@ -1659,10 +902,11 @@ const DashboardSantri = () => {
       {/* ══════════════════════════════════════════════
           KONTEN UTAMA
       ══════════════════════════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-32 2xl:pt-36 pb-20">
+
         {/* ── HERO BANNER GREETING ── */}
         <div
-          className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${gradient} shadow-lg mb-6`}
+          className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${HERO_GRADIENT} shadow-lg mb-6`}
         >
           {/* Dekorasi lingkaran */}
           <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/10 pointer-events-none" />
@@ -1687,10 +931,10 @@ const DashboardSantri = () => {
                 {loadingHI
                   ? "Sedang memuat tugas..."
                   : tugasPending > 0
-                    ? `Ada ${tugasPending} tugas yang menunggu diselesaikan hari ini.`
-                    : tugasHariIni.length > 0
-                      ? "Luar biasa! Semua tugas hari ini sudah selesai. 🌟"
-                      : "Tidak ada tugas untuk hari ini. Selamat beristirahat!"}
+                  ? `Ada ${tugasPending} tugas yang menunggu diselesaikan hari ini.`
+                  : tugasHariIni.length > 0
+                  ? "Luar biasa! Semua tugas hari ini sudah selesai. 🌟"
+                  : "Tidak ada tugas untuk hari ini. Selamat beristirahat!"}
               </p>
 
               {/* Progress bar hari ini */}
@@ -1698,15 +942,12 @@ const DashboardSantri = () => {
                 <div className="mt-4 flex items-center gap-3 max-w-xs">
                   <div className="flex-1 bg-white/25 rounded-full h-2 overflow-hidden">
                     <motion.div
-                      className="bg-card h-2 rounded-full"
+                      className="bg-white h-2 rounded-full"
                       initial={{ width: 0 }}
                       animate={{
                         width: `${
                           tugasHariIni.length
-                            ? Math.round(
-                                (tugasSelesaiHariIni / tugasHariIni.length) *
-                                  100,
-                              )
+                            ? Math.round((tugasSelesaiHariIni / tugasHariIni.length) * 100)
                             : 0
                         }%`,
                       }}
@@ -1730,11 +971,7 @@ const DashboardSantri = () => {
               </p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => {
-                    fetchHariIni();
-                    fetchRiwayat();
-                    notif.info("Data diperbarui");
-                  }}
+                  onClick={() => { fetchHariIni(); fetchRiwayat(); showToast("Data diperbarui"); }}
                   className="p-2 rounded-xl bg-white/20 hover:bg-white/30 text-white transition"
                   title="Refresh"
                 >
@@ -1767,18 +1004,14 @@ const DashboardSantri = () => {
           </div>
           <div className="flex gap-1.5">
             <button
-              onClick={() => {
-                fetchHariIni();
-                fetchRiwayat();
-                notif.info("Data diperbarui");
-              }}
-              className="p-2 rounded-xl bg-surface2 text-muted hover:bg-gray-200 dark:bg-gray-700 transition"
+              onClick={() => { fetchHariIni(); fetchRiwayat(); showToast("Data diperbarui"); }}
+              className="p-2 rounded-xl bg-surface2 text-muted hover:bg-line transition"
             >
               <FiRefreshCw size={14} />
             </button>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1 px-3 py-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/20 font-bold text-xs rounded-xl transition"
+              className="flex items-center gap-1 px-3 py-2 bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/25 font-bold text-xs rounded-xl transition"
             >
               <FiLogOut size={13} /> Keluar
             </button>
@@ -1790,55 +1023,46 @@ const DashboardSantri = () => {
           {[
             {
               label: "Total Tugas",
-              val: stats.total,
-              icon: <FiList size={18} />,
-              ic: "bg-surface2 text-muted",
+              val:   stats.total,
+              icon:  <FiList size={18} />,
+              ic:    "bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300",
               val_color: "text-ink",
             },
             {
               label: "Selesai",
-              val: stats.selesai,
-              icon: <FiCheckCircle size={18} />,
-              ic: "bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-300",
-              val_color: "text-green-700 dark:text-green-300",
+              val:   stats.selesai,
+              icon:  <FiCheckCircle size={18} />,
+              ic:    "bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400",
+              val_color: "text-green-700 dark:text-green-400",
             },
             {
               label: "Belum Selesai",
-              val: stats.pending,
-              icon: <FiClock size={18} />,
-              ic: "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300",
-              val_color: "text-amber-700 dark:text-amber-300",
+              val:   stats.pending,
+              icon:  <FiClock size={18} />,
+              ic:    "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400",
+              val_color: "text-amber-700 dark:text-amber-400",
             },
             {
               label: "Skor Kinerja",
-              val: `${stats.persen}%`,
-              icon: <FiAward size={18} />,
-              ic: "bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300",
-              val_color:
-                stats.persen >= 80
-                  ? "text-green-600 dark:text-green-300"
-                  : stats.persen >= 50
-                    ? "text-amber-500 dark:text-amber-400"
-                    : "text-red-500 dark:text-red-400",
+              val:   `${stats.persen}%`,
+              icon:  <FiAward size={18} />,
+              ic:    "bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400",
+              val_color: stats.persen >= 80
+                ? "text-green-600 dark:text-green-400"
+                : stats.persen >= 50
+                ? "text-amber-500 dark:text-amber-400"
+                : "text-red-500 dark:text-red-400",
             },
           ].map((s, i) => (
             <div
               key={i}
               className="bg-card rounded-2xl p-4 sm:p-5 border border-line shadow-sm hover:shadow-md transition-shadow"
             >
-              <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${s.ic}`}
-              >
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${s.ic}`}>
                 {s.icon}
               </div>
-              <p
-                className={`text-2xl sm:text-3xl font-extrabold ${s.val_color}`}
-              >
-                {s.val}
-              </p>
-              <p className="text-xs text-muted font-semibold mt-1 leading-tight">
-                {s.label}
-              </p>
+              <p className={`text-2xl sm:text-3xl font-extrabold ${s.val_color}`}>{s.val}</p>
+              <p className="text-xs text-muted font-semibold mt-1 leading-tight">{s.label}</p>
             </div>
           ))}
         </div>
@@ -1848,29 +1072,29 @@ const DashboardSantri = () => {
           <div className="bg-card rounded-2xl p-4 sm:p-5 border border-line shadow-sm mb-6">
             <div className="flex justify-between items-center mb-2">
               <p className="text-sm font-bold text-ink flex items-center gap-1.5">
-                <FiTrendingUp size={14} className="text-green-600 dark:text-green-300" />
+                <FiTrendingUp size={14} className="text-green-600 dark:text-green-400" />
                 Progres Keseluruhan
               </p>
               <span
                 className={`text-sm font-extrabold ${
                   stats.persen >= 80
-                    ? "text-green-600 dark:text-green-300"
+                    ? "text-green-600 dark:text-green-400"
                     : stats.persen >= 50
-                      ? "text-amber-500 dark:text-amber-400"
-                      : "text-red-500 dark:text-red-400"
+                    ? "text-amber-500 dark:text-amber-400"
+                    : "text-red-500 dark:text-red-400"
                 }`}
               >
                 {stats.persen}%
               </span>
             </div>
-            <div className="w-full bg-surface2 rounded-full h-2.5 overflow-hidden">
+            <div className="w-full bg-surface2 border border-line rounded-full h-2.5 overflow-hidden">
               <motion.div
                 className={`h-2.5 rounded-full ${
                   stats.persen >= 80
                     ? "bg-green-500"
                     : stats.persen >= 50
-                      ? "bg-amber-400"
-                      : "bg-red-400"
+                    ? "bg-amber-400"
+                    : "bg-red-400"
                 }`}
                 initial={{ width: 0 }}
                 animate={{ width: `${stats.persen}%` }}
@@ -1883,11 +1107,109 @@ const DashboardSantri = () => {
           </div>
         )}
 
+        {/* ── KELAS SAYA ── */}
+        {!loadingKelas && kelasSaya && (
+          <section className="mb-6">
+            <div className="bg-card rounded-2xl border border-line shadow-sm overflow-hidden">
+              <div className="relative h-36 sm:h-44 bg-gradient-to-br from-[#0a6658] via-[#0d806a] to-[#12a48c]">
+                {kelasSaya.foto ? (
+                  <img
+                    src={`${API}/uploads/${kelasSaya.foto}`}
+                    alt={kelasSaya.nama}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white/60 font-bold">
+                    Tanpa Foto Kelas
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between gap-3">
+                  <div className="min-w-0">
+                    <span className="inline-block px-2.5 py-0.5 bg-green-500 text-white text-[10px] font-extrabold rounded-full mb-1.5">
+                      KELAS SAYA
+                    </span>
+                    <h3 className="text-lg sm:text-2xl font-extrabold text-white leading-tight truncate">
+                      {kelasSaya.nama}
+                    </h3>
+                    <p className="text-white/85 text-xs mt-0.5 truncate">
+                      Wali Kelas: {kelasSaya.wali_kelas || "-"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => navigate(`/kelas/${kelasSaya.id}`)}
+                    className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-green-700 font-extrabold text-sm shadow-lg hover:bg-green-50 active:scale-[.98] transition"
+                  >
+                    <FiPlayCircle size={16} /> Ikuti Kelas
+                  </button>
+                </div>
+              </div>
+
+              {/* Jadwal hari ini */}
+              <div className="px-4 sm:px-5 py-4">
+                <p className="text-xs font-extrabold text-muted uppercase tracking-wide mb-2.5 flex items-center gap-1.5">
+                  <FiClock size={13} /> Jadwal Hari Ini
+                  {hariIniNama && <span className="text-green-600 dark:text-green-400">— {hariIniNama}</span>}
+                </p>
+                {jadwalHariIniKelas.length === 0 ? (
+                  <p className="text-sm text-muted font-medium py-1">
+                    Tidak ada pelajaran hari ini.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {jadwalHariIniKelas.map((j) => (
+                      <div
+                        key={j.id}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-surface2 border border-line"
+                      >
+                        <div className="w-1.5 self-stretch rounded-full bg-green-500/70" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-ink text-sm truncate">{j.mapel}</p>
+                          <p className="text-xs text-muted flex items-center gap-1.5 mt-0.5">
+                            <FiUser size={11} />
+                            {j.guru_nama_tampil || j.guru_nama || "Guru belum diisi"}
+                          </p>
+                        </div>
+                        <span className="text-xs font-bold text-green-600 dark:text-green-400 flex items-center gap-1.5 shrink-0">
+                          <FiClock size={12} />
+                          {fmtRentangJam(j.jam_mulai, j.jam_selesai)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── BELUM ADA KELAS ── */}
+        {!loadingKelas && !kelasSaya && (
+          <section className="mb-6">
+            <div className="bg-card rounded-2xl border border-dashed border-line p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-green-100 dark:bg-green-500/20 flex items-center justify-center text-green-600 dark:text-green-400 shrink-0">
+                <FiBookOpen size={22} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-extrabold text-ink text-sm">
+                  Kamu belum terdaftar di kelas
+                </h3>
+                <p className="text-xs text-muted mt-0.5">
+                  Hubungi pengajar/admin untuk ditempatkan ke kelas. Setelah itu
+                  jadwal & tombol Ikuti Kelas akan muncul di sini.
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* ── TUGAS HARI INI ── */}
         <section className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base sm:text-lg font-extrabold text-ink flex items-center gap-2">
-              <div className="w-7 h-7 bg-green-100 dark:bg-green-500/20 rounded-lg flex items-center justify-center text-green-600 dark:text-green-300">
+              <div className="w-7 h-7 bg-green-100 dark:bg-green-500/20 rounded-lg flex items-center justify-center text-green-600 dark:text-green-400">
                 <FiCalendar size={15} />
               </div>
               Tugas Saya
@@ -1903,28 +1225,24 @@ const DashboardSantri = () => {
             <div className="flex justify-center items-center h-36">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600" />
             </div>
-          ) : tugasAktif.length === 0 ? (
+          ) : tugasHariIni.length === 0 ? (
             <div className="bg-card rounded-2xl p-10 text-center border border-dashed border-line shadow-sm">
-              <div className="w-16 h-16 bg-green-50 dark:bg-green-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-green-50 dark:bg-green-500/12 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <FiSun size={28} className="text-green-400" />
               </div>
-              <h3 className="font-bold text-muted text-base mb-1">
-                Tidak ada tugas aktif
-              </h3>
-              <p className="text-muted text-sm">
-                Nikmati harimu atau cek kembali besok.
-              </p>
+              <h3 className="font-bold text-ink text-base mb-1">Tidak ada tugas aktif</h3>
+              <p className="text-muted text-sm">Nikmati harimu atau cek kembali besok.</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {tugasAktif.map((t) => (
-                <KartuTugas
-                  key={t.id}
-                  tugas={t}
-                  onSelesai={setModalTugas}
-                  onMonitoring={setMonitoringTugas}
-                  menyelesaikanId={menyelesaikanId}
-                  tugasTersorot={tugasTersorot}
+              {tugasHariIni.map((t) => (
+                <KartuTugas 
+                  key={t.id} 
+                  tugas={t} 
+                  onSelesai={setModalTugas} 
+                  onMonitoring={setMonitoringTugas} 
+                  onKerjakan={handleKerjakan} 
+                  onIkutiKelas={kelasSaya?.id ? handleIkutiKelas : null}
                 />
               ))}
             </div>
@@ -1938,13 +1256,13 @@ const DashboardSantri = () => {
             className="w-full flex items-center justify-between p-4 bg-card rounded-2xl border border-line shadow-sm hover:border-green-200 dark:hover:border-green-500/40 transition"
           >
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-indigo-100 dark:bg-indigo-500/20 rounded-lg flex items-center justify-center text-indigo-600 dark:text-indigo-300">
+              <div className="w-7 h-7 bg-indigo-100 dark:bg-indigo-500/20 rounded-lg flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                 <FiBookOpen size={15} />
               </div>
               <h2 className="text-sm sm:text-base font-extrabold text-ink">
                 Riwayat Tugas
               </h2>
-              <span className="text-xs text-muted font-semibold bg-surface2 px-2 py-0.5 rounded-full">
+              <span className="text-xs text-muted font-semibold bg-surface2 border border-line px-2 py-0.5 rounded-full">
                 {semuaTugas.length}
               </span>
             </div>
@@ -1974,7 +1292,7 @@ const DashboardSantri = () => {
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition ${
                           filterRiwayat === f
                             ? "bg-green-600 text-white"
-                            : "bg-surface2 text-muted hover:bg-gray-200 dark:bg-gray-700"
+                            : "bg-surface2 text-muted hover:bg-line"
                         }`}
                       >
                         {f}{" "}
@@ -2013,32 +1331,32 @@ const DashboardSantri = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               {
-                to: "/koleksi-tanaman",
+                to:    "/koleksi-tanaman",
                 emoji: "🌱",
-                bg: "bg-green-100 dark:bg-green-500/20 hover:bg-green-200 dark:hover:bg-green-500/25",
+                bg:    "bg-green-100 dark:bg-green-500/20 hover:bg-green-200 dark:hover:bg-green-500/30",
                 label: "Koleksi Tanaman",
-                sub: "Perawatan tanaman",
+                sub:   "Perawatan tanaman",
               },
               {
-                to: "/status-pendaftaran",
-                icon: <FiUser size={20} className="text-blue-600 dark:text-blue-300" />,
-                bg: "bg-blue-100 dark:bg-blue-500/20 hover:bg-blue-200 dark:hover:bg-blue-500/25",
+                to:    "/status-pendaftaran",
+                icon:  <FiUser size={20} className="text-blue-600 dark:text-blue-400" />,
+                bg:    "bg-blue-100 dark:bg-blue-500/20 hover:bg-blue-200 dark:hover:bg-blue-500/30",
                 label: "Profil Saya",
-                sub: "Status pendaftaran",
+                sub:   "Status pendaftaran",
               },
               {
-                to: "/event",
-                icon: <FiCalendar size={20} className="text-purple-600 dark:text-purple-300" />,
-                bg: "bg-purple-100 dark:bg-purple-500/20 hover:bg-purple-200 dark:hover:bg-purple-500/25",
+                to:    "/event",
+                icon:  <FiCalendar size={20} className="text-purple-600 dark:text-purple-400" />,
+                bg:    "bg-purple-100 dark:bg-purple-500/20 hover:bg-purple-200 dark:hover:bg-purple-500/30",
                 label: "Kegiatan",
-                sub: "Info event pondok",
+                sub:   "Info event pondok",
               },
               {
-                to: "/blog_grid",
-                icon: <FiBookOpen size={20} className="text-orange-600 dark:text-orange-300" />,
-                bg: "bg-orange-100 dark:bg-orange-500/20 hover:bg-orange-200 dark:hover:bg-orange-500/25",
+                to:    "/blog_grid",
+                icon:  <FiBookOpen size={20} className="text-orange-600 dark:text-orange-400" />,
+                bg:    "bg-orange-100 dark:bg-orange-500/20 hover:bg-orange-200 dark:hover:bg-orange-500/30",
                 label: "Blog",
-                sub: "Artikel & wawasan",
+                sub:   "Artikel & wawasan",
               },
             ].map((item, i) => (
               <Link
@@ -2055,9 +1373,7 @@ const DashboardSantri = () => {
                   <p className="font-bold text-ink text-xs sm:text-sm truncate">
                     {item.label}
                   </p>
-                  <p className="text-[10px] sm:text-xs text-muted truncate">
-                    {item.sub}
-                  </p>
+                  <p className="text-[10px] sm:text-xs text-muted truncate">{item.sub}</p>
                 </div>
               </Link>
             ))}

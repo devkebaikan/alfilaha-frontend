@@ -10,6 +10,7 @@ import {
   FiX,
   FiTrash2,
 } from "react-icons/fi";
+import ActionMenu from "../../../../Shared/ActionMenu";
 
 const Reservasi = ({
   reservasi,
@@ -22,52 +23,49 @@ const Reservasi = ({
   setDeleteModal,
 }) => {
   const [selectedReservasi, setSelectedReservasi] = useState(null);
+  const [menuTerbuka, setMenuTerbuka] = useState(null);
 
   return (
     <div className="space-y-6">
       {/* QUICK STATS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-3xl p-6 shadow-lg border border-blue-400 flex items-center space-x-5 text-white relative overflow-hidden group">
+        <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-3xl p-6 shadow-lg border border-green-400 flex items-center space-x-5 text-white relative overflow-hidden group">
           <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-card opacity-10 rounded-full mix-blend-overlay group-hover:scale-110 transition-transform duration-500"></div>
           <div className="absolute bottom-[-10%] left-[-10%] w-24 h-24 bg-card opacity-10 rounded-full mix-blend-overlay"></div>
           <div className="w-14 h-14 bg-white/20 dark:bg-white/[0.06] backdrop-blur-sm text-white rounded-2xl flex items-center justify-center shrink-0 z-10 border border-white/20 shadow-inner">
             <FiCalendar className="text-2xl" />
           </div>
           <div className="z-10">
-            <p className="text-sm text-blue-100 font-semibold tracking-wide mb-0.5">
+            <p className="text-sm text-green-100 font-semibold tracking-wide mb-0.5">
               Total Reservasi Hari Ini
             </p>
             <p className="text-3xl font-extrabold">{reservasi.length}</p>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-400 to-orange-600 rounded-3xl p-6 shadow-lg border border-orange-300 dark:border-orange-500/40 flex items-center space-x-5 text-white relative overflow-hidden group">
-          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-card opacity-10 rounded-full mix-blend-overlay group-hover:scale-110 transition-transform duration-500"></div>
-          <div className="absolute bottom-[-10%] left-[-10%] w-24 h-24 bg-card opacity-10 rounded-full mix-blend-overlay"></div>
-          <div className="w-14 h-14 bg-white/20 dark:bg-white/[0.06] backdrop-blur-sm text-white rounded-2xl flex items-center justify-center shrink-0 z-10 border border-white/20 shadow-inner">
+        <div className="bg-card rounded-3xl p-6 shadow-sm border border-line flex items-center space-x-5">
+          <div className="w-14 h-14 bg-surface2 text-muted rounded-2xl flex items-center justify-center shrink-0 border border-line">
             <FiClock className="text-2xl" />
           </div>
-          <div className="z-10">
-            <p className="text-sm text-orange-100 font-semibold tracking-wide mb-0.5">
+          <div>
+            <p className="text-sm text-muted font-semibold tracking-wide mb-0.5">
               Menunggu Konfirmasi
             </p>
-            <p className="text-3xl font-extrabold">
+            <p className="text-3xl font-extrabold text-ink">
               {reservasi.filter((r) => r.status === "Pending").length}
             </p>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-3xl p-6 shadow-lg border border-emerald-400 flex items-center space-x-5 text-white relative overflow-hidden group">
-          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-card opacity-10 rounded-full mix-blend-overlay group-hover:scale-110 transition-transform duration-500"></div>
-          <div className="absolute bottom-[-10%] left-[-10%] w-24 h-24 bg-card opacity-10 rounded-full mix-blend-overlay"></div>
-          <div className="w-14 h-14 bg-white/20 dark:bg-white/[0.06] backdrop-blur-sm text-white rounded-2xl flex items-center justify-center shrink-0 z-10 border border-white/20 shadow-inner">
+        <div className="bg-card rounded-3xl p-6 shadow-sm border border-line flex items-center space-x-5">
+          <div className="w-14 h-14 bg-surface2 text-muted rounded-2xl flex items-center justify-center shrink-0 border border-line">
             <FiCheck className="text-2xl" />
           </div>
-          <div className="z-10">
-            <p className="text-sm text-emerald-100 font-semibold tracking-wide mb-0.5">
+          <div>
+            <p className="text-sm text-muted font-semibold tracking-wide mb-0.5">
               Selesai
             </p>
-            <p className="text-3xl font-extrabold">
+            <p className="text-3xl font-extrabold text-ink">
               {reservasi.filter((r) => r.status === "Diterima").length}
             </p>
           </div>
@@ -87,7 +85,7 @@ const Reservasi = ({
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative shrink-0">
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+              <FiSearch className="pointer-events-none absolute inset-y-0 left-4 my-auto text-muted" />
               <input
                 type="text"
                 placeholder="Cari nama / kontak..."
@@ -97,7 +95,7 @@ const Reservasi = ({
               />
             </div>
             <div className="relative shrink-0">
-              <FiFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+              <FiFilter className="pointer-events-none absolute inset-y-0 left-4 my-auto text-muted" />
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
@@ -108,7 +106,7 @@ const Reservasi = ({
                 <option value="Diterima">Diterima</option>
                 <option value="Ditolak">Ditolak</option>
               </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted text-xs">
+              <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-muted text-xs">
                 ▼
               </div>
             </div>
@@ -175,7 +173,7 @@ const Reservasi = ({
                   <tr
                     key={item.id}
                     onClick={() => setSelectedReservasi(item)}
-                    className="odd:bg-card even:bg-surface2 hover:!bg-[#F1F6F3] dark:hover:!bg-white/[0.035] dark:bg-green-500/10 hover:shadow-md dark:hover:shadow-none transition-all duration-300 group border-l-4 border-transparent hover:!border-[#16804B] dark:hover:!border-green-600 cursor-pointer"
+                    className="group hover:bg-surface2 transition-colors cursor-pointer"
                   >
                     <td className="px-6 py-5">
                       <div className="font-extrabold text-ink text-base">
@@ -217,48 +215,67 @@ const Reservasi = ({
                       </span>
                     </td>
                     <td
-                      className="px-6 py-5 text-right space-x-2"
+                      className="px-6 py-5 text-right"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {item.status === "Pending" && (
-                        <>
-                          <button
-                            className="text-white bg-green-600 hover:bg-green-700 px-3 py-2 rounded-xl font-bold text-xs transition duration-300 shadow-sm hover:shadow-sm transform hover:-translate-y-0.5"
-                            onClick={() =>
-                              updateStatusReservasi(item.id, "Diterima")
-                            }
-                            title="Konfirmasi Pesanan"
-                          >
-                            <FiCheck className="inline-block w-4 h-4" />
-                          </button>
-                          <button
-                            className="text-orange-500 bg-orange-50 dark:bg-orange-500/15 hover:bg-orange-600 hover:text-white dark:hover:bg-orange-600/80 px-3 py-2 rounded-xl font-bold text-xs transition duration-300 border border-orange-100 dark:border-orange-500/30 hover:border-orange-600 dark:hover:border-orange-600/60 shadow-sm hover:shadow-sm dark:hover:shadow-none transform hover:-translate-y-0.5"
-                            onClick={() =>
-                              setRejectModal({
-                                show: true,
-                                id: item.id,
-                                nama: item.nama,
-                              })
-                            }
-                            title="Tolak Reservasi"
-                          >
-                            <FiX className="inline-block w-4 h-4" />
-                          </button>
-                        </>
-                      )}
-                      <button
-                        className="text-red-500 hover:text-white hover:bg-red-600 dark:hover:bg-red-600/80 bg-red-50 dark:bg-red-500/15 p-2 rounded-xl transition duration-300 shadow-sm border border-red-50 dark:border-red-500/30 hover:border-red-600 dark:hover:border-red-600/60 transform hover:-translate-y-0.5"
-                        title="Hapus"
-                        onClick={() =>
-                          setDeleteModal({
-                            show: true,
-                            id: item.id,
-                            nama: item.nama,
-                          })
-                        }
-                      >
-                        <FiTrash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex justify-end">
+                        <ActionMenu
+                          terbuka={menuTerbuka === item.id}
+                          onToggle={() =>
+                            setMenuTerbuka((cur) =>
+                              cur === item.id ? null : item.id,
+                            )
+                          }
+                          onTutup={() => setMenuTerbuka(null)}
+                          items={
+                            item.status === "Pending"
+                              ? [
+                                  {
+                                    label: "Konfirmasi",
+                                    icon: <FiCheck size={15} />,
+                                    onClick: () =>
+                                      updateStatusReservasi(item.id, "Diterima"),
+                                  },
+                                  {
+                                    label: "Tolak",
+                                    icon: <FiX size={15} />,
+                                    danger: true,
+                                    onClick: () =>
+                                      setRejectModal({
+                                        show: true,
+                                        id: item.id,
+                                        nama: item.nama,
+                                      }),
+                                  },
+                                  { type: "divider" },
+                                  {
+                                    label: "Hapus",
+                                    icon: <FiTrash2 size={15} />,
+                                    danger: true,
+                                    onClick: () =>
+                                      setDeleteModal({
+                                        show: true,
+                                        id: item.id,
+                                        nama: item.nama,
+                                      }),
+                                  },
+                                ]
+                              : [
+                                  {
+                                    label: "Hapus",
+                                    icon: <FiTrash2 size={15} />,
+                                    danger: true,
+                                    onClick: () =>
+                                      setDeleteModal({
+                                        show: true,
+                                        id: item.id,
+                                        nama: item.nama,
+                                      }),
+                                  },
+                                ]
+                          }
+                        />
+                      </div>
                     </td>
                   </tr>
                 ));

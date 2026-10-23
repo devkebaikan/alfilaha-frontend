@@ -22,6 +22,22 @@ import {
   FiBell,
   FiImage,
   FiLogIn,
+  FiBookOpen,
+  FiBox,
+  FiHome,
+  FiDroplet,
+  FiScissors,
+  FiSun,
+  FiActivity,
+  FiFeather,
+  FiHeart,
+  FiTag,
+  FiPaperclip,
+  FiCoffee,
+  FiWind,
+  FiThermometer,
+  FiSquare,
+  FiMoreHorizontal,
 } from "react-icons/fi";
 
 const API = import.meta.env.VITE_PUBLIC_API || "http://localhost:5000";
@@ -47,11 +63,64 @@ const AKSI_LABEL = {
   panen: "Panen",
 };
 
+// Ikon untuk setiap aksi perawatan — selalu tampil di chip, disesuaikan
+// dengan nama aksi (tanaman maupun ternak). Fallback ke ikon generik.
+const getAksiIcon = (nama, size = 12) => {
+  const n = String(nama || "").toLowerCase();
+  if (/siram|air|minum/.test(n)) return <FiDroplet size={size} />;
+  if (/pupuk|nutrisi|pakan|makan/.test(n)) return <FiCoffee size={size} />;
+  if (/panen|potong|pangkas|pruning|panen|sembelih/.test(n))
+    return <FiScissors size={size} />;
+  if (/kebersihan|bersih|sanitasi|kandang/.test(n)) return <FiHome size={size} />;
+  if (/sakit|sehat|vaksin|obat|kesehatan/.test(n)) return <FiHeart size={size} />;
+  if (/suhu|temperature|pemanas/.test(n)) return <FiThermometer size={size} />;
+  if (/angin|ventilasi|sirkulasi/.test(n)) return <FiWind size={size} />;
+  if (/jemur|sinar|matahari/.test(n)) return <FiSun size={size} />;
+  if (/tanam|semai|bibit/.test(n)) return <FiFeather size={size} />;
+  if (/tandai|label|catat|timbang/.test(n)) return <FiTag size={size} />;
+  if (/cek|periksa|monitor|kontrol|inspeksi/.test(n)) return <FiActivity size={size} />;
+  return <FiPaperclip size={size} />;
+};
+
+// Ikon untuk aksi/aktivitas kelas (FGD, Kunjungan, Klasikal, dll).
+const getAktivitasKelasIcon = (nama, size = 12) => {
+  const n = String(nama || "").toLowerCase();
+  if (/fgd|diskusi|kelompok/.test(n)) return <FiActivity size={size} />;
+  if (/kunjungan|studi|lapangan|tour/.test(n)) return <FiSun size={size} />;
+  if (/klasikal|kelas|teori/.test(n)) return <FiBookOpen size={size} />;
+  return <FiPaperclip size={size} />;
+};
+
 const isKategoriPertanian = (nama) =>
   /pertanian|perkebunan/i.test(String(nama || "").trim());
 
 const isKategoriPeternakan = (nama) =>
   /peternakan/i.test(String(nama || "").trim());
+
+const isKategoriPendidikan = (nama) =>
+  /pendidikan|kelas/i.test(String(nama || "").trim());
+
+const getKategoriIcon = (nama) => {
+  const n = String(nama || "").toLowerCase();
+  if (/peternakan/i.test(n)) return <FiBox size={12} />;
+  if (/pendidikan|kelas/i.test(n)) return <FiBookOpen size={12} />;
+  if (/pertanian|perkebunan/i.test(n)) return <FiTrendingUp size={12} />;
+  if (/kebersihan|bersih/i.test(n)) return <FiHome size={12} />;
+  return <FiList size={12} />;
+};
+
+const getKategoriStyle = (nama) => {
+  const n = String(nama || "").toLowerCase();
+  if (/peternakan/i.test(n))
+    return "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-500/30";
+  if (/pendidikan|kelas/i.test(n))
+    return "bg-violet-50 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-500/30";
+  if (/pertanian|perkebunan/i.test(n))
+    return "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30";
+  if (/kebersihan|bersih/i.test(n))
+    return "bg-cyan-50 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-500/30";
+  return "bg-surface2 text-muted border-line";
+};
 
 const clsStatus = (s) =>
   ({
@@ -84,6 +153,50 @@ const initials = (n) =>
         .toUpperCase()
     : "?";
 
+/**
+ * Pisahkan deskripsi jadwal menjadi { utama, perHari }.
+ * Deskripsi mentah menyisipkan blok "Jadwal Pelajaran:" berisi baris hari
+ * (Senin/Selasa/...) dan tiap pelajaran diawali "•".
+ */
+const parseDeskripsiJadwal = (deskripsi) => {
+  const teks = String(deskripsi || "");
+  const idx = teks.indexOf("Jadwal Pelajaran:");
+  if (idx === -1) return { utama: teks.trim(), perHari: [] };
+
+  const utama = teks.slice(0, idx).trim();
+  const blok = teks.slice(idx + "Jadwal Pelajaran:".length);
+  const baris = blok
+    .split("\n")
+    .map((b) => b.trim())
+    .filter(Boolean);
+
+  const perHari = [];
+  let hariAktif = null;
+  baris.forEach((b) => {
+    if (b.startsWith("•")) {
+      if (!hariAktif) {
+        hariAktif = { hari: "", items: [] };
+        perHari.push(hariAktif);
+      }
+      hariAktif.items.push(b.slice(1).trim());
+    } else {
+      hariAktif = { hari: b, items: [] };
+      perHari.push(hariAktif);
+    }
+  });
+  return { utama, perHari };
+};
+
+/** "B.Inggris (07:00-08:00) — Ustadz Ahmad" → { mapel, jam, guru } */
+const parseBarisPelajaran = (baris) => {
+  const m = String(baris).match(/^(.*?)\s*(?:\((\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2})\))?\s*(?:—\s*(.*))?$/);
+  return {
+    mapel: (m?.[1] || baris).trim(),
+    jam: (m?.[2] || "").trim(),
+    guru: (m?.[3] || "").trim(),
+  };
+};
+
 /* ═══════════════════════════════════════════════════════════
    FORM JADWAL BARU (Dengan Lokasi & Kategori Dinamis)
 ═══════════════════════════════════════════════════════════ */
@@ -107,6 +220,8 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
       tanggal_selesai: "",
       deskripsi: "",
       santri_ids: [],
+      kelas_terpilih: [],
+      jadwal_pelajaran: [],
       ...initial,
     };
     // Saat edit: preselected dari penanggung_jawab (CSV id santri lama)
@@ -117,6 +232,16 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
         .filter(Boolean);
     }
     if (!Array.isArray(awal.santri_ids)) awal.santri_ids = [];
+    if (Array.isArray(awal.kelas_terpilih)) {
+      awal.kelas_terpilih = awal.kelas_terpilih
+        .filter((k) => k && k.kelas_id)
+        .map((k) => ({
+          kelas_id: Number(k.kelas_id),
+          aksi: Array.isArray(k.aksi) ? [...k.aksi] : [],
+        }));
+    } else {
+      awal.kelas_terpilih = [];
+    }
     // Normalisasi tanaman_terpilih (format baru: [{ tanaman_id, aksi: [] }])
     if (Array.isArray(awal.tanaman_terpilih)) {
       awal.tanaman_terpilih = awal.tanaman_terpilih
@@ -149,14 +274,12 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
   // Data dari database
   const [kategoriList, setKategoriList] = useState([]);
   const [lokasiList, setLokasiList] = useState([]);
-  const [kegiatanList, setKegiatanList] = useState([]);
   const [tanamanList, setTanamanList] = useState([]);
   const [santriList, setSantriList] = useState([]);
 
   // Loading states
   const [, setLoadingKategori] = useState(false);
   const [, setLoadingLokasi] = useState(false);
-  const [loadingKegiatan, setLoadingKegiatan] = useState(false);
   const [loadingTanaman, setLoadingTanaman] = useState(false);
   const [loadingSantri, setLoadingSantri] = useState(false);
 
@@ -174,6 +297,21 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
   const [aksiTernakLoading, setAksiTernakLoading] = useState(false);
   const [aksiTernakError, setAksiTernakError] = useState("");
 
+  // Mode Pendidikan (kelas): daftar kelas, guru, jenis aktivitas perawatan,
+  // dan baris jadwal pelajaran yang dikirim ke santri
+  const [kelasList, setKelasList] = useState([]);
+  const [guruList, setGuruList] = useState([]);
+  const [jenisPerawatanPendidikan, setJenisPerawatanPendidikan] = useState([
+    { key: "fgd", label: "FGD" },
+    { key: "kunjungan", label: "Kunjungan" },
+    { key: "klasikal", label: "Klasikal" },
+  ]);
+  const [showTambahJenis, setShowTambahJenis] = useState(false);
+  const [inputTambahJenis, setInputTambahJenis] = useState("");
+  // Jadwal pelajaran yang sudah tersimpan di tiap kelas terpilih
+  const [jadwalKelasMap, setJadwalKelasMap] = useState({});
+  const [loadingJadwalKelas, setLoadingJadwalKelas] = useState(false);
+
   // UI states
   const [showKategoriForm, setShowKategoriForm] = useState(false);
   const [kategoriForm, setKategoriForm] = useState({ nama: "" });
@@ -181,9 +319,7 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
   const [santriFilterKelas, setSantriFilterKelas] = useState("");
   const [santriError, setSantriError] = useState("");
   const [santriLoginRequired, setSantriLoginRequired] = useState(false);
-  const [kegiatanError, setKegiatanError] = useState("");
-  const [kegiatanBaru, setKegiatanBaru] = useState("");
-  const [menambahKegiatan, setMenambahKegiatan] = useState(false);
+
 
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -197,7 +333,17 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
   const isPeternakan = isKategoriPeternakan(
     kategoriTerpilih?.nama || initial?.kategori,
   );
-  const isProduksi = isPertanian || isPeternakan;
+  const isPendidikan = isKategoriPendidikan(
+    kategoriTerpilih?.nama || initial?.kategori,
+  );
+  const isProduksi = isPertanian || isPeternakan || isPendidikan;
+
+  // Untuk kategori Pendidikan, admin memilih pelajaran dari jadwal kelas.
+  // Semua pelajaran terpilih digabung jadi SATU tiket; daftarnya ditampilkan
+  // di ringkasan agar admin tahu apa yang akan dikirim ke santri.
+  const pelajaranTerpilih = isPendidikan
+    ? (form.jadwal_pelajaran || []).filter((j) => j && j.mapel)
+    : [];
 
   // Fetch kategori
   const fetchKategori = async () => {
@@ -232,32 +378,6 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
   };
 
   // Fetch kegiatan berdasarkan lokasi (endpoint: GET /api/lokasi/:id/kegiatan)
-  const fetchKegiatan = async (lokasiId) => {
-    if (!lokasiId) {
-      setKegiatanList([]);
-      return;
-    }
-    setLoadingKegiatan(true);
-    setKegiatanError("");
-    try {
-      const url = `${API}/api/lokasi/${lokasiId}/kegiatan`;
-      const res = await adminFetch(url, { cache: "no-store" });
-      if (!res.ok) {
-        setKegiatanError(`Server menjawab ${res.status}`);
-        setKegiatanList([]);
-        return;
-      }
-      const data = await res.json();
-      setKegiatanList(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.error("Fetch kegiatan gagal:", e);
-      setKegiatanError("Tidak bisa terhubung ke server");
-      setKegiatanList([]);
-    } finally {
-      setLoadingKegiatan(false);
-    }
-  };
-
   // Fetch tanaman berdasarkan lokasi
   const fetchTanaman = async (lokasiId) => {
     if (!lokasiId) {
@@ -435,56 +555,6 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
     }
   };
 
-  // Toggle kegiatan selection
-  const toggleKegiatan = (kegiatanId) => {
-    const current = form.kegiatan_lokasi_ids || [];
-    if (current.includes(kegiatanId)) {
-      set(
-        "kegiatan_lokasi_ids",
-        current.filter((id) => id !== kegiatanId),
-      );
-    } else {
-      set("kegiatan_lokasi_ids", [...current, kegiatanId]);
-    }
-  };
-
-  // Tambah kegiatan baru untuk lokasi terpilih langsung dari form jadwal (admin)
-  const tambahKegiatanBaru = async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
-    const lokasiId = parseInt(form.lokasi_id, 10);
-    const nama = kegiatanBaru.trim().replace(/\s+/g, " ");
-    if (!lokasiId || !nama) return;
-
-    setMenambahKegiatan(true);
-    setKegiatanError("");
-    try {
-      const res = await adminFetch(`${API}/api/lokasi/${lokasiId}/kegiatan`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nama }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        setKegiatanError(errData.error || `Server menjawab ${res.status}`);
-        return;
-      }
-      const body = await res.json();
-      await fetchKegiatan(lokasiId);
-      if (body && body.id) {
-        const ids = form.kegiatan_lokasi_ids || [];
-        if (!ids.includes(body.id)) {
-          set("kegiatan_lokasi_ids", [...ids, body.id]);
-        }
-      }
-      setKegiatanBaru("");
-    } catch (e) {
-      console.error("Tambah kegiatan langsung gagal:", e);
-      setKegiatanError("Tidak bisa terhubung ke server");
-    } finally {
-      setMenambahKegiatan(false);
-    }
-  };
-
   // Toggle tanaman selection (mode non-Pertanian: tanaman terkait lokasi)
   const toggleTanaman = (tanamanId) => {
     const current = form.tanaman_ids || [];
@@ -619,7 +689,6 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
     set("lokasi_id", lokasiId);
     set("kegiatan_lokasi_ids", []); // Reset kegiatan selection
     set("tanaman_ids", []); // Reset tanaman selection
-    fetchKegiatan(lokasiId);
     fetchTanaman(lokasiId);
   };
 
@@ -630,10 +699,9 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
     fetchSantri();
   }, []);
 
-  // Load kegiatan dan tanaman saat lokasi berubah
+  // Load tanaman saat lokasi berubah
   useEffect(() => {
     if (form.lokasi_id) {
-      fetchKegiatan(form.lokasi_id);
       fetchTanaman(form.lokasi_id);
     }
   }, [form.lokasi_id]);
@@ -720,7 +788,217 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kategoriList]);
 
-  const onSubmit = async (e) => {
+  // Mode Pendidikan: ambil daftar kelas, guru, dan jenis aktivitas perawatan
+  useEffect(() => {
+    if (!isPendidikan) return;
+    (async () => {
+      try {
+        const [rk, rg, rj] = await Promise.all([
+          adminFetch(`${API}/api/admin/kelas`),
+          adminFetch(`${API}/api/pendidikan/guru`),
+          adminFetch(`${API}/api/pendidikan/jenis-perawatan`),
+        ]);
+        if (rk.ok) {
+          const data = await rk.json();
+          setKelasList(Array.isArray(data) ? data : data?.kelas || []);
+        }
+        if (rg.ok) setGuruList(await rg.json());
+        if (rj.ok) {
+          const data = await rj.json();
+          if (Array.isArray(data) && data.length) {
+            setJenisPerawatanPendidikan(
+              data.map((d) => ({
+                key: String(d.nama).toLowerCase(),
+                label: d.nama,
+              })),
+            );
+          }
+        }
+      } catch (e) {}
+    })();
+  }, [isPendidikan]);
+
+  // Ambil jadwal pelajaran yang sudah tersimpan untuk setiap kelas terpilih,
+  // supaya admin bisa langsung memilih jadwal yang sudah ada.
+  const kelasTerpilihKey = (form.kelas_terpilih || [])
+    .map((k) => Number(k.kelas_id))
+    .filter(Boolean)
+    .sort((a, b) => a - b)
+    .join(",");
+  useEffect(() => {
+    if (!isPendidikan) return;
+    const ids = kelasTerpilihKey ? kelasTerpilihKey.split(",").map(Number) : [];
+    if (ids.length === 0) {
+      setJadwalKelasMap({});
+      return;
+    }
+    let batal = false;
+    setLoadingJadwalKelas(true);
+    (async () => {
+      const map = {};
+      await Promise.all(
+        ids.map(async (id) => {
+          try {
+            const res = await fetch(`${API}/api/pendidikan/jadwal/${id}`);
+            if (res.ok) {
+              const rows = await res.json();
+              map[id] = Array.isArray(rows) ? rows : [];
+            } else map[id] = [];
+          } catch (e) {
+            map[id] = [];
+          }
+        }),
+      );
+      if (!batal) {
+        setJadwalKelasMap(map);
+        setLoadingJadwalKelas(false);
+      }
+    })();
+    return () => {
+      batal = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPendidikan, kelasTerpilihKey]);
+
+  // Toggle pilih kelas (mode Pendidikan)
+  const toggleKelas = (kelasId) => {
+    setForm((prev) => {
+      const list = Array.isArray(prev.kelas_terpilih)
+        ? [...prev.kelas_terpilih]
+        : [];
+      const idx = list.findIndex((k) => Number(k.kelas_id) === Number(kelasId));
+      if (idx >= 0) list.splice(idx, 1);
+      else list.push({ kelas_id: Number(kelasId), aksi: [] });
+      return { ...prev, kelas_terpilih: list };
+    });
+  };
+
+  // Toggle aksi perawatan per kelas (mode Pendidikan)
+  const toggleAksiKelas = (kelasId, aksiKey) => {
+    setForm((prev) => {
+      const list = (Array.isArray(prev.kelas_terpilih)
+        ? prev.kelas_terpilih
+        : []
+      ).map((k) => ({
+        ...k,
+        aksi: Array.isArray(k.aksi) ? [...k.aksi] : [],
+      }));
+      const idx = list.findIndex(
+        (k) => Number(k.kelas_id) === Number(kelasId),
+      );
+      if (idx >= 0) {
+        const has =
+          list[idx].aksi.includes(aksiKey) || list[idx].aksi.includes(aksiKey.toUpperCase());
+        list[idx].aksi = has
+          ? list[idx].aksi.filter((a) => a !== aksiKey && a !== aksiKey.toUpperCase())
+          : [...list[idx].aksi, aksiKey];
+      }
+      return { ...prev, kelas_terpilih: list };
+    });
+  };
+
+  // Jadwal pelajaran lama punya id; baris baru (manual) tidak. Pakai id itu
+  // sebagai penanda terpilih.
+  const jadwalIdDipakai = (id) =>
+    (form.jadwal_pelajaran || []).some(
+      (j) => j.pelajaran_id !== undefined && Number(j.pelajaran_id) === Number(id),
+    );
+
+  // Klik jadwal pelajaran yang sudah tersimpan → masukkan/keluarkan dari form.
+  const toggleJadwalPelajaranAda = (kelasId, item) => {
+    setForm((prev) => {
+      const list = Array.isArray(prev.jadwal_pelajaran)
+        ? [...prev.jadwal_pelajaran]
+        : [];
+      const idx = list.findIndex(
+        (j) =>
+          j.pelajaran_id !== undefined &&
+          Number(j.pelajaran_id) === Number(item.id),
+      );
+      if (idx >= 0) {
+        list.splice(idx, 1);
+      } else {
+        list.push({
+          pelajaran_id: Number(item.id),
+          kelas_id: Number(kelasId),
+          hari: item.hari,
+          jam_mulai: String(item.jam_mulai || "").slice(0, 5),
+          jam_selesai: String(item.jam_selesai || "").slice(0, 5),
+          mapel: item.mapel || "",
+          guru_id: item.guru_id || "",
+        });
+      }
+      return { ...prev, jadwal_pelajaran: list };
+    });
+  };
+
+  // Pilih semua jadwal pelajaran milik sebuah kelas, atau kosongkan bila sudah
+  // semua terpilih. Dipakai oleh tombol "Pilih Semua".
+  const toggleSemuaJadwalKelas = (kelasId) => {
+    const items = jadwalKelasMap[kelasId] || [];
+    if (items.length === 0) return;
+    setForm((prev) => {
+      const list = Array.isArray(prev.jadwal_pelajaran)
+        ? [...prev.jadwal_pelajaran]
+        : [];
+      const semuaTerpilih = items.every((item) =>
+        list.some(
+          (j) =>
+            j.pelajaran_id !== undefined &&
+            Number(j.pelajaran_id) === Number(item.id),
+        ),
+      );
+      if (semuaTerpilih) {
+        const ids = new Set(items.map((it) => Number(it.id)));
+        return {
+          ...prev,
+          jadwal_pelajaran: list.filter(
+            (j) => !(j.pelajaran_id !== undefined && ids.has(Number(j.pelajaran_id))),
+          ),
+        };
+      }
+      const sudah = new Set(
+        list.filter((j) => j.pelajaran_id !== undefined).map((j) => Number(j.pelajaran_id)),
+      );
+      items.forEach((item) => {
+        if (sudah.has(Number(item.id))) return;
+        sudah.add(Number(item.id));
+        list.push({
+          pelajaran_id: Number(item.id),
+          kelas_id: Number(kelasId),
+          hari: item.hari,
+          jam_mulai: String(item.jam_mulai || "").slice(0, 5),
+          jam_selesai: String(item.jam_selesai || "").slice(0, 5),
+          mapel: item.mapel || "",
+          guru_id: item.guru_id || "",
+          guru_nama: item.guru_nama || item.guru_nama_tampil || "",
+        });
+      });
+      return { ...prev, jadwal_pelajaran: list };
+    });
+  };
+
+  const tambahJenisPerawatan = async () => {
+    const nama = inputTambahJenis.trim();
+    if (!nama) return;
+    try {
+      const res = await adminFetch(`${API}/api/pendidikan/jenis-perawatan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nama }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length) {
+          setJenisPerawatanPendidikan(data.map((d) => ({ key: String(d.nama).toLowerCase(), label: d.nama })));
+        }
+        setInputTambahJenis('');
+        setShowTambahJenis(false);
+      }
+    } catch (e) {}
+  };
+
+    const onSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setSaveError("");
@@ -778,20 +1056,20 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
         setSaving(false);
         return;
       }
-    } else {
-      if (!form.lokasi_id) {
-        setSaveError("Lokasi diperlukan");
+    } else if (isPendidikan) {
+      if (!form.kelas_terpilih || form.kelas_terpilih.length === 0) {
+        setSaveError(
+          "Kategori pendidikan wajib memilih minimal satu kelas.",
+        );
         setSaving(false);
         return;
       }
-      if (
-        !form.kegiatan_lokasi_ids ||
-        form.kegiatan_lokasi_ids.length === 0
-      ) {
-        setSaveError("Minimal satu kegiatan harus dipilih");
-        setSaving(false);
-        return;
-      }
+    }
+    // Lokasi wajib untuk semua kategori (kegiatan opsional).
+    if (!form.lokasi_id) {
+      setSaveError("Lokasi diperlukan");
+      setSaving(false);
+      return;
     }
     if (!form.santri_ids || form.santri_ids.length === 0) {
       setSaveError("Minimal satu santri harus dipilih");
@@ -800,7 +1078,9 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
     }
 
     try {
-      await onSave(form);
+      const namaKategori =
+        kategoriTerpilih?.nama || form.kategori || initial?.kategori || "";
+      await onSave(namaKategori ? { ...form, kategori: namaKategori } : form);
     } catch (err) {
       setSaveError(err?.message || "Gagal menyimpan jadwal");
     } finally {
@@ -879,7 +1159,7 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
             required
             value={form.nama_aktivitas}
             onChange={(e) => set("nama_aktivitas", e.target.value)}
-            placeholder="cth: Pembersihan Area Kebun"
+            placeholder="cth: Kelas 11 — Senin"
             className="w-full px-4 py-3 bg-surface2 border border-line rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition text-base"
           />
         </div>
@@ -1099,18 +1379,13 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
                                     onClick={() =>
                                       toggleAksiTanaman(tanamanItem.id, aksi)
                                     }
-                                    className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 transition ${
+                                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition ${
                                       checked
                                         ? "bg-green-600 border-green-600 text-white"
                                         : "bg-card border-line text-muted hover:border-green-400/60"
                                     }`}
                                   >
-                                    <FiCheckCircle
-                                      size={12}
-                                      className={`inline mr-1 ${
-                                        checked ? "" : "opacity-0"
-                                      }`}
-                                    />
+                                    {getAksiIcon(AKSI_LABEL[aksi] || aksi)}
                                     {AKSI_LABEL[aksi] || aksi}
                                   </button>
                                 );
@@ -1217,7 +1492,20 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
                         className="flex items-center gap-3 w-full text-left"
                       >
                         <div className="w-14 h-14 rounded-lg overflow-hidden bg-gradient-to-br from-teal-600 to-green-800 flex items-center justify-center flex-shrink-0">
-                          <FiImage size={20} className="text-white" />
+                          {ternakItem.foto ? (
+                            <img
+                              src={`${API}/uploads/${ternakItem.foto}`}
+                              alt={ternakItem.nama}
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <FiImage size={20} className="text-white" />
+                          )}
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
@@ -1293,21 +1581,16 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
                                         Number(aksi.id),
                                       )
                                     }
-                                    className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 transition ${
+                                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition ${
                                       checked
                                         ? "bg-teal-600 border-teal-600 text-white"
                                         : "bg-card border-line text-muted hover:border-teal-400/60"
                                     }`}
                                   >
-                                    <FiCheckCircle
-                                      size={12}
-                                      className={`inline mr-1 ${
-                                        checked ? "" : "opacity-0"
-                                      }`}
-                                    />
+                                    {getAksiIcon(aksi.label || aksi.nama_aksi)}
                                     {aksi.label || aksi.nama_aksi}
                                     {aksi.butuh_input_angka && (
-                                      <span className="ml-1 text-[9px] font-bold uppercase opacity-80">
+                                      <span className="text-[9px] font-bold uppercase opacity-80">
                                         • angka
                                       </span>
                                     )}
@@ -1329,8 +1612,267 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
           </div>
         )}
 
-        {/* Lokasi */}
-        {!isProduksi && (
+        {isPendidikan && (
+          <div>
+            <label className="block text-sm font-bold text-ink mb-2">Pilih Kelas</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {kelasList.map((kls) => {
+                const isSelected = (form.kelas_terpilih || []).some((k) => Number(k.kelas_id) === Number(kls.id));
+                const entry = (form.kelas_terpilih || []).find((k) => Number(k.kelas_id) === Number(kls.id));
+                const entryAksi = Array.isArray(entry?.aksi) ? entry.aksi : [];
+                return (
+                  <div key={kls.id} className={`rounded-xl border-2 p-3 ${isSelected ? "border-violet-500 bg-violet-50 dark:bg-violet-500/15" : "border-line bg-card"}`}>
+                    <button type="button" onClick={() => toggleKelas(kls.id)} className="flex items-center gap-3 w-full text-left">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center flex-shrink-0">
+                        {kls.foto ? (
+                          <img
+                            src={`${API}/uploads/${kls.foto}`}
+                            alt={kls.nama}
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <FiBookOpen size={20} className="text-white" />
+                        )}
+                      </div>
+                      <div className="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0">{isSelected && <FiCheckCircle size={12} className="text-violet-600" />}</div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-sm truncate">{kls.nama}</p>
+                        {(kls.wali_kelas || kls.tahun_ajaran) && <p className="text-xs text-muted truncate">{[kls.wali_kelas, kls.tahun_ajaran].filter(Boolean).join(" · ")}</p>}
+                      </div>
+                    </button>
+                    {isSelected && (
+                      <div className="mt-3 pt-3 border-t border-violet-200 dark:border-violet-500/30">
+                        <p className="text-[11px] font-bold text-muted uppercase mb-1.5">Aktivitas Kelas</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {jenisPerawatanPendidikan.map((jp) => {
+                            const checked = entryAksi.includes(jp.key) || entryAksi.includes(jp.label);
+                            return (
+                              <button key={jp.key} type="button" onClick={() => toggleAksiKelas(kls.id, jp.key)} className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition ${checked ? "bg-violet-600 border-violet-600 text-white" : "bg-card border-line text-muted"}`}>
+                                {getAktivitasKelasIcon(jp.key || jp.label)}
+                                {jp.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div className="mt-2">
+                          <button type="button" onClick={() => setShowTambahJenis((v)=>!v)} className="text-xs text-violet-600">+ Tambah Aktivitas Kelas</button>
+                          {showTambahJenis && (
+                            <div className="flex gap-2 mt-2">
+                              <input value={inputTambahJenis} onChange={(e)=>setInputTambahJenis(e.target.value)} placeholder="Nama aktivitas" className="flex-1 px-2 py-1 border border-line rounded text-xs" />
+                              <button type="button" onClick={tambahJenisPerawatan} className="px-2 py-1 bg-violet-600 text-white rounded text-xs">Simpan</button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Panel besar: daftar jadwal pelajaran kelas terpilih, dikelompokkan
+                per hari Senin–Sabtu. Admin tinggal klik untuk memakai. */}
+            {(form.kelas_terpilih || []).length > 0 && (
+              <div className="mt-6 rounded-2xl border-2 border-violet-200 dark:border-violet-500/30 bg-violet-50/60 dark:bg-violet-500/5 p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <FiCalendar className="text-violet-600 dark:text-violet-300" size={20} />
+                  <h3 className="text-base font-extrabold text-ink">
+                    Jadwal Pelajaran Kelas
+                  </h3>
+                  <span className="text-xs text-muted">
+                    — klik pelajaran untuk mengirimnya ke santri
+                  </span>
+                </div>
+
+                {pelajaranTerpilih.length > 0 && (
+                  <div className="mb-4 rounded-xl border border-violet-300 dark:border-violet-500/40 bg-card p-4">
+                    <p className="text-sm font-extrabold text-ink mb-2 flex items-center gap-1.5">
+                      <FiCheckCircle size={15} className="text-violet-600 dark:text-violet-300" />
+                      Terpilih: {pelajaranTerpilih.length} pelajaran → dikirim
+                      sebagai satu tiket
+                    </p>
+                    <div className="space-y-2">
+                      {pelajaranTerpilih.map((j) => (
+                        <div
+                          key={`${j.pelajaran_id}-${j.hari}`}
+                          className="grid grid-cols-[5.5rem_1fr] gap-3 items-start rounded-lg border border-line bg-surface2/50 px-3 py-2"
+                        >
+                          <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300 text-[11px] font-extrabold whitespace-nowrap">
+                            {j.hari}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-ink truncate">
+                              {j.mapel}
+                            </p>
+                            <div className="flex items-center gap-3 mt-0.5 text-[11px] text-muted flex-wrap">
+                              <span className="inline-flex items-center gap-1 font-semibold text-green-600 dark:text-green-400">
+                                <FiClock size={11} />
+                                {j.jam_mulai} - {j.jam_selesai}
+                              </span>
+                              {j.guru_nama && (
+                                <span className="inline-flex items-center gap-1 truncate">
+                                  <FiUser size={11} />
+                                  {j.guru_nama}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {loadingJadwalKelas ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-violet-600" />
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {(form.kelas_terpilih || []).map((kt) => {
+                      const klsId = Number(kt.kelas_id);
+                      const kls = kelasList.find((k) => Number(k.id) === klsId);
+                      const items = jadwalKelasMap[klsId] || [];
+                      const semuaTerpilih =
+                        items.length > 0 &&
+                        items.every(
+                          (item) =>
+                            typeof item === "object" &&
+                            jadwalIdDipakai(item.id),
+                        );
+                      return (
+                        <div
+                          key={klsId}
+                          className="rounded-xl border border-line bg-card p-4"
+                        >
+                          <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+                            <p className="font-extrabold text-ink">
+                              {kls?.nama || `Kelas ${klsId}`}
+                              <span className="ml-2 text-xs font-normal text-muted">
+                                {items.length} pelajaran
+                              </span>
+                            </p>
+                            {items.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => toggleSemuaJadwalKelas(klsId)}
+                                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold border-2 transition ${
+                                  semuaTerpilih
+                                    ? "bg-violet-600 border-violet-600 text-white"
+                                    : "bg-violet-50 dark:bg-violet-500/15 border-violet-300 dark:border-violet-500/40 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-500/25"
+                                }`}
+                              >
+                                <FiCheckCircle size={15} />
+                                {semuaTerpilih ? "Kosongkan Semua" : "Pilih Semua"}
+                              </button>
+                            )}
+                          </div>
+
+                          {items.length === 0 ? (
+                            <p className="text-sm text-muted">
+                              Belum ada jadwal pelajaran untuk kelas ini.
+                              Tambahkan dulu di menu Tahun Ajaran.
+                            </p>
+                          ) : (
+                            <div className="space-y-4">
+                              {["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"].map(
+                                (hari) => {
+                                  const daftar = items
+                                    .filter(
+                                      (it) =>
+                                        typeof it === "object" && it.hari === hari,
+                                    )
+                                    .sort((a, b) =>
+                                      String(a.jam_mulai).localeCompare(
+                                        String(b.jam_mulai),
+                                      ),
+                                    );
+                                  if (daftar.length === 0) return null;
+                                  return (
+                                    <div key={hari}>
+                                      <p className="text-xs font-extrabold text-violet-600 dark:text-violet-300 uppercase tracking-wide mb-2">
+                                        {hari}
+                                      </p>
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                        {daftar.map((item) => {
+                                          const aktif = jadwalIdDipakai(item.id);
+                                          const guru =
+                                            item.guru_nama || item.guru_nama_tampil;
+                                          return (
+                                            <button
+                                              key={item.id}
+                                              type="button"
+                                              onClick={() =>
+                                                toggleJadwalPelajaranAda(klsId, item)
+                                              }
+                                              className={`flex items-start gap-3 p-3 rounded-xl border-2 text-left transition ${
+                                                aktif
+                                                  ? "border-violet-500 bg-violet-600 text-white"
+                                                  : "border-line bg-surface2 hover:border-violet-400/70 dark:hover:border-violet-500/50"
+                                              }`}
+                                            >
+                                              <div
+                                                className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                                                  aktif
+                                                    ? "bg-white border-white"
+                                                    : "border-line"
+                                                }`}
+                                              >
+                                                {aktif && (
+                                                  <FiCheckCircle
+                                                    size={13}
+                                                    className="text-violet-600"
+                                                  />
+                                                )}
+                                              </div>
+                                              <div className="min-w-0 flex-1">
+                                                <p
+                                                  className={`font-bold text-sm truncate ${aktif ? "text-white" : "text-ink"}`}
+                                                >
+                                                  {item.mapel}
+                                                </p>
+                                                <p
+                                                  className={`text-xs mt-0.5 ${aktif ? "text-white/90" : "text-muted"}`}
+                                                >
+                                                  {String(item.jam_mulai || "").slice(0, 5)}
+                                                  {" – "}
+                                                  {String(item.jam_selesai || "").slice(0, 5)}
+                                                </p>
+                                                {guru && (
+                                                  <p
+                                                    className={`text-xs mt-0.5 truncate ${aktif ? "text-white/80" : "text-muted"}`}
+                                                  >
+                                                    {guru}
+                                                  </p>
+                                                )}
+                                              </div>
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  );
+                                },
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+
+        {/* Lokasi — wajib untuk semua kategori */}
         <div>
           <label className="block text-sm font-bold text-ink mb-1.5">
             Lokasi <span className="text-red-500">*</span>
@@ -1349,172 +1891,9 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
             ))}
           </select>
           <p className="text-xs text-muted mt-1">
-            Kegiatan dan tanaman akan muncul setelah lokasi dipilih
+            Pilih lokasi dari daftar Lokasi &amp; Area
           </p>
-          {form.lokasi_id && (
-            <p className="text-[11px] text-muted mt-1 font-mono">
-              id lokasi: {form.lokasi_id} | kegiatan diterima:{" "}
-              {kegiatanList.length} | URL: {API}/api/lokasi/{form.lokasi_id}
-              /kegiatan
-            </p>
-          )}
         </div>
-        )}
-
-        {/* Kegiatan Lokasi */}
-        {!isPertanian && form.lokasi_id && (
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-bold text-ink">
-                Kegiatan di Lokasi Ini <span className="text-red-500">*</span>
-              </label>
-              {!loadingKegiatan &&
-                !kegiatanError &&
-                kegiatanList.length > 0 && (
-                  <div className="flex items-center gap-2 text-xs">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        set(
-                          "kegiatan_lokasi_ids",
-                          kegiatanList.map((k) => k.id),
-                        )
-                      }
-                      className="px-2.5 py-1 rounded-lg border border-green-300 dark:border-green-500/40 text-green-700 dark:text-green-300 font-semibold hover:bg-green-50 dark:hover:bg-green-500/10 dark:bg-green-500/10 transition"
-                    >
-                      Pilih Semua
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => set("kegiatan_lokasi_ids", [])}
-                      className="px-2.5 py-1 rounded-lg border border-line text-muted font-semibold hover:bg-surface2 transition"
-                    >
-                      Kosongkan
-                    </button>
-                  </div>
-                )}
-            </div>
-
-            <div className="mb-3 flex items-center gap-2">
-              <input
-                type="text"
-                value={kegiatanBaru}
-                onChange={(e) => setKegiatanBaru(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    tambahKegiatanBaru();
-                  }
-                }}
-                placeholder="Tambah kegiatan baru untuk lokasi ini, tekan Enter..."
-                className="flex-1 px-3 py-2.5 bg-surface2 border border-dashed border-green-300 dark:border-green-500/40 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-base"
-              />
-              <button
-                type="button"
-                onClick={() => tambahKegiatanBaru()}
-                disabled={menambahKegiatan || !kegiatanBaru.trim()}
-                className="flex items-center gap-1.5 px-3 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-xl transition disabled:opacity-60"
-              >
-                {menambahKegiatan ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                ) : (
-                  <FiPlus size={15} />
-                )}
-                Tambah
-              </button>
-            </div>
-
-            {loadingKegiatan ? (
-              <div className="flex items-center gap-3 p-4 bg-surface2 border border-line rounded-xl text-muted text-sm">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600" />
-                Memuat kegiatan...
-              </div>
-            ) : kegiatanError ? (
-              <div className="p-4 bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 rounded-xl text-red-700 dark:text-red-300 text-sm">
-                <p className="font-bold">Gagal memuat kegiatan</p>
-                <p className="mt-1 text-red-600 dark:text-red-300">{kegiatanError}</p>
-                <button
-                  type="button"
-                  onClick={() => fetchKegiatan(form.lokasi_id)}
-                  className="mt-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl transition duration-300"
-                >
-                  Muat Ulang
-                </button>
-              </div>
-            ) : kegiatanList.length === 0 ? (
-              <div className="p-4 bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 rounded-xl text-amber-700 dark:text-amber-300 text-sm">
-                <p className="font-bold">Belum ada kegiatan di lokasi ini</p>
-                <p className="mt-1 text-amber-600 dark:text-amber-300">
-                  Tambahkan kegiatan di menu Manajemen Lokasi & Area, lalu
-                  kembali ke sini.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => navigate("/admin/lokasi")}
-                  className="mt-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold rounded-xl transition duration-300 inline-flex items-center gap-2"
-                >
-                  <FiList size={14} /> Buka Manajemen Lokasi & Area
-                </button>
-              </div>
-            ) : (
-              <div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {kegiatanList.map((kegiatan) => {
-                    const isSelected = (
-                      form.kegiatan_lokasi_ids || []
-                    ).includes(kegiatan.id);
-                    return (
-                      <button
-                        key={kegiatan.id}
-                        type="button"
-                        onClick={() => toggleKegiatan(kegiatan.id)}
-                        className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition ${
-                          isSelected
-                            ? "border-green-500 bg-green-50 dark:bg-green-500/15"
-                            : "border-line bg-card hover:border-green-300/60 dark:hover:border-green-500/20"
-                        }`}
-                      >
-                        <div
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                            isSelected
-                              ? "bg-green-500 border-green-500"
-                              : "border-line"
-                          }`}
-                        >
-                          {isSelected && (
-                            <FiCheckCircle size={12} className="text-white" />
-                          )}
-                        </div>
-                        <span className="font-medium text-sm">
-                          {kegiatan.nama}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {(!form.kegiatan_lokasi_ids ||
-                  form.kegiatan_lokasi_ids.length === 0) && (
-                  <div className="mt-2 flex items-start gap-2 text-sm font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 rounded-xl p-3">
-                    <FiAlertTriangle
-                      size={15}
-                      className="flex-shrink-0 mt-0.5"
-                    />
-                    <span>
-                      Minimal satu kegiatan harus dipilih untuk menyimpan
-                      jadwal.
-                    </span>
-                  </div>
-                )}
-                {form.kegiatan_lokasi_ids &&
-                  form.kegiatan_lokasi_ids.length > 0 && (
-                    <p className="text-xs text-muted mt-2">
-                      {form.kegiatan_lokasi_ids.length} kegiatan dipilih
-                    </p>
-                  )}
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Tanaman (Opsional) */}
         {!isPertanian && form.lokasi_id && !loadingTanaman && tanamanList.length > 0 && (
@@ -1557,6 +1936,8 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
             </div>
           </div>
         )}
+
+
 
         {/* Jam */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1912,11 +2293,13 @@ const FormJadwalBaru = ({ initial, onSave, onCancel }) => {
             disabled={
               saving ||
               santriList.length === 0 ||
-              (isProduksi
-                ? (isPertanian
+              (isPendidikan
+                ? (form.kelas_terpilih || []).length === 0
+                : isProduksi
+                  ? isPertanian
                     ? (form.tanaman_terpilih || []).length === 0
-                    : (form.ternak_terpilih || []).length === 0)
-                : !(form.kegiatan_lokasi_ids || []).length)
+                    : (form.ternak_terpilih || []).length === 0
+                  : !(form.kegiatan_lokasi_ids || []).length)
             }
             className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl transition disabled:opacity-60 flex items-center justify-center gap-2 shadow-sm shadow-green-200/60 hover:shadow-sm"
           >
@@ -1974,6 +2357,9 @@ const DetailJadwal = ({
     ? Math.round((stats.selesai / stats.total) * 100)
     : 0;
 
+  const { utama: deskripsiUtama, perHari: pelajaranPerHari } =
+    parseDeskripsiJadwal(jadwal.deskripsi);
+
   return (
     <div className="space-y-5">
       {/* Back + aksi */}
@@ -2019,7 +2405,8 @@ const DetailJadwal = ({
       {/* Info header */}
       <div className="bg-card rounded-2xl border border-line shadow-sm p-6">
         <div className="flex flex-wrap gap-2 mb-4">
-          <span className="px-3 py-1 rounded-full text-xs font-bold border bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-500/30">
+          <span className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1 ${getKategoriStyle(jadwal.nama_kategori || jadwal.kategori)}`}>
+            {getKategoriIcon(jadwal.nama_kategori || jadwal.kategori)}
             {jadwal.nama_kategori || jadwal.kategori}
           </span>
           <span
@@ -2040,8 +2427,59 @@ const DetailJadwal = ({
             </span>
           )}
         </div>
-        {jadwal.deskripsi && (
-          <p className="text-sm text-muted mb-4">{jadwal.deskripsi}</p>
+        {deskripsiUtama && (
+          <p className="text-sm text-muted mb-4 whitespace-pre-line">
+            {deskripsiUtama}
+          </p>
+        )}
+
+        {pelajaranPerHari.length > 0 && (
+          <div className="mb-4 rounded-2xl border border-violet-200 dark:border-violet-500/30 bg-violet-50/50 dark:bg-violet-500/5 p-4">
+            <p className="text-sm font-extrabold text-ink mb-3 flex items-center gap-1.5">
+              <FiCalendar size={15} className="text-violet-600 dark:text-violet-300" />
+              Jadwal Pelajaran
+            </p>
+            <div className="space-y-4">
+              {pelajaranPerHari.map((grup, gi) => (
+                <div key={`${grup.hari}-${gi}`}>
+                  {grup.hari && (
+                    <p className="text-xs font-extrabold text-violet-700 dark:text-violet-300 uppercase tracking-wide mb-1.5">
+                      {grup.hari}
+                    </p>
+                  )}
+                  <div className="space-y-1.5">
+                    {grup.items.map((it, ii) => {
+                      const { mapel, jam, guru } = parseBarisPelajaran(it);
+                      return (
+                        <div
+                          key={ii}
+                          className="grid grid-cols-[1fr_auto] gap-3 items-start rounded-lg border border-line bg-card px-3 py-2"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-ink truncate">
+                              {mapel}
+                            </p>
+                            {guru && (
+                              <p className="text-[11px] text-muted flex items-center gap-1 mt-0.5 truncate">
+                                <FiUser size={11} className="shrink-0" />
+                                {guru}
+                              </p>
+                            )}
+                          </div>
+                          {jam && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-green-600 dark:text-green-400 tabular-nums whitespace-nowrap pt-0.5">
+                              <FiClock size={11} />
+                              {jam}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="bg-surface2 rounded-xl p-3">
@@ -2731,12 +3169,18 @@ const JadwalManager = () => {
                 <div className="flex items-start justify-between gap-4">
                   {/* Kiri */}
                   <div className="flex items-start gap-4 flex-1 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 font-extrabold text-xl flex items-center justify-center flex-shrink-0 group-hover:bg-green-200/60 dark:group-hover:bg-green-500/15 transition-colors duration-300">
-                      {j.nama_aktivitas?.charAt(0).toUpperCase()}
+                    <div className={`w-12 h-12 rounded-xl font-extrabold text-xl flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
+                      /peternakan/i.test(String(j.nama_kategori||j.kategori||'')) ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300' :
+                      /pendidikan|kelas/i.test(String(j.nama_kategori||j.kategori||'')) ? 'bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300' :
+                      /pertanian|perkebunan/i.test(String(j.nama_kategori||j.kategori||'')) ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' :
+                      'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300'
+                    }`}>
+                      {getKategoriIcon(j.nama_kategori||j.kategori)}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 rounded-full text-[11px] font-bold border bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-500/30">
+                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border flex items-center gap-1 ${getKategoriStyle(j.nama_kategori || j.kategori)}`}>
+                          {getKategoriIcon(j.nama_kategori || j.kategori)}
                           {j.nama_kategori || j.kategori}
                         </span>
                         <span

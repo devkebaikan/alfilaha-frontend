@@ -324,24 +324,24 @@ const LokasiManager = () => {
       {/* LIST VIEW */}
       {view === "list" && (
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div className="relative">
+          <div className="flex items-center justify-between gap-3">
+            <div className="relative flex-1 min-w-0 max-w-[16rem]">
               <FiSearch
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted"
+                className="pointer-events-none absolute inset-y-0 left-3 my-auto text-muted"
                 size={18}
               />
               <input
                 type="text"
                 placeholder="Cari lokasi..."
-                className="pl-10 pr-4 py-2.5 bg-card border border-line rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-base w-64"
+                className="w-full pl-10 pr-4 py-2.5 bg-card border border-line rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-base"
               />
             </div>
             <button
               onClick={() => openForm()}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded-xl transition shadow-sm shadow-green-200"
+              className="flex-shrink-0 flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded-xl transition shadow-sm shadow-green-200 whitespace-nowrap"
             >
               <FiPlus size={18} />
-              Tambah Lokasi
+              Lokasi
             </button>
           </div>
 

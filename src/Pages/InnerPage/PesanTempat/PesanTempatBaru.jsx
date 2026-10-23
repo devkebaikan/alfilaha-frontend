@@ -36,7 +36,7 @@ const BagianJudul = ({ ikon, judul }) => (
 );
 
 const IconBungkus = ({ isi }) => (
-  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none">
+  <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted">
     {isi}
   </span>
 );
@@ -587,7 +587,7 @@ const PesanTempat = () => {
                             </option>
                           ))}
                         </select>
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted text-xs">
+                        <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-muted text-xs">
                           ▼
                         </span>
                       </div>

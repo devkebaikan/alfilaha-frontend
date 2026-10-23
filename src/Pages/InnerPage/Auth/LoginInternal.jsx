@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaLock } from "react-icons/fa";
 import { FiCheckCircle } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { emitAuthChange } from "../../../Shared/authEvents";
 
 const LoginInternal = () => {
   const [formData, setFormData] = useState({
@@ -48,6 +49,7 @@ const LoginInternal = () => {
       // Simpan data di local storage
       localStorage.setItem("authToken", data.token);
       localStorage.setItem("userData", JSON.stringify(data.user));
+      emitAuthChange();
 
       setShowSuccess(true);
       navigate("/koleksi-tanaman");

@@ -32,7 +32,7 @@ const blogListData = [
     postFile: "Cleaning",
     blogListDesc:
       "Alternative innovation to ethical network environmental whiteboard pursue compelling results for methods empowerment. Dramatically architect go forward opportunities transition mission top critical supply chains after enterprise",
-    blogListUrl: "/blog_details",
+    blogListUrl: "/blog_grid",
     blogListBtn: "Continue Reading",
     blogListBtnIcon: <FaArrowRightLong />,
   },
@@ -49,7 +49,7 @@ const blogListData = [
     postFile: "Cleaning",
     blogListDesc:
       "Alternative innovation to ethical network environmental whiteboard pursue compelling results for methods empowerment. Dramatically architect go forward opportunities transition mission top critical supply chains after enterprise",
-    blogListUrl: "/blog_details",
+    blogListUrl: "/blog_grid",
     blogListBtn: "Continue Reading",
     blogListBtnIcon: <FaArrowRightLong />,
   },
@@ -66,7 +66,7 @@ const blogListData = [
     postFile: "Cleaning",
     blogListDesc:
       "Alternative innovation to ethical network environmental whiteboard pursue compelling results for methods empowerment. Dramatically architect go forward opportunities transition mission top critical supply chains after enterprise",
-    blogListUrl: "/blog_details",
+    blogListUrl: "/blog_grid",
     blogListBtn: "Continue Reading",
     blogListBtnIcon: <FaArrowRightLong />,
   },
@@ -83,7 +83,7 @@ const blogListData = [
     postFile: "Cleaning",
     blogListDesc:
       "Alternative innovation to ethical network environmental whiteboard pursue compelling results for methods empowerment. Dramatically architect go forward opportunities transition mission top critical supply chains after enterprise",
-    blogListUrl: "/blog_details",
+    blogListUrl: "/blog_grid",
     blogListBtn: "Continue Reading",
     blogListBtnIcon: <FaArrowRightLong />,
   },
@@ -100,7 +100,7 @@ const blogListData = [
     postFile: "Cleaning",
     blogListDesc:
       "Alternative innovation to ethical network environmental whiteboard pursue compelling results for methods empowerment. Dramatically architect go forward opportunities transition mission top critical supply chains after enterprise",
-    blogListUrl: "/blog_details",
+    blogListUrl: "/blog_grid",
     blogListBtn: "Continue Reading",
     blogListBtnIcon: <FaArrowRightLong />,
   },
@@ -111,7 +111,7 @@ const BlogList = () => {
     <>
       <BreadCrumb
         breadCrumbTitle={"Blog With Sidebar"}
-        url={"/blog"}
+        url={"/blog_grid"}
         breadCrumbIcon={<FaArrowRightLong />}
         breadCrumbIcon2={<FaArrowRightLong />}
         breadCrumbLink={"Blog"}
@@ -173,7 +173,7 @@ const BlogList = () => {
                 />
                 <button
                   type="submit"
-                  className=" text-xl text-white rounded h-[56px] w-[56px] bg-PrimaryColor-0 transition-all duration-500 flex items-center justify-center hover:hue-rotate-[360deg] absolute right-7 top-1/2 -translate-y-1/2"
+                  className=" text-xl text-white rounded h-[56px] w-[56px] bg-PrimaryColor-0 transition-all duration-500 flex items-center justify-center hover:hue-rotate-[360deg] absolute right-7 inset-y-0 my-auto"
                 >
                   <IoSearch />
                 </button>
@@ -255,7 +255,7 @@ const BlogList = () => {
                 <h4 className="font-AlbertSans font-semibold text-2xl text-HeadingColor-0 pb-3 mb-8 relative before:absolute before:bottom-0 before:left-0 before:w-7 before:h-[2px] before:bg-PrimaryColor-0">
                   Popular Post
                 </h4>
-                <Link to={"/blog-details"}>
+                <Link to={"/blog_grid"}>
                   <button className="group flex gap-4 mb-6">
                     <div>
                       <img decoding="async" loading="lazy" draggable="false" src={itemthumb} />
@@ -270,7 +270,7 @@ const BlogList = () => {
                     </div>
                   </button>
                 </Link>
-                <Link to={"/blog_details"}>
+                <Link to={"/blog_grid"}>
                   <button className="group flex gap-4 my-6">
                     <div>
                       <img decoding="async" loading="lazy" draggable="false" src={itemthumb2} />
@@ -285,7 +285,7 @@ const BlogList = () => {
                     </div>
                   </button>
                 </Link>
-                <Link to={"/blog_details"}>
+                <Link to={"/blog_grid"}>
                   <button className="group flex gap-4 my-6">
                     <div>
                       <img decoding="async" loading="lazy" draggable="false" src={itemthumb3} />

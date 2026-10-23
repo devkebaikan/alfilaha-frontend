@@ -1,8 +1,24 @@
 import React from "react";
-import { FiEdit, FiTrash2, FiX } from "react-icons/fi";
+import { FiEdit, FiTrash2, FiX, FiSearch } from "react-icons/fi";
 
 const LayananManager = ({ layanan, onAdd, onEdit, setDeleteLayananModal }) => {
   const [selectedLayanan, setSelectedLayanan] = React.useState(null);
+  const [searchQuery, setSearchQuery] = React.useState("");
+
+  const filteredLayanan = React.useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return layanan;
+    return layanan.filter((item) =>
+      [item.title, item.description]
+        .filter(Boolean)
+        .some((v) =>
+          String(v)
+            .replace(/<[^>]+>/g, "")
+            .toLowerCase()
+            .includes(q),
+        ),
+    );
+  }, [layanan, searchQuery]);
 
   return (
     <div className="bg-card rounded-[2rem] shadow-sm border border-line overflow-hidden animate-fade-in-up">
@@ -15,15 +31,42 @@ const LayananManager = ({ layanan, onAdd, onEdit, setDeleteLayananModal }) => {
         </div>
         <button
           onClick={() => onAdd()}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5 whitespace-nowrap"
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5 whitespace-nowrap flex items-center gap-2"
         >
-          Tambah Layanan
+          + Tambah Layanan
         </button>
       </div>
       <div className="p-8">
+        <div className="mb-6 relative max-w-md">
+          <FiSearch className="pointer-events-none absolute inset-y-0 left-4 my-auto text-muted w-5 h-5" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari nama atau deskripsi layanan..."
+            className="w-full pl-12 pr-10 py-3 rounded-xl border border-line focus:ring-2 focus:ring-green-500 outline-none transition bg-surface2 focus:bg-card text-ink font-medium"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute inset-y-0 right-3 flex items-center text-muted hover:text-red-500 transition"
+            >
+              <FiX className="w-5 h-5" />
+            </button>
+          )}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {layanan.length > 0 ? (
-            layanan.map((item) => (
+          {layanan.length === 0 ? (
+            <div className="col-span-full text-center py-10 text-muted font-bold">
+              Belum ada layanan yang ditambahkan.
+            </div>
+          ) : filteredLayanan.length === 0 ? (
+            <div className="col-span-full text-center py-10 text-muted font-bold">
+              {`Tidak ada layanan yang cocok dengan "${searchQuery}".`}
+            </div>
+          ) : (
+            filteredLayanan.map((item) => (
               <div
                 key={`grid-${item.id}`}
                 onClick={() => setSelectedLayanan(item)}
@@ -85,10 +128,6 @@ const LayananManager = ({ layanan, onAdd, onEdit, setDeleteLayananModal }) => {
                 </div>
               </div>
             ))
-          ) : (
-            <div className="col-span-full text-center py-10 text-muted font-bold">
-              Belum ada layanan yang ditambahkan.
-            </div>
           )}
         </div>
       </div>

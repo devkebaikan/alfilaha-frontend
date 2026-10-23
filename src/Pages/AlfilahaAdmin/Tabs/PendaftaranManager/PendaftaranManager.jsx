@@ -20,10 +20,12 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { getAdminHeaders } from "../../../../adminAuth";
 import { useNotifikasi } from "../../../../Context/NotifikasiContext";
+import ActionMenu from "../../../../Shared/ActionMenu";
 
 const PendaftaranManager = () => {
   const notif = useNotifikasi();
   const [activeTab, setActiveTab] = useState("pendaftar");
+  const [menuTerbuka, setMenuTerbuka] = useState(null);
 
   // States for Pendaftar Santri
   const [pendaftar, setPendaftar] = useState([]);
@@ -82,13 +84,6 @@ const PendaftaranManager = () => {
         const data = await response.json();
         const list = Array.isArray(data) ? data : [];
         setPendaftar(list);
-        notif.pantauPesanMasuk({
-          key: "pendaftar",
-          tab: "pendaftaran",
-          nama: "Ada pendaftar santri baru.",
-          satuan: "pendaftar",
-          total: list.length,
-        });
       }
     } catch (error) {
       console.error("Gagal mengambil data pendaftar:", error);
@@ -116,10 +111,8 @@ const PendaftaranManager = () => {
           ditolak: "Ditolak",
           batal: "Batal",
         };
-        // Proses terima/tolak hanya jadi toast, tidak masuk riwayat lonceng
         notif.success(
           `Status pendaftar diubah menjadi "${labelStatus[newStatus] || newStatus}".`,
-          { simpan: false },
         );
       } else {
         notif.error("Gagal mengubah status pendaftar.");
@@ -291,6 +284,9 @@ const PendaftaranManager = () => {
   const totalDiterima = pendaftar.filter(
     (p) => p?.status_pendaftaran === "Diterima",
   ).length;
+  const totalDitolak = pendaftar.filter(
+    (p) => p?.status_pendaftaran === "Ditolak" || p?.status_pendaftaran === "Tertolak",
+  ).length;
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -340,7 +336,7 @@ const PendaftaranManager = () => {
                 <div className="lg:col-span-3 bg-card p-4 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#E5EEE8] dark:border-[#2A3530] flex flex-col sm:flex-row gap-4 sm:gap-6 items-center">
                   <div className="flex-1 w-full">
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">
+                      <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted">
                         <FiSearch size={20} />
                       </span>
                       <input
@@ -352,7 +348,7 @@ const PendaftaranManager = () => {
                       />
                     </div>
                   </div>
-                  <div className="flex gap-4 w-full sm:w-auto">
+                  <div className="flex gap-3 w-full sm:w-auto flex-wrap">
                     <div className="px-5 py-3 bg-[#DCFCE7] dark:bg-[#12331F] text-[#14532D] dark:text-[#6EE7A0] rounded-2xl flex items-center gap-3 border border-[#16804B]/20 flex-1 sm:flex-none">
                       <div className="w-8 h-8 bg-card rounded-full flex items-center justify-center shadow-sm text-[#16804B] dark:text-[#4ADE80] font-bold">
                         <FiClock />
@@ -376,6 +372,19 @@ const PendaftaranManager = () => {
                         </p>
                         <p className="text-xl font-black leading-none">
                           {totalDiterima}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="px-5 py-3 bg-red-50 dark:bg-red-500/15 text-red-700 rounded-2xl flex items-center gap-3 border border-red-200 dark:border-red-500/30 flex-1 sm:flex-none">
+                      <div className="w-8 h-8 bg-card rounded-full flex items-center justify-center shadow-sm text-red-600 dark:text-red-300 font-bold">
+                        <FiX />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-red-600 dark:text-red-300">
+                          Tertolak
+                        </p>
+                        <p className="text-xl font-black leading-none">
+                          {totalDitolak}
                         </p>
                       </div>
                     </div>
@@ -441,7 +450,7 @@ const PendaftaranManager = () => {
                           <tr
                             key={p.id}
                             onClick={() => setSelectedSantri(p)}
-                            className="odd:bg-card even:bg-surface2 hover:!bg-[#F1F6F3] dark:hover:!bg-white/[0.035] dark:bg-green-500/10 hover:shadow-md dark:hover:shadow-none transition-all duration-300 group border-l-4 border-transparent hover:!border-[#16804B] dark:hover:!border-green-600 cursor-pointer"
+                            className="group hover:bg-surface2 transition-colors cursor-pointer"
                           >
                             <td className="py-4 px-6">
                               <div className="flex items-center gap-4">
@@ -505,53 +514,87 @@ const PendaftaranManager = () => {
                               className="py-4 px-6"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <div className="relative inline-block w-48">
-                                <select
-                                  value={p.status_pendaftaran}
-                                  onChange={(e) =>
-                                    handleUpdateStatusPendaftar(
-                                      p.id,
-                                      e.target.value,
-                                    )
-                                  }
-                                  className={`appearance-none w-full text-xs font-bold rounded-xl px-4 py-2.5 outline-none cursor-pointer border shadow-sm transition-all focus:ring-2 focus:ring-offset-1 ${
-                                    p.status_pendaftaran === "Diterima"
-                                      ? "bg-[#DCFCE7] dark:bg-[#12331F] text-[#14532D] dark:text-[#6EE7A0] border-[#16804B]/20 focus:ring-[#16804B]"
-                                      : p.status_pendaftaran === "Ditolak"
-                                        ? "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300 border-red-200 dark:border-red-500/30 focus:ring-red-500"
-                                        : "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-500/30 focus:ring-blue-500"
-                                  }`}
-                                >
-                                  <option value="Menunggu Verifikasi">
-                                    ⏳ Menunggu Verifikasi
-                                  </option>
-                                  <option value="Diterima">
-                                    ✅ Terima Santri
-                                  </option>
-                                  <option value="Ditolak">❌ Tolak</option>
-                                </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted">
-                                  <svg
-                                    className="fill-current h-4 w-4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 20 20"
+                              {(() => {
+                                const st = p.status_pendaftaran;
+                                const diterima = st === "Diterima";
+                                const ditolak =
+                                  st === "Ditolak" || st === "Tertolak";
+                                const cls = diterima
+                                  ? "bg-[#DCFCE7] dark:bg-[#12331F] text-[#14532D] dark:text-[#6EE7A0] border-[#16804B]/20"
+                                  : ditolak
+                                    ? "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300 border-red-200 dark:border-red-500/30"
+                                    : "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-500/30";
+                                return (
+                                  <span
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border shadow-sm ${cls}`}
                                   >
-                                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                  </svg>
-                                </div>
-                              </div>
+                                    {diterima ? (
+                                      <FiCheck size={14} />
+                                    ) : ditolak ? (
+                                      <FiX size={14} />
+                                    ) : (
+                                      <FiClock size={14} />
+                                    )}
+                                    {st}
+                                  </span>
+                                );
+                              })()}
                             </td>
                             <td
                               className="py-4 px-6 text-center"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <button
-                                onClick={() => handleDeletePendaftar(p.id)}
-                                title="Hapus Data"
-                                className="text-muted hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/15 dark:bg-red-500/15 p-2.5 rounded-xl transition-all shadow-sm border border-transparent hover:border-red-100 dark:border-red-500/30"
-                              >
-                                <FiTrash2 size={18} />
-                              </button>
+                              <div className="flex justify-center">
+                                <ActionMenu
+                                  terbuka={menuTerbuka === `pendaftar-${p.id}`}
+                                  onToggle={() =>
+                                    setMenuTerbuka((cur) =>
+                                      cur === `pendaftar-${p.id}`
+                                        ? null
+                                        : `pendaftar-${p.id}`,
+                                    )
+                                  }
+                                  onTutup={() => setMenuTerbuka(null)}
+                                  items={[
+                                    {
+                                      label: "Terima Santri",
+                                      icon: <FiCheck size={15} />,
+                                      onClick: () =>
+                                        handleUpdateStatusPendaftar(
+                                          p.id,
+                                          "Diterima",
+                                        ),
+                                    },
+                                    {
+                                      label: "Menunggu Verifikasi",
+                                      icon: <FiClock size={15} />,
+                                      onClick: () =>
+                                        handleUpdateStatusPendaftar(
+                                          p.id,
+                                          "Menunggu Verifikasi",
+                                        ),
+                                    },
+                                    {
+                                      label: "Tolak",
+                                      icon: <FiX size={15} />,
+                                      danger: true,
+                                      onClick: () =>
+                                        handleUpdateStatusPendaftar(
+                                          p.id,
+                                          "Ditolak",
+                                        ),
+                                    },
+                                    { type: "divider" },
+                                    {
+                                      label: "Hapus",
+                                      icon: <FiTrash2 size={15} />,
+                                      danger: true,
+                                      onClick: () =>
+                                        handleDeletePendaftar(p.id),
+                                    },
+                                  ]}
+                                />
+                              </div>
                             </td>
                           </tr>
                         ))
@@ -672,20 +715,31 @@ const PendaftaranManager = () => {
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleEditProgram(prog)}
-                            className="text-muted hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/15 dark:bg-blue-500/15 p-2.5 rounded-xl transition-all"
-                          >
-                            <FiEdit3 size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteProgram(prog.id)}
-                            className="text-muted hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/15 dark:bg-red-500/15 p-2.5 rounded-xl transition-all"
-                          >
-                            <FiTrash2 size={18} />
-                          </button>
-                        </div>
+                        <ActionMenu
+                          terbuka={menuTerbuka === `program-${prog.id}`}
+                          onToggle={() =>
+                            setMenuTerbuka((cur) =>
+                              cur === `program-${prog.id}`
+                                ? null
+                                : `program-${prog.id}`,
+                            )
+                          }
+                          onTutup={() => setMenuTerbuka(null)}
+                          items={[
+                            {
+                              label: "Edit",
+                              icon: <FiEdit3 size={15} />,
+                              onClick: () => handleEditProgram(prog),
+                            },
+                            { type: "divider" },
+                            {
+                              label: "Hapus",
+                              icon: <FiTrash2 size={15} />,
+                              danger: true,
+                              onClick: () => handleDeleteProgram(prog.id),
+                            },
+                          ]}
+                        />
                       </div>
                     </div>
                   </div>
@@ -960,9 +1014,11 @@ const PendaftaranManager = () => {
                   </h4>
                   <div className="flex items-center gap-3 mt-1 text-sm font-bold">
                     <span
-                      className={`px-3 py-1 rounded-full ${selectedSantri?.status_pendaftaran === "Diterima" ? "bg-[#DCFCE7] dark:bg-[#12331F] text-[#14532D] dark:text-[#6EE7A0]" : selectedSantri?.status_pendaftaran === "Ditolak" ? "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300" : "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300"}`}
+                      className={`px-3 py-1 rounded-full ${selectedSantri?.status_pendaftaran === "Diterima" ? "bg-[#DCFCE7] dark:bg-[#12331F] text-[#14532D] dark:text-[#6EE7A0]" : selectedSantri?.status_pendaftaran === "Ditolak" || selectedSantri?.status_pendaftaran === "Tertolak" ? "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300" : "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300"}`}
                     >
-                      {selectedSantri?.status_pendaftaran || "Menunggu"}
+                      {selectedSantri?.status_pendaftaran === "Ditolak" || selectedSantri?.status_pendaftaran === "Tertolak"
+                        ? "Ditolak"
+                        : selectedSantri?.status_pendaftaran || "Menunggu"}
                     </span>
                     <span className="text-muted flex items-center gap-1">
                       <FiCalendar />{" "}

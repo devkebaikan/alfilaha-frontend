@@ -3,7 +3,13 @@ import { FaArrowRightLong } from "react-icons/fa6";
 import { FaSearch } from "react-icons/fa";
 import BreadCrumb from "../../../Shared/BreadCrumb/BreadCrumb";
 import subTitleShape from "/images/sub-title-shape.png";
-import { FiDroplet, FiCheckCircle, FiShoppingBag } from "react-icons/fi";
+import { ikonAksiUntuk } from "../../../Shared/ikonAksi";
+
+const LABEL_AKSI_LAMPAU = {
+  siram: "Disiram",
+  pupuk: "Diberi Pupuk",
+  panen: "Dipanen",
+};
 
 const CekTanaman = () => {
   const [searchCode, setSearchCode] = useState("");
@@ -192,21 +198,21 @@ const CekTanaman = () => {
                     >
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
                         <h4 className="font-AlbertSans font-semibold text-xl text-HeadingColor-0 flex items-center gap-2">
-                          {item.jenis_tindakan === "siram" ? (
-                            <>
-                              <FiDroplet className="text-blue-500" /> Disiram
-                            </>
-                          ) : item.jenis_tindakan === "panen" ? (
-                            <>
-                              <FiShoppingBag className="text-green-600" />{" "}
-                              Dipanen
-                            </>
-                          ) : (
-                            <>
-                              <FiCheckCircle className="text-orange-500" />{" "}
-                              Diberi Pupuk
-                            </>
-                          )}
+                          {(() => {
+                            const jenis = String(
+                              item.jenis_tindakan || "",
+                            ).toLowerCase();
+                            const { Icon } = ikonAksiUntuk(jenis, "tanaman");
+                            const label =
+                              LABEL_AKSI_LAMPAU[jenis] ||
+                              jenis.replace(/^\w/, (c) => c.toUpperCase()) ||
+                              "Perawatan";
+                            return (
+                              <>
+                                <Icon className="text-green-600" /> {label}
+                              </>
+                            );
+                          })()}
                         </h4>
                         <div className="flex items-center gap-4 mt-2 md:mt-0">
                           <span className="text-TextColor-0 text-sm font-medium">
