@@ -210,7 +210,7 @@ const router = createBrowserRouter([
         element: page(ProjectDetails),
       },
       {
-        path: "/donation_inner",
+        path: "/https://beramalbersama.com/home",
         element: page(DonationInner),
       },
       {

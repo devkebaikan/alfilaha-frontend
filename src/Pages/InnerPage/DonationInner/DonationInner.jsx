@@ -14,7 +14,7 @@ const DonationData = [
   {
     id: 1,
     donateImg: donateImg,
-    donateUrl: "/donation_inner",
+    donateUrl: "/https://beramalbersama.com/home",
     imgButton: "Donate Now",
     donateTitle: "Fund Raising For Tree Plantation - 2024",
     donateDesc:
@@ -28,7 +28,7 @@ const DonationData = [
   {
     id: 2,
     donateImg: donateImg2,
-    donateUrl: "/donation_inner",
+    donateUrl: "/https://beramalbersama.com/home",
     imgButton: "Donate Now",
     donateTitle: "Fund Raising For Forest Recycling & Repair",
     donateDesc:
@@ -42,7 +42,7 @@ const DonationData = [
   {
     id: 3,
     donateImg: donateImg3,
-    donateUrl: "/donation_inner",
+    donateUrl: "/https://beramalbersama.com/home",
     imgButton: "Donate Now",
     donateTitle: "Environmental Dust Cleaning & Recycling",
     donateDesc:
@@ -56,7 +56,7 @@ const DonationData = [
   {
     id: 4,
     donateImg: donateImg4,
-    donateUrl: "/donation_inner",
+    donateUrl: "/https://beramalbersama.com/home",
     imgButton: "Donate Now",
     donateTitle: "Fund Raising For Renewable Energy Poor Peaples",
     donateDesc:
@@ -70,7 +70,7 @@ const DonationData = [
   {
     id: 5,
     donateImg: donateImg5,
-    donateUrl: "/donation_inner",
+    donateUrl: "/https://beramalbersama.com/home",
     imgButton: "Donate Now",
     donateTitle: "Donations for Plant Seedlings Orphan Peoples",
     donateDesc:
@@ -84,7 +84,7 @@ const DonationData = [
   {
     id: 6,
     donateImg: donateImg6,
-    donateUrl: "/donation_inner",
+    donateUrl: "/https://beramalbersama.com/home",
     imgButton: "Donate Now",
     donateTitle: "Fund Raising For Tree Plantation - 2024",
     donateDesc:
@@ -109,7 +109,12 @@ const DonationInner = () => {
         <div className="Container">
           <div className="text-center">
             <h5 className="font-AlbertSans font-medium text-PrimaryColor-0 flex items-center gap-2 justify-center">
-              <img decoding="async" loading="lazy" src={subTitleShape} draggable="false" />
+              <img
+                decoding="async"
+                loading="lazy"
+                src={subTitleShape}
+                draggable="false"
+              />
               DONATIONS
             </h5>
             <h1 className="font-AlbertSans font-bold text-[22px] leading-[1.3] sm:text-[38px] sm:leading-[48px] md:text-[40px] md:leading-[54px] lg:text-[32px] lg:leading-[42px] xl:text-[40px] xl:leading-[50px] 2xl:text-[46px] 2xl:leading-[56px] text-HeadingColor-0 mt-5 mb-3 px-1 sm:px-2">

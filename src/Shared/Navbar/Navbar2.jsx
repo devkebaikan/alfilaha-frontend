@@ -122,7 +122,8 @@ const Navbar2 = () => {
               {/* website Logo */}
               <div>
                 <Link to="/">
-                  <img decoding="async"
+                  <img
+                    decoding="async"
                     loading="lazy"
                     src={Logo}
                     className="hidden lg:block w-full brightness-0 invert-[1]"
@@ -133,7 +134,8 @@ const Navbar2 = () => {
               <div className="w-full lg:hidden flex justify-between h-[70px] items-center py-3">
                 <div className="w-28">
                   <Link to="/">
-                    <img decoding="async"
+                    <img
+                      decoding="async"
                       loading="lazy"
                       draggable="false"
                       src={Logo}
@@ -308,7 +310,10 @@ const Navbar2 = () => {
                           </div>
                           <div className="px-5 group hover:bg-PrimaryColor-0">
                             <li className="hover:ml-3 duration-300">
-                              <Link to="/donation_inner" className="py-2 block">
+                              <Link
+                                to="/https://beramalbersama.com/home"
+                                className="py-2 block"
+                              >
                                 Donations
                               </Link>
                             </li>

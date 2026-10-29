@@ -124,7 +124,10 @@ const Navbar = () => {
           keywords: ["kontak", "hubungi", "lokasi", "alamat", "peta"],
           path: "/contact",
         },
-        { keywords: ["donasi", "sumbangan"], path: "/donation_inner" },
+        {
+          keywords: ["donasi", "sumbangan"],
+          path: "/https://beramalbersama.com/home",
+        },
         { keywords: ["blog", "artikel", "berita", "news"], path: "/blog_grid" },
         { keywords: ["admin", "dashboard", "panel"], path: "/admin" },
       ];
@@ -223,7 +226,8 @@ const Navbar = () => {
               {/* Website Logo */}
               <div className="flex items-center justify-start min-w-0">
                 <Link to="/" className="flex items-center gap-2 sm:gap-3">
-                  <img decoding="async"
+                  <img
+                    decoding="async"
                     loading="lazy"
                     draggable="false"
                     src={Logo}
@@ -248,7 +252,7 @@ const Navbar = () => {
                 <button
                   aria-label="Search"
                   onClick={() => setIsSearchOpen(!isSearchOpen)}
-                    className={`flex items-center justify-center w-11 h-11 rounded-full bg-white/10 dark:bg-white/[0.08] hover:bg-white/20 dark:hover:bg-white/[0.16] transition-all duration-150 active:scale-95 focus:outline-none ${isSearchOpen ? "text-[#0d806a]" : "text-white"}`}
+                  className={`flex items-center justify-center w-11 h-11 rounded-full bg-white/10 dark:bg-white/[0.08] hover:bg-white/20 dark:hover:bg-white/[0.16] transition-all duration-150 active:scale-95 focus:outline-none ${isSearchOpen ? "text-[#0d806a]" : "text-white"}`}
                 >
                   <IoSearch className="w-5 h-5" />
                 </button>
@@ -513,7 +517,7 @@ const Navbar = () => {
                       Pendaftaran
                     </Link>
                     <Link
-                      to={"/donation_inner"}
+                      to={"/https://beramalbersama.com/home"}
                       className="whitespace-nowrap px-[18px] 2xl:px-5 py-2.5 bg-[#0d806a] hover:bg-[#0a6658] text-white rounded-full text-[13px] 2xl:text-sm font-bold transition-all duration-150 shadow-lg active:scale-95 hover:shadow-md"
                     >
                       Donasi
@@ -569,7 +573,8 @@ const Navbar = () => {
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-2.5"
           >
-            <img decoding="async"
+            <img
+              decoding="async"
               loading="lazy"
               draggable="false"
               src={Logo}
@@ -633,10 +638,10 @@ const Navbar = () => {
                     </div>
                   </div>
                 ) : (
-                    <Link
-                      to={link.path}
-                      className="block py-3 px-2 -mx-2 rounded-lg text-white text-[15px] sm:text-[16px] font-AlbertSans font-medium transition-all duration-150 hover:text-[#0d806a] hover:bg-white/5 active:scale-[0.99]"
-                    >
+                  <Link
+                    to={link.path}
+                    className="block py-3 px-2 -mx-2 rounded-lg text-white text-[15px] sm:text-[16px] font-AlbertSans font-medium transition-all duration-150 hover:text-[#0d806a] hover:bg-white/5 active:scale-[0.99]"
+                  >
                     {link.title}
                   </Link>
                 )}
@@ -728,7 +733,7 @@ const Navbar = () => {
                   Pendaftaran
                 </Link>
                 <Link
-                  to={"/donation_inner"}
+                  to={"/https://beramalbersama.com/home"}
                   className="flex justify-center w-full py-3.5 bg-[#0d806a] hover:bg-[#0a6658] text-white rounded-full font-bold transition-all duration-150 shadow-lg hover:-translate-y-0.5 active:scale-[0.995] hover:shadow-md"
                 >
                   Donasi

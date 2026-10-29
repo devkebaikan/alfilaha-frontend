@@ -69,7 +69,7 @@ const STATIC_PAGES = [
   },
   {
     title: "Donasi Lingkungan",
-    path: "/donation_inner",
+    path: "/https://beramalbersama.com/home",
     desc: "Berpartisipasi dalam program donasi lingkungan dan kemanusiaan",
     type: "Halaman",
   },
